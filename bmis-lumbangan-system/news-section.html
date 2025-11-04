@@ -1,0 +1,35 @@
+<!-- News Section - UPDATED -->
+<section class="news-section" id="news">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-badge">Latest News</div>
+            <h2 class="section-title">Batangas News & Updates</h2>
+            <p class="section-subtitle">Real-time news from Batangas Provincial Government</p>
+        </div>
+        
+        <!-- Loading State -->
+        <div id="newsLoading" class="news-loading">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p>Fetching latest news from Batangas...</p>
+        </div>
+        
+        <!-- Error State -->
+        <div id="newsError" class="news-error" style="display: none;">
+            <i class="fas fa-exclamation-circle"></i>
+            <p>Unable to load news at this time. Please try again later.</p>
+        </div>
+        
+        <!-- News Content -->
+        <div id="newsContent" class="row" style="display: none;">
+            <!-- News will be dynamically inserted here -->
+        </div>
+        
+        <div class="text-center mt-5">
+            <button id="refreshNews" class="btn btn-custom btn-primary-custom">
+                <i class="fas fa-sync-alt"></i> Refresh News
+            </button>
+        </div>
+    </div>
+</section>

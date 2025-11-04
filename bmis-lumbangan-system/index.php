@@ -14,11 +14,11 @@ $baseUrl = rtrim($scriptDir, '/') . '/';
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Your styles -->
-  <link rel="stylesheet" href="<?= htmlspecialchars($baseUrl) ?>assets/css/landing.css">
-  <link rel="stylesheet" href="<?= htmlspecialchars($baseUrl) ?>assets/css/news-styles.css">
+  <link rel="stylesheet" href="<?= htmlspecialchars($baseUrl) ?>app/assets/css/Landing/landing.css">
+  <link rel="stylesheet" href="<?= htmlspecialchars($baseUrl) ?>app/assets/css/Landing/news-styles.css">
 
   <!-- Page JS -->
-  <script src="<?= htmlspecialchars($baseUrl) ?>assets/js/batangas-news.js" defer></script>
+  <script src="<?= htmlspecialchars($baseUrl) ?>app/assets/js/Landing/batangas-news.js" defer></script>
 </head>
 <body>
   <!-- Floating Background Shapes -->
@@ -30,7 +30,7 @@ $baseUrl = rtrim($scriptDir, '/') . '/';
 
   <!-- Header include (PHP) -->
   <?php
-    $headerPath = __DIR__ . '/components/header.php';
+    $headerPath = __DIR__ . '/app/components/header.php';
     if (file_exists($headerPath)) { include $headerPath; }
   ?>
 
@@ -422,13 +422,13 @@ $baseUrl = rtrim($scriptDir, '/') . '/';
 
   <!-- Footer include (PHP) -->
   <?php
-    $footerPath = __DIR__ . '/components/footer.php';
+    $footerPath = __DIR__ . '/app/components/footer.php';
     if (file_exists($footerPath)) { include $footerPath; }
   ?>
 
   <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-  <script src="<?= htmlspecialchars($baseUrl) ?>assets/js/Landing.js"></script>
+  <script src="<?= htmlspecialchars($baseUrl) ?>app/assets/js/Landing/Landing.js"></script>
 
   <!-- Login Modal (kept as-is) -->
   <div class="login-modal-overlay" id="loginModal">

@@ -14,7 +14,7 @@
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg bg-body-secondary position-sticky top-0 z-3">
+    <nav class="navbar navbar-expand-lg bg-body-secondary position-sticky top-0 z-1">
         <div class="container-fluid">
             <a class="navbar-brand fw-bold" href="#">
                 

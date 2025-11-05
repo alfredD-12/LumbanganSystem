@@ -1,10 +1,10 @@
 <?php
 // index.php — main entry point (Front Controller)
 
-// ✅ Load configuration and controllers
+//  Load configuration and controllers
 require_once __DIR__ . '/../app/controllers/DocumentRequestController.php';
 
-// ✅ Handle AJAX/API actions
+//  Handle AJAX/API actions
 $action = $_GET['action'] ?? null;
 
 if ($action) {

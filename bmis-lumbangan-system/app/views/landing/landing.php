@@ -1,24 +1,24 @@
 <?php
-// Landing page with PHP includes for header/footer and robust base URL handling.
-$scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
-$baseUrl = rtrim($scriptDir, '/') . '/';
+// Landing page (app/views/landing/landing.php)
+// No <base> tag. Use relative paths to assets and filesystem includes.
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Barangay Lumbangan | Nasugbu, Batangas</title>
+
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Your styles -->
-  <link rel="stylesheet" href="<?= htmlspecialchars($baseUrl) ?>app/assets/css/Landing/landing.css">
-  <link rel="stylesheet" href="<?= htmlspecialchars($baseUrl) ?>app/assets/css/Landing/news-styles.css">
+  <!-- Styles: relative to app/views/landing/ -->
+  <link rel="stylesheet" href="../../assets/css/Landing/landing.css?v=2">
+  <link rel="stylesheet" href="../../assets/css/Landing/news-styles.css?v=2">
 
-  <!-- Page JS -->
-  <script src="<?= htmlspecialchars($baseUrl) ?>app/assets/js/Landing/batangas-news.js" defer></script>
+  <!-- Optional news fetcher (can be deferred) -->
+  <script src="../../assets/js/Landing/batangas-news.js?v=2" defer></script>
 </head>
 <body>
   <!-- Floating Background Shapes -->
@@ -28,17 +28,13 @@ $baseUrl = rtrim($scriptDir, '/') . '/';
     <div class="shape"></div>
   </div>
 
-  <!-- Header include (PHP) -->
-  <?php
-    $headerPath = __DIR__ . '/app/components/header.php';
-    if (file_exists($headerPath)) { include $headerPath; }
-  ?>
+  <!-- Header include (filesystem path) -->
+  <?php include dirname(__DIR__, 2) . '/components/header.php'; ?>
 
   <!-- Hero Section -->
   <section class="hero-section" id="home">
     <div class="container">
       <div class="hero-content">
-        <!-- Bagong Batangas Logo -->
         <div class="mb-5" style="animation: fadeInUp 1s ease; margin-top: -80px;">
           <img src="https://portal.batangas.gov.ph/wp-content/uploads/2025/06/batangaslogo2025.png"
                alt="Bagong Batangas"
@@ -72,30 +68,10 @@ $baseUrl = rtrim($scriptDir, '/') . '/';
   <section class="stats-section">
     <div class="container">
       <div class="row">
-        <div class="col-lg-3 col-md-6">
-          <div class="stat-card">
-            <div class="stat-number"><i class="fas fa-users"></i> 5,000+</div>
-            <div class="stat-label">Residents</div>
-          </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-          <div class="stat-card">
-            <div class="stat-number"><i class="fas fa-project-diagram"></i> 25+</div>
-            <div class="stat-label">Active Projects</div>
-          </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-          <div class="stat-card">
-            <div class="stat-number"><i class="fas fa-calendar-check"></i> 50+</div>
-            <div class="stat-label">Events Yearly</div>
-          </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-          <div class="stat-card">
-            <div class="stat-number"><i class="fas fa-award"></i> 10+</div>
-            <div class="stat-label">Awards</div>
-          </div>
-        </div>
+        <div class="col-lg-3 col-md-6"><div class="stat-card"><div class="stat-number"><i class="fas fa-users"></i> 5,000+</div><div class="stat-label">Residents</div></div></div>
+        <div class="col-lg-3 col-md-6"><div class="stat-card"><div class="stat-number"><i class="fas fa-project-diagram"></i> 25+</div><div class="stat-label">Active Projects</div></div></div>
+        <div class="col-lg-3 col-md-6"><div class="stat-card"><div class="stat-number"><i class="fas fa-calendar-check"></i> 50+</div><div class="stat-label">Events Yearly</div></div></div>
+        <div class="col-lg-3 col-md-6"><div class="stat-card"><div class="stat-number"><i class="fas fa-award"></i> 10+</div><div class="stat-label">Awards</div></div></div>
       </div>
     </div>
   </section>
@@ -116,23 +92,11 @@ $baseUrl = rtrim($scriptDir, '/') . '/';
           </div>
         </div>
         <div class="col-lg-6 about-content">
-          <p class="about-text">
-            Barangay Lumbangan is one of the progressive barangays of Nasugbu, Batangas, known for its peaceful community and hardworking residents. Our barangay is committed to providing excellent public service and fostering a safe, clean, and prosperous environment for all residents.
-          </p>
-          <p class="about-text">
-            Through collaborative efforts and transparent governance, we strive to implement programs that enhance the quality of life of every family in Lumbangan.
-          </p>
+          <p class="about-text">Barangay Lumbangan is one of the progressive barangays of Nasugbu, Batangas, known for its peaceful community and hardworking residents. Our barangay is committed to providing excellent public service and fostering a safe, clean, and prosperous environment for all residents.</p>
+          <p class="about-text">Through collaborative efforts and transparent governance, we strive to implement programs that enhance the quality of life of every family in Lumbangan.</p>
           <div class="mission-vision-grid">
-            <div class="mv-card">
-              <div class="mv-icon"><i class="fas fa-bullseye"></i></div>
-              <h5 class="mv-title">Mission</h5>
-              <p class="mv-text">To provide responsive, transparent, and inclusive governance that empowers every resident and promotes sustainable community development.</p>
-            </div>
-            <div class="mv-card">
-              <div class="mv-icon"><i class="fas fa-eye"></i></div>
-              <h5 class="mv-title">Vision</h5>
-              <p class="mv-text">A progressive, peaceful, and united Barangay Lumbangan where every resident enjoys a high quality of life.</p>
-            </div>
+            <div class="mv-card"><div class="mv-icon"><i class="fas fa-bullseye"></i></div><h5 class="mv-title">Mission</h5><p class="mv-text">To provide responsive, transparent, and inclusive governance that empowers every resident and promotes sustainable community development.</p></div>
+            <div class="mv-card"><div class="mv-icon"><i class="fas fa-eye"></i></div><h5 class="mv-title">Vision</h5><p class="mv-text">A progressive, peaceful, and united Barangay Lumbangan where every resident enjoys a high quality of life.</p></div>
           </div>
         </div>
       </div>
@@ -183,7 +147,7 @@ $baseUrl = rtrim($scriptDir, '/') . '/';
   </section>
 
   <!-- Officials Section -->
-  <section class="officials-section">
+  <section class="officials-section" id="officials">
     <div class="container">
       <div class="section-header">
         <div class="section-badge">Leadership</div>
@@ -191,60 +155,12 @@ $baseUrl = rtrim($scriptDir, '/') . '/';
         <p class="section-subtitle">Meet the dedicated leaders serving our community with integrity and passion</p>
       </div>
       <div class="row">
-        <div class="col-lg-4 col-md-6">
-          <div class="official-card">
-            <div class="official-img"><i class="fas fa-user"></i></div>
-            <div class="official-info">
-              <div class="official-name">Hon. Juan Dela Cruz</div>
-              <div class="official-position">Punong Barangay</div>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6">
-          <div class="official-card">
-            <div class="official-img"><i class="fas fa-user"></i></div>
-            <div class="official-info">
-              <div class="official-name">Hon. Maria Santos</div>
-              <div class="official-position">Kagawad</div>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6">
-          <div class="official-card">
-            <div class="official-img"><i class="fas fa-user"></i></div>
-            <div class="official-info">
-              <div class="official-name">Hon. Pedro Reyes</div>
-              <div class="official-position">Kagawad</div>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6">
-          <div class="official-card">
-            <div class="official-img"><i class="fas fa-user"></i></div>
-            <div class="official-info">
-              <div class="official-name">Hon. Ana Mercado</div>
-              <div class="official-position">Kagawad</div>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6">
-          <div class="official-card">
-            <div class="official-img"><i class="fas fa-user"></i></div>
-            <div class="official-info">
-              <div class="official-name">Hon. Jose Garcia</div>
-              <div class="official-position">SK Chairman</div>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6">
-          <div class="official-card">
-            <div class="official-img"><i class="fas fa-user"></i></div>
-            <div class="official-info">
-              <div class="official-name">Grace Flores</div>
-              <div class="official-position">Barangay Secretary</div>
-            </div>
-          </div>
-        </div>
+        <div class="col-lg-4 col-md-6"><div class="official-card"><div class="official-img"><i class="fas fa-user"></i></div><div class="official-info"><div class="official-name">Hon. Juan Dela Cruz</div><div class="official-position">Punong Barangay</div></div></div></div>
+        <div class="col-lg-4 col-md-6"><div class="official-card"><div class="official-img"><i class="fas fa-user"></i></div><div class="official-info"><div class="official-name">Hon. Maria Santos</div><div class="official-position">Kagawad</div></div></div></div>
+        <div class="col-lg-4 col-md-6"><div class="official-card"><div class="official-img"><i class="fas fa-user"></i></div><div class="official-info"><div class="official-name">Hon. Pedro Reyes</div><div class="official-position">Kagawad</div></div></div></div>
+        <div class="col-lg-4 col-md-6"><div class="official-card"><div class="official-img"><i class="fas fa-user"></i></div><div class="official-info"><div class="official-name">Hon. Ana Mercado</div><div class="official-position">Kagawad</div></div></div></div>
+        <div class="col-lg-4 col-md-6"><div class="official-card"><div class="official-img"><i class="fas fa-user"></i></div><div class="official-info"><div class="official-name">Hon. Jose Garcia</div><div class="official-position">SK Chairman</div></div></div></div>
+        <div class="col-lg-4 col-md-6"><div class="official-card"><div class="official-img"><i class="fas fa-user"></i></div><div class="official-info"><div class="official-name">Grace Flores</div><div class="official-position">Barangay Secretary</div></div></div></div>
       </div>
     </div>
   </section>
@@ -258,51 +174,9 @@ $baseUrl = rtrim($scriptDir, '/') . '/';
         <p class="section-subtitle">Stay informed with the latest news, events, and advisories</p>
       </div>
       <div class="row">
-        <div class="col-lg-4 col-md-6">
-          <div class="announcement-card">
-            <div class="announcement-header">
-              <i class="fas fa-bullhorn announcement-icon"></i>
-              <div>
-                <h5 style="margin: 0; font-size: 1rem;">Community Event</h5>
-                <div class="announcement-date">October 30, 2025</div>
-              </div>
-            </div>
-            <div class="announcement-body">
-              <h5 class="announcement-title">Barangay Cleanup Drive</h5>
-              <p style="color: #718096; font-size: 0.95rem;">Join us for a community-wide cleanup drive. Let's work together to keep our barangay clean and beautiful. Bring your own cleaning materials.</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6">
-          <div class="announcement-card">
-            <div class="announcement-header">
-              <i class="fas fa-exclamation-triangle announcement-icon"></i>
-              <div>
-                <h5 style="margin: 0; font-size: 1rem;">Advisory</h5>
-                <div class="announcement-date">October 28, 2025</div>
-              </div>
-            </div>
-            <div class="announcement-body">
-              <h5 class="announcement-title">Scheduled Power Interruption</h5>
-              <p style="color: #718096; font-size: 0.95rem;">Please be advised of a scheduled power interruption on November 2, 2025 from 9:00 AM to 3:00 PM for maintenance work.</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6">
-          <div class="announcement-card">
-            <div class="announcement-header">
-              <i class="fas fa-medkit announcement-icon"></i>
-              <div>
-                <h5 style="margin: 0; font-size: 1rem;">Health Program</h5>
-                <div class="announcement-date">October 25, 2025</div>
-              </div>
-            </div>
-            <div class="announcement-body">
-              <h5 class="announcement-title">Free Medical Mission</h5>
-              <p style="color: #718096; font-size: 0.95rem;">Free medical consultation and medicines will be available for all residents. Bring your valid ID and barangay clearance.</p>
-            </div>
-          </div>
-        </div>
+        <div class="col-lg-4 col-md-6"><div class="announcement-card"><div class="announcement-header"><i class="fas fa-bullhorn announcement-icon"></i><div><h5 style="margin: 0; font-size: 1rem;">Community Event</h5><div class="announcement-date">October 30, 2025</div></div></div><div class="announcement-body"><h5 class="announcement-title">Barangay Cleanup Drive</h5><p style="color: #718096; font-size: 0.95rem;">Join us for a community-wide cleanup drive. Let's work together to keep our barangay clean and beautiful. Bring your own cleaning materials.</p></div></div></div>
+        <div class="col-lg-4 col-md-6"><div class="announcement-card"><div class="announcement-header"><i class="fas fa-exclamation-triangle announcement-icon"></i><div><h5 style="margin: 0; font-size: 1rem;">Advisory</h5><div class="announcement-date">October 28, 2025</div></div></div><div class="announcement-body"><h5 class="announcement-title">Scheduled Power Interruption</h5><p style="color: #718096; font-size: 0.95rem;">Please be advised of a scheduled power interruption on November 2, 2025 from 9:00 AM to 3:00 PM for maintenance work.</p></div></div></div>
+        <div class="col-lg-4 col-md-6"><div class="announcement-card"><div class="announcement-header"><i class="fas fa-medkit announcement-icon"></i><div><h5 style="margin: 0; font-size: 1rem;">Health Program</h5><div class="announcement-date">October 25, 2025</div></div></div><div class="announcement-body"><h5 class="announcement-title">Free Medical Mission</h5><p style="color: #718096; font-size: 0.95rem;">Free medical consultation and medicines will be available for all residents. Bring your valid ID and barangay clearance.</p></div></div></div>
       </div>
     </div>
   </section>
@@ -316,7 +190,6 @@ $baseUrl = rtrim($scriptDir, '/') . '/';
         <p class="section-subtitle">Real-time news from Batangas Provincial Government</p>
       </div>
 
-      <!-- Loading State -->
       <div id="newsLoading" class="news-loading">
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Loading...</span>
@@ -324,16 +197,12 @@ $baseUrl = rtrim($scriptDir, '/') . '/';
         <p>Fetching latest news from Batangas...</p>
       </div>
 
-      <!-- Error State -->
       <div id="newsError" class="news-error" style="display: none;">
         <i class="fas fa-exclamation-circle"></i>
         <p>Unable to load news at this time. Please try again later.</p>
       </div>
 
-      <!-- News Content -->
-      <div id="newsContent" class="row" style="display: none;">
-        <!-- News will be dynamically inserted here -->
-      </div>
+      <div id="newsContent" class="row" style="display: none;"></div>
 
       <div class="text-center mt-5">
         <button id="refreshNews" class="btn btn-custom btn-primary-custom">
@@ -420,17 +289,10 @@ $baseUrl = rtrim($scriptDir, '/') . '/';
     </div>
   </section>
 
-  <!-- Footer include (PHP) -->
-  <?php
-    $footerPath = __DIR__ . '/app/components/footer.php';
-    if (file_exists($footerPath)) { include $footerPath; }
-  ?>
+  <!-- Footer include -->
+  <?php include dirname(__DIR__, 2) . '/components/footer.php'; ?>
 
-  <!-- Scripts -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-  <script src="<?= htmlspecialchars($baseUrl) ?>app/assets/js/Landing/Landing.js"></script>
-
-  <!-- Login Modal (kept as-is) -->
+  <!-- Login Modal -->
   <div class="login-modal-overlay" id="loginModal">
     <div class="login-modal-container" id="loginModalContainer">
       <button class="login-modal-close" id="closeLoginModal"><i class="fas fa-times"></i></button>
@@ -486,5 +348,10 @@ $baseUrl = rtrim($scriptDir, '/') . '/';
       </div>
     </div>
   </div>
+
+  <!-- Scripts (after modal so handlers bind) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+  <script src="../../assets/js/Landing/Landing.js?v=2"></script>
+  <script src="../../assets/js/Landing/login.js?v=2"></script>
 </body>
 </html>

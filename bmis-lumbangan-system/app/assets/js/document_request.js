@@ -178,7 +178,7 @@ docTypeSelect.addEventListener('change', async function () {
     }
 });
 
-// -------------------------------
+  // -------------------------------
   // 🔹 Ongoing requests AJAX
   // -------------------------------
   async function loadOngoingRequests() {
@@ -198,10 +198,10 @@ docTypeSelect.addEventListener('change', async function () {
 
       requests.forEach(row => {
         const col = document.createElement('div');
-        col.className = 'col-sm-4 mb-sm-0 mt-2 position-relative';
+        col.className = 'col-sm-4 mb-sm-0 mt-2 position-relative z-n1';
 
         const card = document.createElement('div');
-        card.className = 'card shadow-md shadow-sm position-relative';
+        card.className = 'card shadow-md shadow-sm position-relative z-n1';
 
         // 🔹 Delete badge button
       const deleteBtn = document.createElement('span');
@@ -285,10 +285,10 @@ docTypeSelect.addEventListener('change', async function () {
       
       requests.forEach(row => {
         const col = document.createElement('div');
-        col.className = 'col-sm-4 mb-sm-0 mt-2 position-relative';
+        col.className = 'col-sm-4 mb-sm-0 mt-2 position-relative z-n1';
 
         const card = document.createElement('div');
-        card.className = 'card shadow-md shadow-sm position-relative';
+        card.className = 'card shadow-md shadow-sm position-relative z-n1';
 
         const cardBody = document.createElement('div');
         cardBody.className = 'card-body';
@@ -341,10 +341,10 @@ docTypeSelect.addEventListener('change', async function () {
 
       requests.forEach(row => {
         const col = document.createElement('div');
-        col.className = 'col-sm-4 mb-sm-0 mt-2 position-relative';
+        col.className = 'col-sm-4 mb-sm-0 mt-2 position-relative z-n1';
 
         const card = document.createElement('div');
-        card.className = 'card shadow-md shadow-sm position-relative';
+        card.className = 'card shadow-md shadow-sm position-relative z-n1';
         const cardBody = document.createElement('div');
         cardBody.className = 'card-body';
         cardBody.innerHTML = `

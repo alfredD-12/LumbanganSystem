@@ -1,0 +1,111 @@
+/* Footer */
+        .footer {
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+            color: white;
+            padding: 80px 0 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-red), transparent);
+        }
+
+        .footer-title {
+            font-weight: 700;
+            margin-bottom: 25px;
+            font-size: 1.3rem;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 15px;
+        }
+
+        .footer-links a {
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .footer-links a:hover {
+            color: white;
+            padding-left: 10px;
+        }
+
+        .footer-links a::before {
+            content: '→';
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .footer-links a:hover::before {
+            opacity: 1;
+        }
+
+        .social-links a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 50%;
+            color: white;
+            margin-right: 15px;
+            transition: all 0.4s;
+            font-size: 1.1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .social-links a:hover {
+            background: var(--accent-red);
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 10px 25px rgba(197, 48, 48, 0.4);
+        }
+
+        .footer-bottom {
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.15);
+            text-align: center;
+        }
+
+        @media (max-width: 992px) {
+            .about-content {
+                padding-left: 0;
+                margin-top: 40px;
+            }
+            .mission-vision-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+            .section-title {
+                font-size: 2rem;
+            }
+            .stat-number {
+                font-size: 2rem;
+            }
+        }

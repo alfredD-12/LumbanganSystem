@@ -1,4 +1,4 @@
-<?php include __DIR__ . '/../../components/header.php'; ?>
+<?php include __DIR__ . '/../../components/resident_components/header-resident.php'; ?>
 
 
 

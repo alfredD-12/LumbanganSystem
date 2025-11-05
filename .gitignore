@@ -1,0 +1,3 @@
+# Ignores upload/proofs file
+bmis-lumbangan-system/app/uploads/proofs/*
+!bmis-lumbangan-system/app/uploads/proofs/.gitkeep

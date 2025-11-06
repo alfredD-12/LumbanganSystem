@@ -1,0 +1,13 @@
+body { background-color: #f9fafb; }
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    color: #fff;
+}
+
+.status-Pending { background-color: #ffc107; }
+.status-Approved { background-color: #198754; }
+.status-Rejected { background-color: #dc3545; }
+.status-Released { background-color: #0d6efd; }

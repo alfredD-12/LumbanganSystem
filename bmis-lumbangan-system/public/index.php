@@ -3,12 +3,14 @@
 
 //  Load configuration and controllers
 require_once __DIR__ . '/../app/controllers/DocumentRequestController.php';
+require_once __DIR__ . '/../app/controllers/admins/AdminDocumentController.php';
 
 //  Handle AJAX/API actions
 $action = $_GET['action'] ?? null;
 
 if ($action) {
     $controller = new DocumentRequestController();
+    $adminController = new AdminDocumentController();
 
     switch ($action) {
         case 'getRequirements':
@@ -35,6 +37,14 @@ if ($action) {
             $controller->getRequestHistoryByUser(); // must echo JSON
             break;
 
+        case 'getAllRequests':
+            $adminController->getAllRequests(); // returns JSON for DataTables
+            break;
+
+        case 'updateStatus':
+            $adminController->updateRequestStatus(); // must echo JSON
+            break;
+
         default:
             header('Content-Type: application/json');
             echo json_encode(['error' => 'Invalid action']);
@@ -53,6 +63,11 @@ switch ($page) {
         $controller->showRequestForm();
         break;
 
+    case 'admin_document_requests':
+        $adminController = new AdminDocumentController();
+        $adminController->showAdminDocumentRequestsPage();
+        break;
+
     // Example for future pages
     // case 'resident_list':
     //     $controller = new ResidentController();
@@ -64,3 +79,5 @@ switch ($page) {
         echo "404 - Page not found.";
         break;
 }
+
+

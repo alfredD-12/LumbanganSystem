@@ -111,6 +111,51 @@ class DocumentRequest {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /* From this section, the method the methods for
+    the admin side are placed. */
 
+    //Fetch all document requests with documents names joined
+    public function getAllRequests() {
+        $sql = "SELECT
+                    dr.request_id, 
+                    dr.user_id,
+                    dr.document_type_id, 
+                    dr.request_date, 
+                    dr.status, 
+                    dr.requested_for, 
+                    dr.relation_to_requestee,
+                    dr.purpose,
+                    dr.proof_upload,
+                    dr.approval_date,
+                    dr.remarks,
+                    u.fullname AS requester_name,
+                    dt.document_name
+                FROM document_requests dr
+                INNER JOIN document_types dt 
+                    ON dr.document_type_id = dt.document_type_id
+                INNER JOIN users u
+                    ON dr.user_id = u.user_id
+                ORDER BY dr.request_date DESC";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Update request status
+    public function updateStatus($requestId, $status, $remarks = null) {
+        $sql = "UPDATE document_requests 
+                SET status = :status, 
+                    approval_date = NOW(), 
+                    remarks = :remarks
+                WHERE request_id = :id";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':status', $status);
+        $stmt->bindParam(':remarks', $remarks);
+        $stmt->bindParam(':id', $requestId, PDO::PARAM_INT);
+
+        return $stmt->execute();
+    }
 
 }

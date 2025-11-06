@@ -48,6 +48,13 @@
   <script src="<?php echo BASE_URL . 'assets/js/document_request.js'; ?>"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
   <!-- <script src="<?php //echo BASE_URL . 'assets/js/Landing.js'; ?>"></script> -->
-
+  <!-- jQuery + DataTables -->
+   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+   <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+  <script src="<?php echo BASE_URL . 'assets/js/document_admin.js'?>"></script>
+  <script>
+    const BASE_URL = "<?php echo BASE_URL; ?>";
+  </script>
 </body>
 </html>

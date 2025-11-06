@@ -960,47 +960,291 @@
     }, 5000);
     </script>
 
-    <!-- Achievements/Badges -->
-    <section class="achievements-section">
+    <!-- Achievements/Badges - Stacked Carousel -->
+    <section class="achievements-section" style="padding: 5rem 0; background: transparent; position: relative; overflow: visible;">
         <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Your Achievements</h2>
-                <p class="section-subtitle">Earn badges through civic engagement</p>
+            <div class="section-header" style="text-align: center; margin-bottom: 3rem;">
+                <h2 class="section-title" style="font-size: 2.2rem; font-weight: 700; color: var(--primary-blue); margin-bottom: 0.75rem;">Your Achievements</h2>
+                <p class="section-subtitle" style="color: #666; font-size: 1rem;">Earn badges through civic engagement</p>
             </div>
-            <div class="badges-grid">
-                <div class="badge-item">
-                    <div class="badge-icon">🏅</div>
-                    <div class="badge-name">Good Citizen</div>
-                    <div class="badge-description">Maintained clearance for 2 years</div>
-                </div>
-                <div class="badge-item">
-                    <div class="badge-icon">🗳️</div>
-                    <div class="badge-name">Active Voter</div>
-                    <div class="badge-description">Participated in voting</div>
-                </div>
-                <div class="badge-item">
-                    <div class="badge-icon">🤝</div>
-                    <div class="badge-name">Community Helper</div>
-                    <div class="badge-description">Joined 3 community events</div>
-                </div>
-                <div class="badge-item">
-                    <div class="badge-icon">💬</div>
-                    <div class="badge-name">Active Participant</div>
-                    <div class="badge-description">Posted in community forum</div>
-                </div>
-                <div class="badge-item locked">
-                    <div class="badge-icon">🌟</div>
-                    <div class="badge-name">Volunteer</div>
-                    <div class="badge-description">Help in 5 events</div>
-                </div>
-                <div class="badge-item locked">
-                    <div class="badge-icon">👑</div>
-                    <div class="badge-name">Community Legend</div>
-                    <div class="badge-description">Complete profile 100%</div>
+            
+            <!-- Stacked Cards Carousel -->
+            <div style="position: relative; width: 100%; max-width: 900px; height: 450px; margin: 0 auto; perspective: 1500px;">
+                <div id="badgeStack" style="position: relative; width: 100%; height: 100%; transform-style: preserve-3d;">
+                    
+                    <!-- Badge Card 1: Good Citizen -->
+                    <div class="badge-stack-card" data-position="0" style="
+                        position: absolute;
+                        width: 280px;
+                        height: 350px;
+                        left: 50%;
+                        top: 50%;
+                        transform: translate(-50%, -50%);
+                        transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+                    ">
+                        <div style="
+                            width: 100%;
+                            height: 100%;
+                            background: linear-gradient(135deg, #ffffff 0%, #fef3c7 100%);
+                            border-radius: 24px;
+                            padding: 2rem;
+                            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+                            border: 4px solid #fbbf24;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            text-align: center;
+                        ">
+                            <div style="font-size: 5rem; margin-bottom: 1rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">🏅</div>
+                            <div style="font-weight: 700; font-size: 1.5rem; color: #1e3a5f; margin-bottom: 0.5rem;">Good Citizen</div>
+                            <div style="font-size: 0.95rem; color: #64748b; line-height: 1.5;">Maintained clearance for 2 years</div>
+                        </div>
+                    </div>
+
+                    <!-- Badge Card 2: Active Voter -->
+                    <div class="badge-stack-card" data-position="1" style="
+                        position: absolute;
+                        width: 280px;
+                        height: 350px;
+                        left: 50%;
+                        top: 50%;
+                        transform: translate(-50%, -50%);
+                        transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+                    ">
+                        <div style="
+                            width: 100%;
+                            height: 100%;
+                            background: linear-gradient(135deg, #ffffff 0%, #dbeafe 100%);
+                            border-radius: 24px;
+                            padding: 2rem;
+                            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+                            border: 4px solid #3b82f6;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            text-align: center;
+                        ">
+                            <div style="font-size: 5rem; margin-bottom: 1rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">🗳️</div>
+                            <div style="font-weight: 700; font-size: 1.5rem; color: #1e3a5f; margin-bottom: 0.5rem;">Active Voter</div>
+                            <div style="font-size: 0.95rem; color: #64748b; line-height: 1.5;">Participated in voting</div>
+                        </div>
+                    </div>
+
+                    <!-- Badge Card 3: Community Helper -->
+                    <div class="badge-stack-card" data-position="2" style="
+                        position: absolute;
+                        width: 280px;
+                        height: 350px;
+                        left: 50%;
+                        top: 50%;
+                        transform: translate(-50%, -50%);
+                        transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+                    ">
+                        <div style="
+                            width: 100%;
+                            height: 100%;
+                            background: linear-gradient(135deg, #ffffff 0%, #d1fae5 100%);
+                            border-radius: 24px;
+                            padding: 2rem;
+                            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+                            border: 4px solid #10b981;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            text-align: center;
+                        ">
+                            <div style="font-size: 5rem; margin-bottom: 1rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">🤝</div>
+                            <div style="font-weight: 700; font-size: 1.5rem; color: #1e3a5f; margin-bottom: 0.5rem;">Community Helper</div>
+                            <div style="font-size: 0.95rem; color: #64748b; line-height: 1.5;">Joined 3 community events</div>
+                        </div>
+                    </div>
+
+                    <!-- Badge Card 4: Active Participant -->
+                    <div class="badge-stack-card" data-position="3" style="
+                        position: absolute;
+                        width: 280px;
+                        height: 350px;
+                        left: 50%;
+                        top: 50%;
+                        transform: translate(-50%, -50%);
+                        transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+                    ">
+                        <div style="
+                            width: 100%;
+                            height: 100%;
+                            background: linear-gradient(135deg, #ffffff 0%, #e9d5ff 100%);
+                            border-radius: 24px;
+                            padding: 2rem;
+                            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+                            border: 4px solid #8b5cf6;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            text-align: center;
+                        ">
+                            <div style="font-size: 5rem; margin-bottom: 1rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">💬</div>
+                            <div style="font-weight: 700; font-size: 1.5rem; color: #1e3a5f; margin-bottom: 0.5rem;">Active Participant</div>
+                            <div style="font-size: 0.95rem; color: #64748b; line-height: 1.5;">Posted in community forum</div>
+                        </div>
+                    </div>
+
+                    <!-- Badge Card 5: Volunteer (Locked) -->
+                    <div class="badge-stack-card" data-position="4" style="
+                        position: absolute;
+                        width: 280px;
+                        height: 350px;
+                        left: 50%;
+                        top: 50%;
+                        transform: translate(-50%, -50%);
+                        transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+                    ">
+                        <div style="
+                            width: 100%;
+                            height: 100%;
+                            background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+                            border-radius: 24px;
+                            padding: 2rem;
+                            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+                            border: 4px solid #9ca3af;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            text-align: center;
+                        ">
+                            <div style="font-size: 5rem; margin-bottom: 1rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1)) grayscale(100%);">🌟</div>
+                            <div style="font-weight: 700; font-size: 1.5rem; color: #6b7280; margin-bottom: 0.5rem;">Volunteer</div>
+                            <div style="font-size: 0.95rem; color: #9ca3af; line-height: 1.5;">Help in 5 events</div>
+                            <div style="font-size: 2rem; margin-top: 0.5rem;">🔒</div>
+                        </div>
+                    </div>
+
+                    <!-- Badge Card 6: Community Legend (Locked) -->
+                    <div class="badge-stack-card" data-position="5" style="
+                        position: absolute;
+                        width: 280px;
+                        height: 350px;
+                        left: 50%;
+                        top: 50%;
+                        transform: translate(-50%, -50%);
+                        transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+                    ">
+                        <div style="
+                            width: 100%;
+                            height: 100%;
+                            background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+                            border-radius: 24px;
+                            padding: 2rem;
+                            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+                            border: 4px solid #9ca3af;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            text-align: center;
+                        ">
+                            <div style="font-size: 5rem; margin-bottom: 1rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1)) grayscale(100%);">👑</div>
+                            <div style="font-weight: 700; font-size: 1.5rem; color: #6b7280; margin-bottom: 0.5rem;">Community Legend</div>
+                            <div style="font-size: 0.95rem; color: #9ca3af; line-height: 1.5;">Complete profile 100%</div>
+                            <div style="font-size: 2rem; margin-top: 0.5rem;">🔒</div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
     </section>
+
+    <script>
+        // Badge Stack Carousel
+        let currentBadgeIndex = 0;
+        const totalBadges = 6;
+
+        function updateBadgeStack() {
+            const cards = document.querySelectorAll('.badge-stack-card');
+            
+            cards.forEach((card, index) => {
+                const position = (index - currentBadgeIndex + totalBadges) % totalBadges;
+                
+                // Reset styles
+                card.style.zIndex = '';
+                card.style.transform = '';
+                card.style.filter = '';
+                card.style.opacity = '';
+                card.style.pointerEvents = '';
+                
+                if (position === 0) {
+                    // Front card - full size, centered, no blur
+                    card.style.transform = 'translate(-50%, -50%) scale(1) rotateY(0deg) translateZ(0px)';
+                    card.style.zIndex = '50';
+                    card.style.filter = 'blur(0px)';
+                    card.style.opacity = '1';
+                    card.style.pointerEvents = 'auto';
+                } else if (position === 1) {
+                    // Right card - smaller, more offset, blur
+                    card.style.transform = 'translate(0%, -50%) scale(0.8) rotateY(-20deg) translateZ(-100px)';
+                    card.style.zIndex = '40';
+                    card.style.filter = 'blur(3px)';
+                    card.style.opacity = '0.5';
+                    card.style.pointerEvents = 'none';
+                } else if (position === 2) {
+                    // Far right - even smaller, more blur
+                    card.style.transform = 'translate(50%, -50%) scale(0.65) rotateY(-30deg) translateZ(-200px)';
+                    card.style.zIndex = '30';
+                    card.style.filter = 'blur(5px)';
+                    card.style.opacity = '0.3';
+                    card.style.pointerEvents = 'none';
+                } else if (position === totalBadges - 1) {
+                    // Left card - smaller, more offset, blur
+                    card.style.transform = 'translate(-100%, -50%) scale(0.8) rotateY(20deg) translateZ(-100px)';
+                    card.style.zIndex = '40';
+                    card.style.filter = 'blur(3px)';
+                    card.style.opacity = '0.5';
+                    card.style.pointerEvents = 'none';
+                } else if (position === totalBadges - 2) {
+                    // Far left - even smaller, more blur
+                    card.style.transform = 'translate(-150%, -50%) scale(0.65) rotateY(30deg) translateZ(-200px)';
+                    card.style.zIndex = '30';
+                    card.style.filter = 'blur(5px)';
+                    card.style.opacity = '0.3';
+                    card.style.pointerEvents = 'none';
+                } else {
+                    // Hidden cards
+                    card.style.transform = 'translate(-50%, -50%) scale(0.4) translateZ(-300px)';
+                    card.style.zIndex = '10';
+                    card.style.filter = 'blur(8px)';
+                    card.style.opacity = '0';
+                    card.style.pointerEvents = 'none';
+                }
+            });
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateBadgeStack();
+            
+            // Auto-rotate every 3 seconds - continuous, cannot be controlled
+            setInterval(() => {
+                currentBadgeIndex = (currentBadgeIndex + 1) % totalBadges;
+                updateBadgeStack();
+            }, 3000);
+        });
+
+        // ========== NAVBAR SCROLL EFFECT ==========
+        // Add transparent blur effect on scroll
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.user-navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+    </script>
 
     <!-- Resident Directory - Interactive Flip Cards Carousel -->
     <section id="directory" style="padding: 4rem 0; background: transparent; position: relative; overflow: hidden;">

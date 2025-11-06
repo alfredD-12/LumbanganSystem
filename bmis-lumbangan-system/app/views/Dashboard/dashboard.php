@@ -20,8 +20,136 @@
         <div class="shape"></div>
     </div>
 
-    <!-- Include Dashboard Header Component -->
-    <?php include '../../components/dashboard_header.php'; ?>
+    <!-- User Dashboard Header -->
+    <nav class="navbar navbar-expand-lg user-navbar navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="#dashboard">
+                <div class="logo-circle">
+                    <i class="fas fa-landmark"></i>
+                </div>
+                <div>
+                    <h6 class="mb-0 fw-bold">Barangay Lumbangan</h6>
+                    <small class="text-muted">Resident Portal</small>
+                </div>
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#userNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="userNavbar">
+                <ul class="navbar-nav ms-auto me-3">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#dashboard" id="dashboardLink">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="#announcements">
+                            <i class="fas fa-bullhorn"></i> Announcements
+                        </a>
+                    </li>
+
+                    <!-- Services Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-concierge-bell"></i> Services
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="#complaint-status">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    Complaint Status
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#document-status">
+                                    <i class="fas fa-file-alt"></i>
+                                    Document Request Status
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#survey-status">
+                                    <i class="fas fa-poll"></i>
+                                    Survey Status
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="#new-request">
+                                    <i class="fas fa-plus-circle"></i>
+                                    New Request
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <!-- Government Seals - Hidden on mobile for better spacing -->
+                <div class="d-none d-lg-flex align-items-center gap-2 me-3" style="border-right: 1px solid rgba(0,0,0,0.1); padding-right: 1.5rem;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Bagong_Pilipinas_logo.png"
+                         alt="Bagong Pilipinas" title="Bagong Pilipinas"
+                         style="width: 38px; height: 38px; object-fit: contain;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Seal_of_Nasugbu.png/599px-Seal_of_Nasugbu.png"
+                         alt="Nasugbu Seal" title="Municipality of Nasugbu"
+                         style="width: 38px; height: 38px; object-fit: contain;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/0/0c/Seal_of_Batangas.png"
+                         alt="Batangas Seal" title="Province of Batangas"
+                         style="width: 38px; height: 38px; object-fit: contain;">
+                </div>
+
+                <!-- Notifications & Inbox Buttons - Mobile optimized spacing -->
+                <div class="d-flex align-items-center gap-1 gap-md-2">
+                    <!-- Notifications Button -->
+                    <button class="navbar-icon-btn" type="button" data-bs-toggle="modal" data-bs-target="#notificationsModal" title="Notifications" aria-label="Notifications">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">3</span>
+                    </button>
+
+                    <!-- Inbox Button -->
+                    <button class="navbar-icon-btn" type="button" data-bs-toggle="modal" data-bs-target="#inboxModal" title="Inbox" aria-label="Inbox">
+                        <i class="fas fa-envelope"></i>
+                        <span class="badge">1</span>
+                    </button>
+
+                    <!-- Documents Button - Hidden on very small screens -->
+                    <button class="navbar-icon-btn d-none d-sm-inline-block" type="button" data-bs-toggle="modal" data-bs-target="#documentsModal" title="My Documents" aria-label="My Documents">
+                        <i class="fas fa-file-alt"></i>
+                    </button>
+
+                    <!-- User Profile Dropdown - Responsive margins -->
+                    <div class="dropdown" style="margin-left: 0.5rem; border-left: 1px solid rgba(0,0,0,0.1); padding-left: 0.5rem;">
+                        <button class="user-profile-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-label="User menu">
+                            <div class="user-avatar"><i class="fas fa-user"></i></div>
+                            <span class="d-none d-sm-inline">User</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#userProfileModal">
+                                    <i class="fas fa-user"></i>
+                                    My Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#settings">
+                                    <i class="fas fa-cog"></i>
+                                    Settings
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="#logout">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
 
     <!-- Welcome Banner - Enhanced Interactive Design -->
     <section class="welcome-banner" id="dashboard" style="background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(224,242,254,0.3) 50%, transparent 100%); padding: 5rem 0 5rem; position: relative; overflow: hidden; border-bottom: 1px solid rgba(30,58,95,0.08);">
@@ -1108,7 +1236,15 @@
         });
 
         // ========== NAVBAR SCROLL EFFECT ==========
-        // Note: Navbar scroll effect is now handled by the header component
+        // Add transparent blur effect on scroll
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.user-navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
     </script>
 
     <!-- Resident Directory - Interactive Flip Cards Carousel -->
@@ -1597,8 +1733,46 @@
     </div>
 
     <!-- Footer -->
-    <!-- Include Dashboard Footer Component -->
-    <?php include '../../components/dashboard_footer.php'; ?>
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <h5 class="footer-title">Barangay Lumbangan</h5>
+                    <p style="color: rgba(255,255,255,0.85); line-height: 1.8;">
+                        Committed to serving the community with transparency, integrity, and excellence. Building a better future for all residents.
+                    </p>
+                    <div class="social-links mt-4">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <h5 class="footer-title">Quick Links</h5>
+                    <ul class="footer-links">
+                        <li><a href="#dashboard">Dashboard</a></li>
+                        <li><a href="#services">Services</a></li>
+                        <li><a href="#announcements">Announcements</a></li>
+                        <li><a href="#profile">My Profile</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <h5 class="footer-title">Contact Information</h5>
+                    <ul class="footer-links">
+                        <li style="color: rgba(255,255,255,0.85);"><i class="fas fa-map-marker-alt" style="margin-right: 10px;"></i>Lumbangan, Nasugbu, Batangas</li>
+                        <li style="color: rgba(255,255,255,0.85);"><i class="fas fa-phone" style="margin-right: 10px;"></i>(043) XXX-XXXX</li>
+                        <li style="color: rgba(255,255,255,0.85);"><i class="fas fa-envelope" style="margin-right: 10px;"></i>barangay.lumbangan@nasugbu.gov.ph</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p style="margin: 0; color: rgba(255,255,255,0.7);">
+                    © <?php echo date('Y'); ?> Barangay Lumbangan, Nasugbu, Batangas. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <script src="../../assets/js/Dashboard/dashboard.js"></script>

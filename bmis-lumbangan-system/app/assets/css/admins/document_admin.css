@@ -1,13 +1,99 @@
 body { background-color: #f9fafb; }
 
 .status-badge {
-    padding: 4px 10px;
-    border-radius: 10px;
-    font-size: 0.8rem;
-    color: #fff;
+    padding: 5px 10px;
+    border-radius: 12px;
+    color: white;
+    font-size: 0.85rem;
+    text-transform: capitalize;
 }
+
 
 .status-Pending { background-color: #ffc107; }
 .status-Approved { background-color: #198754; }
 .status-Rejected { background-color: #dc3545; }
 .status-Released { background-color: #0d6efd; }
+
+.table-container {
+  width: 100%;
+  overflow-x: auto !important;
+  overflow-y: hidden;
+  white-space: nowrap;
+}
+
+.dataTables_wrapper .dt-buttons {
+  margin-right: 10px;
+}
+
+.dataTables_filter {
+  text-align: right !important;
+}
+
+.dataTables_filter input {
+  margin-left: 0.5em;
+  border-radius: 8px;
+  padding: 5px 10px;
+}
+
+/*  Modern DataTables Button Styling */
+.dt-btn-modern {
+  transition: all 0.25s ease-in-out;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Hover effect */
+.dt-btn-modern:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Focus/Active state */
+.dt-btn-modern:active,
+.dt-btn-modern:focus {
+  transform: translateY(0);
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Fine-tune spacing between buttons */
+div.dt-buttons .btn {
+  margin-right: 0.4rem;
+}
+
+/*  Make DataTables search box bigger and modern */
+.dataTables_filter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.dataTables_filter label {
+  font-weight: 500;
+}
+
+.dataTables_filter input {
+  width: 280px !important;  /* make it wider */
+  max-width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 20px;
+  background-color: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease-in-out;
+}
+
+/* Add hover/focus effect for modern feel */
+.dataTables_filter input:focus {
+  outline: none;
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+
+
+
+
+

@@ -127,9 +127,11 @@ class DocumentRequest {
                     dr.purpose,
                     dr.proof_upload,
                     dr.approval_date,
+                    dr.release_date,
                     dr.remarks,
                     u.fullname AS requester_name,
-                    dt.document_name
+                    dt.document_name,
+                    dt.requirements
                 FROM document_requests dr
                 INNER JOIN document_types dt 
                     ON dr.document_type_id = dt.document_type_id
@@ -157,5 +159,21 @@ class DocumentRequest {
 
         return $stmt->execute();
     }
+
+    public function getStatusSummary(){
+        $sql = "SELECT status, COUNT(*) AS total FROM document_requests GROUP BY status";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $summary = ['Pending' => 0, 'Approved' => 0, 'Rejected' => 0, 'Released' => 0];
+        foreach ($rows as $row) {
+            if (isset($summary[$row['status']])) {
+                $summary[$row['status']] = (int)$row['total'];
+            }
+        }
+        return $summary;
+    }
+
 
 }

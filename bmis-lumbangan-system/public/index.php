@@ -45,6 +45,10 @@ if ($action) {
             $adminController->updateRequestStatus(); // must echo JSON
             break;
 
+        case 'getStatusSummary':
+            $adminController->getStatusSummary();
+            break;
+
         default:
             header('Content-Type: application/json');
             echo json_encode(['error' => 'Invalid action']);

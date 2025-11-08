@@ -37,4 +37,10 @@ class AdminDocumentController {
     public function showAdminDocumentRequestsPage() {
         include __DIR__ . '/../../views/admins/document_request_admin.php';
     }
+
+    public function getStatusSummary(){
+        $summary = $this->documentRequestModel->getStatusSummary();
+        echo json_encode($summary);
+    }
+
 }

@@ -1,6 +1,19 @@
 <?php
-// Landing page (app/views/landing/landing.php)
-// No <base> tag. Use relative paths to assets and filesystem includes.
+// Single-file Landing page that includes its own header and footer markup.
+// Assets are referenced relative to app/views/landing/
+
+// Check if user is already logged in - redirect to appropriate dashboard
+require_once dirname(__DIR__, 2) . '/helpers/session_helper.php';
+
+if (isLoggedIn()) {
+    if (isUser()) {
+        header('Location: ../Dashboard/dashboard.php');
+        exit();
+    } elseif (isOfficial()) {
+        header('Location: ../Admin/admin_dashboard.php'); // Create this later
+        exit();
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -9,15 +22,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Barangay Lumbangan | Nasugbu, Batangas</title>
 
+  <!-- Vendor -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Styles: relative to app/views/landing/ -->
+  <!-- Landing page styles -->
   <link rel="stylesheet" href="../../assets/css/Landing/landing.css?v=2">
   <link rel="stylesheet" href="../../assets/css/Landing/news-styles.css?v=2">
 
-  <!-- Optional news fetcher (can be deferred) -->
+  <!-- Optional news fetcher -->
   <script src="../../assets/js/Landing/batangas-news.js?v=2" defer></script>
 </head>
 <body>
@@ -28,8 +42,53 @@
     <div class="shape"></div>
   </div>
 
-  <!-- Header include (filesystem path) -->
-  <?php include dirname(__DIR__, 2) . '/components/header.php'; ?>
+  <!-- Header (Navbar) -->
+  <nav class="navbar navbar-expand-lg fixed-top shadow-sm">
+    <div class="container">
+      <!-- Brand / Logo Section -->
+      <a class="navbar-brand d-flex align-items-center" href="#home">
+        <div class="logo-circle">
+          <i class="fas fa-landmark"></i>
+        </div>
+        <div class="brand-text">
+          <h6 class="mb-0 fw-bold brand-title">Barangay Lumbangan</h6>
+          <small class="brand-subtitle">Nasugbu, Batangas</small>
+        </div>
+      </a>
+
+      <!-- Toggle for mobile -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- Navbar links -->
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto me-auto">
+          <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="#projects">Projects</a></li>
+          <li class="nav-item"><a class="nav-link" href="#announcements">Announcements</a></li>
+          <li class="nav-item"><a class="nav-link" href="#news-section">News</a></li>
+          <li class="nav-item"><a class="nav-link" href="#gallery">Gallery</a></li>
+          <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" id="openLoginModal">Login / Register</a></li>
+        </ul>
+
+        <!-- Government Seals (Right side) -->
+        <div class="d-none d-lg-flex align-items-center gap-2">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Bagong_Pilipinas_logo.png"
+               alt="Bagong Pilipinas" title="Bagong Pilipinas"
+               style="width: 38px; height: 38px; object-fit: contain;">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Seal_of_Nasugbu.png/599px-Seal_of_Nasugbu.png"
+               alt="Nasugbu Seal" title="Municipality of Nasugbu"
+               style="width: 38px; height: 38px; object-fit: contain;">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/0/0c/Seal_of_Batangas.png"
+               alt="Batangas Seal" title="Province of Batangas"
+               style="width: 38px; height: 38px; object-fit: contain;">
+        </div>
+      </div>
+    </div>
+  </nav>
 
   <!-- Hero Section -->
   <section class="hero-section" id="home">
@@ -289,10 +348,54 @@
     </div>
   </section>
 
-  <!-- Footer include -->
-  <?php include dirname(__DIR__, 2) . '/components/footer.php'; ?>
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4">
+          <h5 class="footer-title">Barangay Lumbangan</h5>
+          <p style="color: rgba(255,255,255,0.85); line-height: 1.8;">
+            Committed to serving the community with transparency, integrity, and excellence. Building a better future for all residents.
+          </p>
+          <div class="social-links mt-4">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
+          </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+          <h5 class="footer-title">Quick Links</h5>
+          <ul class="footer-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About Us</a></li>
+            <li><a href="#projects">Projects</a></li>
+            <li><a href="#announcements">Announcements</a></li>
+            <li><a href="#gallery">Gallery</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-4 mb-4">
+          <h5 class="footer-title">Office Hours</h5>
+          <ul class="footer-links">
+            <li style="color: rgba(255,255,255,0.85);">Monday - Friday</li>
+            <li style="color: white; font-weight: 600;">8:00 AM - 5:00 PM</li>
+            <li style="color: rgba(255,255,255,0.85); margin-top: 20px;">Saturday</li>
+            <li style="color: white; font-weight: 600;">8:00 AM - 12:00 PM</li>
+            <li style="color: rgba(255,255,255,0.85); margin-top: 20px;">Sunday & Holidays</li>
+            <li style="color: white; font-weight: 600;">Closed</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p style="margin: 0; color: rgba(255,255,255,0.7);">
+          © 2025 Barangay Lumbangan, Nasugbu, Batangas. All rights reserved.
+        </p>
+      </div>
+    </div>
+  </footer>
 
-  <!-- Login Modal -->
+  <!-- Login Modal (unchanged, used by navbar Login/Register) -->
   <div class="login-modal-overlay" id="loginModal">
     <div class="login-modal-container" id="loginModalContainer">
       <button class="login-modal-close" id="closeLoginModal"><i class="fas fa-times"></i></button>
@@ -300,36 +403,54 @@
       <div class="modal-sun-wrapper"><div class="modal-decorative-sun"></div></div>
 
       <div class="login-container" id="loginContainer">
-        <div class="login-form-container login-sign-up">
-          <form>
+        <!-- Sign Up -->
+        <div class="login-form-container login-sign-up" style="overflow-y: auto;">
+          <form id="signupForm" method="POST" action="javascript:void(0);">
             <h1>Create Account</h1>
             <div class="login-social-icons">
               <img src="https://upload.wikimedia.org/wikipedia/commons/0/0c/Seal_of_Batangas.png" alt="Batangas" style="width: 40px;">
               <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Seal_of_Nasugbu.png/599px-Seal_of_Nasugbu.png" style="width: 39px;">
               <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Bagong_Pilipinas_logo.png" style="width: 41px;">
             </div>
-            <input type="text" placeholder="Name" required>
-            <input type="email" placeholder="Email" required>
-            <input type="password" placeholder="Password" required>
+            <span>or use your email for registeration</span>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <input type="text" name="first_name" placeholder="First Name" required>
+              <input type="text" name="middle_name" placeholder="Middle Name">
+            </div>
+            <input type="text" name="last_name" placeholder="Last Name" required>
+            <div style="position: relative; width: 100%;">
+              <input type="text" name="username" id="usernameInput" placeholder="Username" required style="width: 100%; padding-right: 40px;">
+              <span id="usernameCheck" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); display: none; z-index: 10;">
+                <i class="fas fa-circle-notch fa-spin" id="usernameLoading" style="color: #999; font-size: 16px;"></i>
+                <i class="fas fa-check-circle" id="usernameAvailable" style="color: #28a745; display: none; font-size: 16px;"></i>
+                <i class="fas fa-times-circle" id="usernameTaken" style="color: #dc3545; display: none; font-size: 16px;"></i>
+              </span>
+            </div>
+            <input type="text" name="email" placeholder="Email or Contact Number" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <input type="password" name="confirm_password" placeholder="Confirm Password" required>
             <button type="submit">Sign Up</button>
           </form>
         </div>
 
+        <!-- Sign In -->
         <div class="login-form-container login-sign-in">
-          <form>
+          <form id="signinForm" method="POST" action="javascript:void(0);">
             <h1>Sign In</h1>
             <div class="login-social-icons">
               <img src="https://upload.wikimedia.org/wikipedia/commons/0/0c/Seal_of_Batangas.png" alt="Batangas" style="width: 40px;">
               <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Seal_of_Nasugbu.png/599px-Seal_of_Nasugbu.png" style="width: 39px;">
               <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Bagong_Pilipinas_logo.png" style="width: 41px;">
             </div>
-            <input type="email" placeholder="Email" required>
-            <input type="password" placeholder="Password" required>
+            <span style="color: #666; font-size: 0.9rem; margin-bottom: 15px; display: block;">Login as User or Official (auto-detected)</span>
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
             <a href="#">Forget Your Password?</a>
             <button type="submit">Sign In</button>
           </form>
         </div>
 
+        <!-- Toggle Panels -->
         <div class="login-toggle-container">
           <div class="login-toggle">
             <div class="login-toggle-panel login-toggle-left">
@@ -349,7 +470,7 @@
     </div>
   </div>
 
-  <!-- Scripts (after modal so handlers bind) -->
+  <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
   <script src="../../assets/js/Landing/Landing.js?v=2"></script>
   <script src="../../assets/js/Landing/login.js?v=2"></script>

@@ -1,4 +1,11 @@
 <?php
+// Require user authentication
+require_once dirname(__DIR__, 2) . '/helpers/session_helper.php';
+requireUser(); // Only allow logged-in users to access this page
+
+$fullName = getFullName();
+$username = getUsername();
+$firstName = getFirstName();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -122,9 +129,14 @@
                     <div class="dropdown" style="margin-left: 0.5rem; border-left: 1px solid rgba(0,0,0,0.1); padding-left: 0.5rem;">
                         <button class="user-profile-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-label="User menu">
                             <div class="user-avatar"><i class="fas fa-user"></i></div>
-                            <span class="d-none d-sm-inline">User</span>
+                            <span class="d-none d-sm-inline"><?php echo htmlspecialchars($username); ?></span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <div class="dropdown-item-text" style="border-bottom: 1px solid #e9ecef; padding-bottom: 10px; margin-bottom: 5px;">
+                                    <strong><?php echo htmlspecialchars($username); ?></strong>
+                                </div>
+                            </li>
                             <li>
                                 <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#userProfileModal">
                                     <i class="fas fa-user"></i>
@@ -139,7 +151,7 @@
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <a class="dropdown-item text-danger" href="#logout">
+                                <a class="dropdown-item text-danger" href="../../controllers/AuthController.php?action=logout">
                                     <i class="fas fa-sign-out-alt"></i>
                                     Logout
                                 </a>
@@ -173,7 +185,7 @@
                         </div>
                         
                         <h1 style="font-size: 3rem; font-weight: 800; margin-bottom: 1rem; line-height: 1.2;">
-                            <span style="background: linear-gradient(135deg, #1e3a5f, #c53030); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Welcome back, User</span>
+                            <span style="background: linear-gradient(135deg, #1e3a5f, #c53030); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Welcome back, <?php echo htmlspecialchars($firstName); ?></span>
                             <span style="display: inline-block; animation: wave 2s ease-in-out infinite; margin-left: 0.3rem;">👋</span>
                         </h1>
                         
@@ -274,7 +286,7 @@
                             </div>
                             <div style="margin-bottom: 1.5rem;">
                                 <div style="color: rgba(255,255,255,0.75); font-size: 0.72rem; margin-bottom: 0.3rem; font-weight: 500;">Resident Name</div>
-                                <div style="color: white; font-size: 1.1rem; font-weight: 700; letter-spacing: 0.3px;">Juan Dela Cruz</div>
+                                <div style="color: white; font-size: 1.1rem; font-weight: 700; letter-spacing: 0.3px;"><?php echo htmlspecialchars($fullName); ?></div>
                             </div>
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <div>

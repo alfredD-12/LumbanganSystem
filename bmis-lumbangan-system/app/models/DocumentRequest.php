@@ -144,21 +144,50 @@ class DocumentRequest {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    private function getApprovalDate($id){
+        $stmt = $this->conn->prepare("SELECT approval_date FROM document_requests WHERE request_id = :id");
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchColumn();
+    }
+
     // Update request status
-    public function updateStatus($requestId, $status, $remarks = null) {
+    public function updateStatus($requestId, $status, $remarks = null, $approvalDate = null, $releaseDate = null)
+    {
+        // Build SQL dynamically depending on status
         $sql = "UPDATE document_requests 
-                SET status = :status, 
-                    approval_date = NOW(), 
-                    remarks = :remarks
+                SET status = :status,
+                    remarks = :remarks, 
+                    approval_date = :approval_date,
+                    release_date = :release_date
                 WHERE request_id = :id";
 
         $stmt = $this->conn->prepare($sql);
+
+        // Determine date logic
+        if ($status === "Approved") {
+            $approvalDate = date('Y-m-d H:i:s');
+            $releaseDate = null; // reset
+        } elseif ($status === "Released") {
+            $releaseDate = date('Y-m-d H:i:s');
+            $approvalDate = $this->getApprovalDate($requestId);
+        } else {
+            // Reset both if not approved or released
+            $approvalDate = null;
+            $releaseDate = null;
+        }
+
+        // Bind parameters
         $stmt->bindParam(':status', $status);
         $stmt->bindParam(':remarks', $remarks);
+        $stmt->bindParam(':approval_date', $approvalDate);
+        $stmt->bindParam(':release_date', $releaseDate);
         $stmt->bindParam(':id', $requestId, PDO::PARAM_INT);
 
         return $stmt->execute();
     }
+
+
 
     public function getStatusSummary(){
         $sql = "SELECT status, COUNT(*) AS total FROM document_requests GROUP BY status";

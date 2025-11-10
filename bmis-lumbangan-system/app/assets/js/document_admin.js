@@ -75,8 +75,18 @@ $(document).ready(function () {
             .join("<br>");
         },
       },
-      { data: "approval_date" },
-      { data: "release_date" },
+      {
+        data: "approval_date",
+        render: function (data, type, row) {
+          return data ? data : "—";
+        },
+      },
+      {
+        data: "release_date",
+        render: function (data, type, row) {
+          return row.status === "Released" && data ? data : "—";
+        },
+      },
       { data: "remarks" },
       {
         data: "status",
@@ -137,89 +147,136 @@ $(document).ready(function () {
   });
 
   /* ----------------------------
-     🔹 OPEN UPDATE STATUS MODAL
-  ----------------------------- */
+   🔹 OPEN UPDATE STATUS MODAL
+----------------------------- */
   $("#requestsTable").on("click", ".edit-btn", function () {
-    const id = $(this).data("id");
-    $("#request_id").val(id);
+    const rowData = $("#requestsTable")
+      .DataTable()
+      .row($(this).closest("tr"))
+      .data();
+
+    // Always reset form before showing
+    $("#statusForm")[0].reset();
+    $("#status")[0].selectedIndex = 0;
+    $("#remarks").val("");
+
+    // Populate fields with row data
+    $("#request_id").val(rowData.request_id);
+    if (rowData.status) $("#status").val(rowData.status);
+    if (rowData.remarks) $("#remarks").val(rowData.remarks);
+
+    // Store current status for comparison
+    const currentStatus = rowData.status || "";
+
+    // Remove previous click handlers
+    // In your first Save button handler (before showing confirm modal)
+    $("#submitUpdate")
+      .off("click")
+      .on("click", function (e) {
+        e.preventDefault();
+
+        const selectedStatus = $("#status").val();
+        const currentStatus = $("#status").data("current-status") || "";
+
+        if (!selectedStatus) {
+          alert("Please select a status before saving.");
+          return;
+        }
+
+        if (selectedStatus === currentStatus) {
+          alert("No changes detected.");
+          return;
+        }
+
+        // 🟢 Store the selected value temporarily
+        $("#confirmUpdateBtn").data("selected-status", selectedStatus);
+        $("#confirmUpdateBtn").data("remarks", $("#remarks").val());
+        $("#confirmUpdateBtn").data("request-id", $("#request_id").val());
+
+        $("#statusModal").modal("hide");
+        $("#confirmMessage").html(
+          `Are you sure you want to update this request from <strong>${currentStatus}</strong> to <strong>${selectedStatus}</strong>?`
+        );
+        $("#confirmUpdateModal").modal("show");
+      });
+
+    // Show the main status modal
     $("#statusModal").modal("show");
   });
 
-  let oldStatus = null;
-  let newStatus = null;
+  /* ----------------------------
+   🔹 CONFIRM UPDATE BUTTON
+----------------------------- */
+  $("#confirmUpdateBtn")
+    .off("click")
+    .on("click", function () {
+      const id = $(this).data("request-id");
+      const remarks = $(this).data("remarks");
+      const selectedStatus = $(this).data("selected-status");
 
-  // Capture current status when modal opens
-  $("#statusModal").on("show.bs.modal", function () {
-    oldStatus = $("#status").val();
-  });
+      if (!selectedStatus) {
+        alert("Please select a status before saving.");
+        $("#confirmUpdateModal").modal("hide");
+        return;
+      }
 
-  // When Save Changes button is clicked
-  $("#submitUpdate").on("click", function (e) {
-    e.preventDefault();
+      let approvalDate = null;
+      let releaseDate = null;
 
-    newStatus = $("#status").val();
+      if (selectedStatus === "Approved") {
+        approvalDate = new Date().toISOString().slice(0, 19).replace("T", " ");
+      } else if (selectedStatus === "Released") {
+        releaseDate = new Date().toISOString().slice(0, 19).replace("T", " ");
+      }
 
-    if (!newStatus) {
-      alert("Please select a status before saving.");
-      return;
-    }
+      $.ajax({
+        url: "index.php?action=updateStatus",
+        method: "POST",
+        data: {
+          request_id: id,
+          status: selectedStatus,
+          remarks: remarks === "" ? null : remarks,
+          approval_date: approvalDate,
+          release_date: releaseDate,
+        },
+        dataType: "json",
+        beforeSend: function () {
+          $("#confirmUpdateBtn").prop("disabled", true).text("Updating...");
+        },
+        success: function (res) {
+          if (res.success) {
+            $("#confirmUpdateModal").modal("hide");
 
-    if (newStatus === oldStatus) {
-      alert("No changes detected.");
-      return;
-    }
+            // Full form reset to default
+            $("#statusForm")[0].reset();
+            $("#status")[0].selectedIndex = 0;
+            $("#remarks").val("");
 
-    // Show confirmation modal
-    $("#statusModal").modal("hide");
-    $("#confirmMessage").html(
-      `Are you sure you want to update this request from 
-     <strong>${oldStatus}</strong> to <strong>${newStatus}</strong>?`
-    );
-    $("#confirmUpdateModal").modal("show");
-  });
+            // Refresh table and cards
+            $("#requestsTable").DataTable().ajax.reload(null, false);
+            updateSummaryCards();
 
-  // When user confirms update
-  $("#confirmUpdateBtn").on("click", function () {
-    // Submit the form via AJAX
-    $.post(
-      "index.php?action=updateStatus",
-      $("#statusForm").serialize(),
-      function (res) {
-        if (res.success) {
-          $("#confirmUpdateModal").modal("hide");
-          $("#statusModal").modal("hide");
-
-          // Reload DataTable without resetting pagination
-          $("#requestsTable").DataTable().ajax.reload(null, false);
-          updateSummaryCards(); // 🔁 refresh summary numbers
-        } else {
-          alert("Failed to update status");
-        }
-      },
-      "json"
-    );
-  });
+            alert("Status updated successfully!");
+          } else {
+            alert("❌ " + (res.message || "Failed to update status."));
+          }
+        },
+        error: function () {
+          alert("⚠️ An error occurred while updating status.");
+        },
+        complete: function () {
+          $("#confirmUpdateBtn").prop("disabled", false).text("Confirm");
+        },
+      });
+    });
 
   /* ----------------------------
-     🔹 HANDLE STATUS UPDATE FORM
-  ----------------------------- */
-  // Optional: run this again whenever you update a request status
-  $("#statusForm").on("submit", function (e) {
-    e.preventDefault();
-    $.post(
-      "index.php?action=updateStatus",
-      $(this).serialize(),
-      function (res) {
-        if (res.success) {
-          $("#statusModal").modal("hide");
-          $("#requestsTable").DataTable().ajax.reload();
-          updateSummaryCards(); // 🔁 refresh summary numbers
-        } else {
-          alert("Failed to update status");
-        }
-      },
-      "json"
-    );
+   🔹 RESET FORM WHEN MODAL CLOSES
+----------------------------- */
+  $("#statusModal").on("hidden.bs.modal", function () {
+    $("#statusForm")[0].reset();
+    $("#status")[0].selectedIndex = 0;
+    $("#remarks").val("");
   });
 
   /* ----------------------------

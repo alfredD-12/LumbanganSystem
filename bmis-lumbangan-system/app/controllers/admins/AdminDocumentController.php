@@ -23,15 +23,24 @@ class AdminDocumentController {
     public function updateRequestStatus() {
         $requestId = $_POST['request_id'] ?? null;
         $status = $_POST['status'] ?? null;
-        $remarks = $_POST['remarks'] ?? null;
+        $remarks = isset($_POST['remarks']) && $_POST['remarks'] !== '' ? $_POST['remarks'] : null;
+        $approvalDate = $_POST['approval_date'] ?? null;
+        $releaseDate = $_POST['release_date'] ?? null;
 
         if ($requestId && $status) {
-            $result = $this->documentRequestModel->updateStatus($requestId, $status, $remarks);
+            $result = $this->documentRequestModel->updateStatus(
+                $requestId,
+                $status,
+                $remarks,
+                $approvalDate,
+                $releaseDate
+            );
             echo json_encode(['success' => $result]);
         } else {
             echo json_encode(['success' => false, 'message' => 'Invalid parameters.']);
         }
     }
+
 
     // Load view for admin document requests
     public function showAdminDocumentRequestsPage() {

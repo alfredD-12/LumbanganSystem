@@ -37,6 +37,27 @@ CREATE TABLE `angina_stroke_screening` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_angina_cvd` (`cvd_id`),
   CONSTRAINT `fk_angina_cvd` FOREIGN KEY (`cvd_id`) REFERENCES `cvd_ncd_risk_assessments` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `announcements`
+--
+
+DROP TABLE IF EXISTS `announcements`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `announcements` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) NOT NULL,
+  `message` text NOT NULL,
+  `image` varchar(255) DEFAULT NULL,
+  `audience` varchar(50) DEFAULT 'all',
+  `status` varchar(50) DEFAULT 'published',
+  `expires_at` datetime DEFAULT NULL,
+  `author` varchar(150) DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -77,6 +98,7 @@ DROP TABLE IF EXISTS `cvd_ncd_risk_assessments`;
 CREATE TABLE `cvd_ncd_risk_assessments` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `person_id` bigint(20) unsigned NOT NULL,
+  `answered_at` datetime DEFAULT NULL,
   `surveyed_by_official_id` bigint(20) unsigned DEFAULT NULL,
   `survey_date` date NOT NULL,
   `notes` text DEFAULT NULL,
@@ -92,7 +114,7 @@ CREATE TABLE `cvd_ncd_risk_assessments` (
   CONSTRAINT `fk_cvd_approved_by_official` FOREIGN KEY (`approved_by_official_id`) REFERENCES `officials` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_cvd_person` FOREIGN KEY (`person_id`) REFERENCES `persons` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_cvd_surveyed_by_official` FOREIGN KEY (`surveyed_by_official_id`) REFERENCES `officials` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -148,6 +170,49 @@ CREATE TABLE `diabetes_screening` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `document_requests`
+--
+
+DROP TABLE IF EXISTS `document_requests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `document_requests` (
+  `request_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `document_type_id` int(11) NOT NULL,
+  `purpose` varchar(255) DEFAULT NULL,
+  `status` enum('Pending','Approved','Released','Rejected') DEFAULT 'Pending',
+  `request_date` timestamp NOT NULL DEFAULT current_timestamp(),
+  `approval_date` datetime DEFAULT NULL,
+  `release_date` datetime DEFAULT NULL,
+  `remarks` text DEFAULT NULL,
+  `proof_upload` varchar(255) DEFAULT NULL,
+  `approved_by` int(11) DEFAULT NULL,
+  `released_by` int(11) DEFAULT NULL,
+  PRIMARY KEY (`request_id`),
+  KEY `document_type_id` (`document_type_id`),
+  CONSTRAINT `document_requests_ibfk_1` FOREIGN KEY (`document_type_id`) REFERENCES `document_types` (`document_type_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `document_types`
+--
+
+DROP TABLE IF EXISTS `document_types`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `document_types` (
+  `document_type_id` int(11) NOT NULL AUTO_INCREMENT,
+  `document_name` varchar(100) NOT NULL,
+  `description` text DEFAULT NULL,
+  `requirements` text DEFAULT NULL,
+  `fee` decimal(10,2) DEFAULT 0.00,
+  PRIMARY KEY (`document_type_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `families`
 --
 
@@ -171,7 +236,7 @@ CREATE TABLE `families` (
   KEY `idx_families_survey` (`survey_date`),
   CONSTRAINT `fk_families_head_person` FOREIGN KEY (`head_person_id`) REFERENCES `persons` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_families_household` FOREIGN KEY (`household_id`) REFERENCES `households` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -266,7 +331,7 @@ CREATE TABLE `health_family_history` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_hfh_person_date` (`person_id`,`recorded_at`),
   CONSTRAINT `fk_hfh_person` FOREIGN KEY (`person_id`) REFERENCES `persons` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -304,7 +369,7 @@ CREATE TABLE `households` (
   PRIMARY KEY (`id`),
   KEY `idx_households_purok` (`purok_id`),
   CONSTRAINT `fk_households_purok` FOREIGN KEY (`purok_id`) REFERENCES `puroks` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -331,7 +396,7 @@ CREATE TABLE `lifestyle_risk` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_lifestyle_cvd` (`cvd_id`),
   CONSTRAINT `fk_lifestyle_cvd` FOREIGN KEY (`cvd_id`) REFERENCES `cvd_ncd_risk_assessments` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -410,7 +475,7 @@ CREATE TABLE `officials` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_officials_username` (`username`),
   KEY `idx_officials_role_active` (`role`,`active`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -515,7 +580,7 @@ CREATE TABLE `persons` (
   KEY `idx_persons_family` (`family_id`),
   KEY `idx_persons_name` (`last_name`,`first_name`),
   CONSTRAINT `fk_persons_family` FOREIGN KEY (`family_id`) REFERENCES `families` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -581,7 +646,7 @@ CREATE TABLE `puroks` (
   `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_purok_name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -653,7 +718,7 @@ CREATE TABLE `users` (
   UNIQUE KEY `uq_users_email` (`email`),
   UNIQUE KEY `uq_users_mobile` (`mobile`),
   CONSTRAINT `fk_users_person` FOREIGN KEY (`person_id`) REFERENCES `persons` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

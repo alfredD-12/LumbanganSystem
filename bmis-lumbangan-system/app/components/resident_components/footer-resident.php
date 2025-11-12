@@ -1,4 +1,4 @@
-    <footer class="dashboard-footer footer">
+    <footer class="dashboard-footer footer mt-5 pt-5 pb-3 position-relative">
         <!-- Floating Shapes Background -->
         <div class="floating-shapes">
             <div class="shape"></div>
@@ -63,6 +63,9 @@
     <script src="<?php echo BASE_URL . 'assets/js/resident/document_resident.js'?>"></script>
     <!-- JS FOR BOOTSTRAP CDN -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- JS FOR DOCUMENT REQUEST -->
+    <script src="<?php echo BASE_URL . 'assets/js/document_request.js'; ?>"></script>
+    <!-- PAKILAGAY NALANG DIN SA BABA NG DEPENDENCIES OR CDNS -->
 
 </body>
 </html>

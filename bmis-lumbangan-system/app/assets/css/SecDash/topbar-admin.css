@@ -1,0 +1,444 @@
+/* ============================================
+   ADMIN TOP BAR - Reusable Component
+   Extracted from SecDash for reusability
+   ============================================ */
+
+/* Top Bar */
+.top-bar {
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    margin: 2rem;
+    margin-top: 1.5rem;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 1rem;
+    z-index: 10000;
+    gap: 2rem;
+    transition: all 0.3s ease;
+}
+
+.top-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex: 1;
+}
+
+/* Government Seals */
+.government-seals {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-right: 1.5rem;
+    border-right: 2px solid rgba(30, 58, 95, 0.1);
+}
+
+.government-seals img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    transition: transform 0.3s;
+}
+
+.government-seals img:hover {
+    transform: scale(1.1);
+}
+
+/* Top Bar Title */
+.top-bar-title {
+    flex: 1;
+}
+
+.top-bar h2 {
+    background: linear-gradient(135deg, #1e3a5f, #c53030);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.top-bar h2 small {
+    display: block;
+    font-size: 0.7rem;
+    color: #718096;
+    font-weight: 400;
+    margin-top: 0.25rem;
+    background: none;
+    -webkit-text-fill-color: #718096;
+}
+
+/* Action Buttons */
+.top-bar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-right: 1.5rem;
+}
+
+.action-icon-btn {
+    position: relative;
+    width: 42px;
+    height: 42px;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(30, 58, 95, 0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1e3a5f;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.action-icon-btn:hover {
+    background: #1e3a5f;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(30, 58, 95, 0.2);
+}
+
+.badge-count {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+    border: 2px solid white;
+}
+
+.badge-count.pulse {
+    animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Admin Profile */
+.admin-profile {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: relative;
+    z-index: 9998;
+}
+
+.admin-info {
+    text-align: right;
+}
+
+.admin-info .name {
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 0.95rem;
+    transition: color 0.3s;
+}
+
+.admin-info .role {
+    font-size: 0.8rem;
+    color: #718096;
+}
+
+.admin-avatar {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, #1e3a5f, #2c5282);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 12px rgba(30, 58, 95, 0.3);
+    transition: all 0.3s;
+    cursor: pointer;
+    border: none;
+    position: relative;
+    pointer-events: auto;
+    z-index: 9999;
+}
+
+.admin-avatar i {
+    font-size: 1.2rem;
+    color: white;
+}
+
+.admin-avatar.dropdown-toggle::after {
+    display: none;
+}
+
+.admin-avatar:hover {
+    transform: scale(1.08);
+    box-shadow: 0 6px 20px rgba(30, 58, 95, 0.5);
+}
+
+.admin-avatar.show {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(30, 58, 95, 0.5);
+}
+
+/* Dropdown Menu */
+.admin-profile .dropdown-menu {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    padding: 0.5rem 0;
+    margin-top: 0.5rem !important;
+    min-width: 240px;
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.98);
+    animation: dropdownSlideIn 0.3s ease-out;
+    top: 100% !important;
+    left: auto !important;
+    right: 0 !important;
+    transform: none !important;
+    z-index: 9999 !important;
+    position: absolute !important;
+    display: none;
+}
+
+.admin-profile .dropdown-menu.show {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+@keyframes dropdownSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) !important;
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) !important;
+    }
+}
+
+.admin-profile .dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    right: 20px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid rgba(255, 255, 255, 0.98);
+}
+
+.admin-profile .dropdown-item-text {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 0.25rem;
+    background: linear-gradient(90deg, rgba(30, 58, 95, 0.03) 0%, transparent 100%);
+}
+
+.admin-profile .dropdown-item-text strong {
+    color: #1e3a5f;
+    font-size: 0.95rem;
+    display: block;
+    margin-bottom: 0.15rem;
+}
+
+.admin-profile .dropdown-item-text small {
+    color: #718096;
+    font-size: 0.8rem;
+}
+
+.admin-profile .dropdown-item {
+    padding: 0.65rem 1.25rem;
+    color: #4a5568;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.admin-profile .dropdown-item i {
+    width: 18px;
+    text-align: center;
+    font-size: 0.95rem;
+    opacity: 0.7;
+    transition: all 0.2s;
+}
+
+.admin-profile .dropdown-item:hover {
+    background: linear-gradient(90deg, rgba(30, 58, 95, 0.08) 0%, rgba(30, 58, 95, 0.04) 100%);
+    color: #1e3a5f;
+    padding-left: 1.5rem;
+}
+
+.admin-profile .dropdown-item:hover i {
+    opacity: 1;
+    transform: translateX(2px);
+}
+
+.admin-profile .dropdown-item.text-danger {
+    color: #c53030;
+}
+
+.admin-profile .dropdown-item.text-danger:hover {
+    background: linear-gradient(90deg, rgba(197, 48, 48, 0.08) 0%, rgba(197, 48, 48, 0.04) 100%);
+    color: #dc2626;
+}
+
+.admin-profile .dropdown-divider {
+    margin: 0.5rem 0;
+    opacity: 0.1;
+}
+
+/* Dark Mode Styles */
+body.dark-mode .top-bar {
+    background: rgba(30, 41, 59, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .top-bar h2 {
+    background: linear-gradient(135deg, #60a5fa, #3b82f6);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+body.dark-mode .top-bar h2 small {
+    color: #94a3b8;
+    -webkit-text-fill-color: #94a3b8;
+}
+
+body.dark-mode .government-seals {
+    border-right-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .action-icon-btn {
+    background: rgba(30, 41, 59, 0.6);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #60a5fa;
+}
+
+body.dark-mode .action-icon-btn:hover {
+    background: #3b82f6;
+    color: white;
+}
+
+body.dark-mode .admin-info .name {
+    color: #e2e8f0;
+}
+
+body.dark-mode .admin-info .role {
+    color: #94a3b8;
+}
+
+body.dark-mode .admin-profile .dropdown-menu {
+    background: rgba(30, 41, 59, 0.98);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .admin-profile .dropdown-menu::before {
+    border-bottom-color: rgba(30, 41, 59, 0.98);
+}
+
+body.dark-mode .admin-profile .dropdown-item-text {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%);
+}
+
+body.dark-mode .admin-profile .dropdown-item-text strong {
+    color: #60a5fa;
+}
+
+body.dark-mode .admin-profile .dropdown-item-text small {
+    color: #94a3b8;
+}
+
+body.dark-mode .admin-profile .dropdown-item {
+    color: #e2e8f0;
+}
+
+body.dark-mode .admin-profile .dropdown-item:hover {
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.05) 100%);
+    color: #60a5fa;
+}
+
+body.dark-mode .admin-profile .dropdown-divider {
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Mobile Responsive */
+@media (max-width: 991px) {
+    .top-bar {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 1rem;
+        margin: 1rem;
+        gap: 1rem;
+    }
+
+    .top-bar-left {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .government-seals {
+        padding-right: 0;
+        padding-bottom: 1rem;
+        border-right: none;
+        border-bottom: 1px solid rgba(30, 58, 95, 0.1);
+        width: 100%;
+        justify-content: center;
+    }
+
+    .government-seals img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .top-bar-title h2 {
+        font-size: 1.2rem;
+        text-align: center;
+    }
+
+    .top-bar h2 small {
+        font-size: 0.65rem;
+    }
+
+    .top-bar-actions {
+        margin-right: 0;
+        justify-content: center;
+    }
+
+    .admin-profile {
+        justify-content: center;
+    }
+}
+
+/* Smooth Transitions */
+.top-bar, .action-icon-btn, .admin-avatar, .dropdown-menu {
+    transition: all 0.5s ease;
+}

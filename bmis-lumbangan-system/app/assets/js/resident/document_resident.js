@@ -321,38 +321,38 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Add manual click listeners as fallback
-  function addManualDropdownListeners() {
-    console.log("Adding manual dropdown listeners...");
-    var userBtn = document.querySelector(".user-profile-btn");
-    if (userBtn) {
-      console.log("User button found, adding click listener");
-      userBtn.addEventListener("click", function (e) {
-        console.log("User button clicked");
-        var dropdownMenu = this.nextElementSibling;
-        if (dropdownMenu && dropdownMenu.classList.contains("dropdown-menu")) {
-          console.log("Toggling dropdown menu");
-          dropdownMenu.classList.toggle("show");
-          this.setAttribute(
-            "aria-expanded",
-            dropdownMenu.classList.contains("show")
-          );
-        }
-      });
+  //   function addManualDropdownListeners() {
+  //     console.log("Adding manual dropdown listeners...");
+  //     var userBtn = document.querySelector("#userDropdown");
+  //     if (userBtn) {
+  //       console.log("User button found, adding click listener");
+  //       userBtn.addEventListener("click", function (e) {
+  //         console.log("User button clicked");
+  //         var dropdownMenu = this.nextElementSibling;
+  //         if (dropdownMenu && dropdownMenu.classList.contains("dropdown-menu")) {
+  //           console.log("Toggling dropdown menu");
+  //           dropdownMenu.classList.toggle("show");
+  //           this.setAttribute(
+  //             "aria-expanded",
+  //             dropdownMenu.classList.contains("show")
+  //           );
+  //         }
+  //       });
 
-      // Close dropdown when clicking outside
-      document.addEventListener("click", function (e) {
-        if (!userBtn.contains(e.target)) {
-          var dropdownMenu = userBtn.nextElementSibling;
-          if (dropdownMenu && dropdownMenu.classList.contains("show")) {
-            dropdownMenu.classList.remove("show");
-            userBtn.setAttribute("aria-expanded", "false");
-          }
-        }
-      });
-    } else {
-      console.error("User button not found");
-    }
-  }
+  //       // Close dropdown when clicking outside
+  //       document.addEventListener("click", function (e) {
+  //         if (!userBtn.contains(e.target)) {
+  //           var dropdownMenu = userBtn.nextElementSibling;
+  //           if (dropdownMenu && dropdownMenu.classList.contains("show")) {
+  //             dropdownMenu.classList.remove("show");
+  //             userBtn.setAttribute("aria-expanded", "false");
+  //           }
+  //         }
+  //       });
+  //     } else {
+  //       console.error("User button not found");
+  //     }
+  //   }
 
   // Start checking for Bootstrap
   checkBootstrap();

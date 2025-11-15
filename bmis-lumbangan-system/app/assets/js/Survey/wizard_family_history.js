@@ -226,6 +226,12 @@
 
   // ========== MODERN TOAST NOTIFICATIONS ==========
   function toast(msg, type='success'){
+    // Prefer global alert when available to avoid duplicates
+    if (window.surveyCreateAlert) {
+      window.surveyCreateAlert(msg, type);
+      return;
+    }
+
     const icons = {
       success: '✓',
       warning: '⚠',
@@ -290,26 +296,29 @@
   if (btnSave) {
     btnSave.addEventListener('click', (e)=>{
       e.preventDefault();
-      
+
       if (!validate()){
         return;
       }
-      
-      // Show loading state
+
+      // Show loading state and then submit form so central handler takes over
       const originalText = btnSave.innerHTML;
       btnSave.disabled = true;
       const lang = langTl?.checked ? 'tl' : 'en';
       btnSave.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${lang === 'tl' ? 'Sine-save...' : 'Saving...'}`;
-      
-      // Simulate save delay
-      setTimeout(() => {
-        toast(lang === 'tl' ? 'Nai-save ang kasaysayan ng pamilya!' : 'Family history saved!');
-        
-        // Redirect to next step after brief delay
-        setTimeout(() => {
-          window.location.href = 'wizard_family.php';
-        }, 800);
-      }, 1000);
+
+      const f = form || document.getElementById('form-family-history');
+      try {
+        if (f.requestSubmit) {
+          f.requestSubmit();
+        } else {
+          f.dispatchEvent(new Event('submit', { cancelable: true }));
+        }
+      } catch (err) {
+        console.error('Error submitting family history form programmatically', err);
+        btnSave.disabled = false;
+        btnSave.innerHTML = originalText;
+      }
     });
   }
 

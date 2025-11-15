@@ -599,58 +599,35 @@
 
   // ========== Form Validation & Submission ==========
   function initFormSubmission() {
-    const saveBtn = $('#btn-save-continue');
-    
-    if (!saveBtn) return;
+    // Validation should occur on the form submit event so the global save handler
+    // (in save-survey.js) can perform the actual POST and show the canonical alerts.
+    const form = document.getElementById('form-family');
+    if (!form) return;
 
-    saveBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      
-      const lang = $('#lang-tl')?.checked ? 'tl' : 'en';
-      
-      if (familyMembers.length === 0) {
-        toast(
-          lang === 'tl' ? 'Magdagdag ng kahit isang miyembro ng pamilya' : 'Please add at least one family member',
-          'warning'
-        );
-        return;
-      }
+    form.addEventListener('submit', (e) => {
+      // familyMembers is optional now. Do not block submission here.
+      // Let the centralized save handler perform validation and show alerts.
 
-      // Show loading state
-      const originalText = saveBtn.innerHTML;
-      saveBtn.disabled = true;
-      saveBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${lang === 'tl' ? 'Sine-save...' : 'Saving...'}`;
-      
-      // Simulate save delay then navigate
-      setTimeout(() => {
-        toast(lang === 'tl' ? 'Nai-save ang impormasyon ng pamilya!' : 'Family information saved!');
-        setTimeout(() => {
-          // Navigate to next step (lifestyle) when created
-          window.location.href = 'wizard_personal.php'; // Placeholder
-        }, 800);
-      }, 1000);
+      // When validation passes, allow the global submit handler (save-survey.js)
+      // to perform the actual save and navigation. We could serialize `familyMembers`
+      // into a hidden input here if the server expects it.
     });
   }
 
   // ========== Toast Notification ==========
   function toast(message, type = 'success') {
-    const toastEl = document.createElement('div');
-    toastEl.className = `alert alert-${type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info'} position-fixed top-0 start-50 translate-middle-x mt-3`;
-    toastEl.style.zIndex = '99999';
-    toastEl.style.minWidth = '300px';
-    toastEl.innerHTML = `
-      <div class="d-flex align-items-center gap-2">
-        <i class="fa-solid fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
-        <span>${message}</span>
-      </div>
-    `;
-    document.body.appendChild(toastEl);
+    // Prefer the global canonical alert when available to avoid duplicates.
+    // If it's not yet available (scripts loaded in different order), enqueue the message
+    // so `save-survey.js` can flush it when it initializes `window.surveyCreateAlert`.
+    if (window.surveyCreateAlert) {
+      window.surveyCreateAlert(message, type === 'success' ? 'success' : (type === 'warning' ? 'warning' : 'info'));
+      return;
+    }
 
-    setTimeout(() => {
-      toastEl.style.transition = 'opacity 0.3s';
-      toastEl.style.opacity = '0';
-      setTimeout(() => toastEl.remove(), 300);
-    }, 3000);
+    // Queue the alert for the central handler to display once it's ready.
+    window._pendingSurveyAlerts = window._pendingSurveyAlerts || [];
+    window._pendingSurveyAlerts.push({ message, type: type === 'success' ? 'success' : (type === 'warning' ? 'warning' : 'info') });
+    // Do not create a local fallback UI here to avoid overlapping/duplicate notifications.
   }
 
   // ========== Language Toggle ==========

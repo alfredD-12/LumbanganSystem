@@ -5,12 +5,16 @@ const loginBtn = document.getElementById('modalLoginBtn');
 if (registerBtn) {
     registerBtn.addEventListener('click', () => {
         container.classList.add("active");
+        // Hide login error when switching to register
+        hideLoginError();
     });
 }
 
 if (loginBtn) {
     loginBtn.addEventListener('click', () => {
         container.classList.remove("active");
+        // Hide register error when switching to login
+        hideRegisterError();
     });
 }
 
@@ -35,16 +39,20 @@ document.getElementById('signinForm')?.addEventListener('submit', async function
         const result = await response.json();
         
         if (result.success) {
+            // Hide any error messages
+            hideLoginError();
             // Redirect to appropriate dashboard
             console.log('Login successful, redirecting...');
             window.location.href = result.redirect;
         } else {
-            // Log error message
+            // Show error message
+            showLoginError(result.message || 'Invalid username or password');
             console.error('Login failed:', result.message);
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;
         }
     } catch (error) {
+        showLoginError('An error occurred. Please try again.');
         console.error('Login error:', error);
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalText;
@@ -191,16 +199,19 @@ document.getElementById('signupForm')?.addEventListener('submit', async function
         
         if (result.success) {
             // Registration successful - redirect silently
+            hideRegisterError();
             console.log('Registration successful!');
             console.log('Redirecting to:', result.redirect);
             window.location.href = result.redirect;
         } else {
-            // Log error message
+            // Show error message
+            showRegisterError(result.message || 'Registration failed. Please try again.');
             console.log('Registration failed:', result.message);
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;
         }
     } catch (error) {
+        showRegisterError('An error occurred. Please try again.');
         console.error('Registration error:', error);
         console.error('Error stack:', error.stack);
         submitBtn.disabled = false;
@@ -276,3 +287,48 @@ document.getElementById('signupForm')?.addEventListener('submit', async function
         })();
     });
 })();
+
+// Helper functions for showing/hiding error messages
+function showLoginError(message) {
+    const alertDiv = document.getElementById('loginErrorAlert');
+    const messageSpan = document.getElementById('loginErrorMessage');
+    
+    if (alertDiv && messageSpan) {
+        messageSpan.textContent = message;
+        alertDiv.style.display = 'block';
+        alertDiv.classList.add('show');
+        
+        // Scroll to the alert
+        alertDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+function hideLoginError() {
+    const alertDiv = document.getElementById('loginErrorAlert');
+    if (alertDiv) {
+        alertDiv.classList.remove('show');
+        alertDiv.style.display = 'none';
+    }
+}
+
+function showRegisterError(message) {
+    const alertDiv = document.getElementById('registerErrorAlert');
+    const messageSpan = document.getElementById('registerErrorMessage');
+    
+    if (alertDiv && messageSpan) {
+        messageSpan.textContent = message;
+        alertDiv.style.display = 'block';
+        alertDiv.classList.add('show');
+        
+        // Scroll to the alert
+        alertDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+function hideRegisterError() {
+    const alertDiv = document.getElementById('registerErrorAlert');
+    if (alertDiv) {
+        alertDiv.classList.remove('show');
+        alertDiv.style.display = 'none';
+    }
+}

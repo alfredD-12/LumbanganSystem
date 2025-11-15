@@ -1,12 +1,21 @@
 <?php
 // Require user authentication
 require_once dirname(__DIR__, 2) . '/helpers/session_helper.php';
+require_once dirname(__DIR__, 2) . '/helpers/survey_data_helper.php';
 requireUser(); // Only allow logged-in users to access survey
 
 $appRoot    = dirname(__DIR__, 2); // .../app
 $components = $appRoot . '/components';
 $fullName = getFullName();
 $username = getUsername();
+
+// Load existing survey data from database
+$surveyData = loadSurveyData();
+
+// Backward compatibility - keep personValue for this page
+function personValue($field, $default = '') {
+    return surveyValue('person', $field, $default);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -19,6 +28,8 @@ $username = getUsername();
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <!-- Litepicker (fallback modern datepicker) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -243,6 +254,9 @@ $username = getUsername();
         </div>
       </div>
 
+      <!-- Wrap all sections in a single form so persistence and validation cover all fields -->
+      <form id="form-person" class="needs-validation mt-3" novalidate>
+
       <!-- Identity -->
       <div class="section-card p-4 mb-4">
         <div class="section-head">
@@ -252,32 +266,34 @@ $username = getUsername();
           </div>
         </div>
 
-        <form id="form-person" class="needs-validation mt-3" novalidate>
-          <div class="row g-4 row-cols-1 row-cols-md-2 row-cols-xl-4">
-            <div class="col">
-              <label class="form-label"><span class="i18n" data-en="First Name" data-tl="Unang Pangalan">First Name</span></label>
-              <input type="text" name="first_name" class="form-control form-control-lg i18n-ph"
-                     data-ph-en="e.g., Juan" data-ph-tl="Hal., Juan" required>
-              <div class="invalid-feedback i18n" data-en="First name is required." data-tl="Kailangan ang unang pangalan.">First name is required.</div>
-            </div>
-            <div class="col">
-              <label class="form-label"><span class="i18n" data-en="Middle Name" data-tl="Gitnang Pangalan">Middle Name</span></label>
-              <input type="text" name="middle_name" class="form-control form-control-lg i18n-ph"
-                     data-ph-en="e.g., Santos" data-ph-tl="Hal., Santos">
-            </div>
-            <div class="col">
-              <label class="form-label"><span class="i18n" data-en="Last Name" data-tl="Apelyido">Last Name</span></label>
-              <input type="text" name="last_name" class="form-control form-control-lg i18n-ph"
-                     data-ph-en="e.g., Dela Cruz" data-ph-tl="Hal., Dela Cruz" required>
-              <div class="invalid-feedback i18n" data-en="Last name is required." data-tl="Kailangan ang apelyido.">Last name is required.</div>
-            </div>
-            <div class="col">
-              <label class="form-label"><span class="i18n" data-en="Suffix" data-tl="Sufiks">Suffix</span></label>
-              <input type="text" name="suffix" class="form-control form-control-lg i18n-ph"
-                     data-ph-en="Jr / III" data-ph-tl="Jr / III">
-            </div>
+        <div class="row g-4 row-cols-1 row-cols-md-2 row-cols-xl-4">
+          <div class="col">
+            <label class="form-label"><span class="i18n" data-en="First Name" data-tl="Unang Pangalan">First Name</span></label>
+            <input type="text" name="first_name" class="form-control form-control-lg i18n-ph"
+                   data-ph-en="e.g., Juan" data-ph-tl="Hal., Juan" 
+                   value="<?php echo personValue('first_name'); ?>" required>
+            <div class="invalid-feedback i18n" data-en="First name is required." data-tl="Kailangan ang unang pangalan.">First name is required.</div>
           </div>
-        </form>
+          <div class="col">
+            <label class="form-label"><span class="i18n" data-en="Middle Name" data-tl="Gitnang Pangalan">Middle Name</span></label>
+            <input type="text" name="middle_name" class="form-control form-control-lg i18n-ph"
+                   data-ph-en="e.g., Santos" data-ph-tl="Hal., Santos"
+                   value="<?php echo personValue('middle_name'); ?>">
+          </div>
+          <div class="col">
+            <label class="form-label"><span class="i18n" data-en="Last Name" data-tl="Apelyido">Last Name</span></label>
+            <input type="text" name="last_name" class="form-control form-control-lg i18n-ph"
+                   data-ph-en="e.g., Dela Cruz" data-ph-tl="Hal., Dela Cruz" 
+                   value="<?php echo personValue('last_name'); ?>" required>
+            <div class="invalid-feedback i18n" data-en="Last name is required." data-tl="Kailangan ang apelyido.">Last name is required.</div>
+          </div>
+          <div class="col">
+            <label class="form-label"><span class="i18n" data-en="Suffix" data-tl="Sufiks">Suffix</span></label>
+       <input type="text" name="suffix" data-optional="true" class="form-control form-control-lg i18n-ph"
+                   data-ph-en="Jr / III" data-ph-tl="Jr / III"
+                   value="<?php echo personValue('suffix'); ?>">
+          </div>
+        </div>
       </div>
 
       <!-- Demographics -->
@@ -293,9 +309,9 @@ $username = getUsername();
           <div class="col-12 col-md-4">
             <label class="form-label"><span class="i18n" data-en="Sex" data-tl="Kasarian">Sex</span></label>
             <div class="btn-group btn-group-lg sex-group w-100" role="group">
-              <input type="radio" class="btn-check" name="sex" id="sexM" value="M">
+              <input type="radio" class="btn-check" name="sex" id="sexM" value="M" <?php echo personValue('sex') === 'M' ? 'checked' : ''; ?>>
               <label class="btn btn-outline-primary flex-fill" for="sexM"><i class="fa-solid fa-person me-1"></i><span class="i18n" data-en="Male" data-tl="Lalaki">Male</span></label>
-              <input type="radio" class="btn-check" name="sex" id="sexF" value="F">
+              <input type="radio" class="btn-check" name="sex" id="sexF" value="F" <?php echo personValue('sex') === 'F' ? 'checked' : ''; ?>>
               <label class="btn btn-outline-primary flex-fill" for="sexF"><i class="fa-solid fa-person-dress me-1"></i><span class="i18n" data-en="Female" data-tl="Babae">Female</span></label>
             </div>
           </div>
@@ -303,15 +319,19 @@ $username = getUsername();
           <div class="col-12 col-md-4">
             <label class="form-label"><span class="i18n" data-en="Birthdate" data-tl="Petsa ng Kapanganakan">Birthdate</span></label>
             <input type="text" name="birthdate" id="birthdate" class="form-control form-control-lg i18n-ph"
-                   data-ph-en="Select date" data-ph-tl="Pumili ng petsa">
+                   data-ph-en="Select date" data-ph-tl="Pumili ng petsa"
+                   value="<?php echo personValue('birthdate'); ?>">
           </div>
 
           <div class="col-12 col-md-4">
             <label class="form-label"><span class="i18n" data-en="Civil Status" data-tl="Katayuang Sibil">Civil Status</span></label>
             <select name="marital_status" class="form-select form-select-lg">
               <option value="" class="i18n" data-en="Select" data-tl="Pumili">Select</option>
-              <option>Single</option><option>Married</option><option>Widowed</option>
-              <option>Separated</option><option>Common-law</option>
+              <option <?php echo personValue('marital_status') === 'Single' ? 'selected' : ''; ?>>Single</option>
+              <option <?php echo personValue('marital_status') === 'Married' ? 'selected' : ''; ?>>Married</option>
+              <option <?php echo personValue('marital_status') === 'Widowed' ? 'selected' : ''; ?>>Widowed</option>
+              <option <?php echo personValue('marital_status') === 'Separated' ? 'selected' : ''; ?>>Separated</option>
+              <option <?php echo personValue('marital_status') === 'Common-law' ? 'selected' : ''; ?>>Common-law</option>
             </select>
           </div>
 
@@ -319,15 +339,20 @@ $username = getUsername();
             <label class="form-label"><span class="i18n" data-en="Family Position" data-tl="Posisyon sa Pamilya">Family Position</span></label>
             <select name="family_position" class="form-select form-select-lg">
               <option value="" class="i18n" data-en="Select" data-tl="Pumili">Select</option>
-              <option>Head</option><option>Spouse</option><option>Child</option>
-              <option>Relative</option><option>Member</option><option>Other</option>
+              <option <?php echo personValue('family_position') === 'Head' ? 'selected' : ''; ?>>Head</option>
+              <option <?php echo personValue('family_position') === 'Spouse' ? 'selected' : ''; ?>>Spouse</option>
+              <option <?php echo personValue('family_position') === 'Child' ? 'selected' : ''; ?>>Child</option>
+              <option <?php echo personValue('family_position') === 'Relative' ? 'selected' : ''; ?>>Relative</option>
+              <option <?php echo personValue('family_position') === 'Member' ? 'selected' : ''; ?>>Member</option>
+              <option <?php echo personValue('family_position') === 'Other' ? 'selected' : ''; ?>>Other</option>
             </select>
           </div>
 
           <div class="col-12 col-md-4">
             <label class="form-label"><span class="i18n" data-en="Age" data-tl="Edad">Age</span></label>
-            <input type="text" id="age_display" class="form-control form-control-lg i18n-ph"
-                   data-ph-en="Auto" data-ph-tl="Awtomatiko" readonly>
+       <input type="text" id="age_display" name="age" class="form-control form-control-lg i18n-ph"
+                   data-ph-en="Auto" data-ph-tl="Awtomatiko" 
+                   value="<?php echo personValue('age'); ?>" readonly>
           </div>
         </div>
       </div>
@@ -353,8 +378,9 @@ $username = getUsername();
                    data-ph-en="09xx-xxxx-xxx"
                    data-ph-tl="09xx-xxxx-xxx"
                    placeholder="09xx-xxxx-xxx"
-                   pattern="^09\\d{2}-\\d{4}-\\d{3}$"
-                   maxlength="13">
+                   pattern="^09\d{2}-\d{4}-\d{3}$"
+                   maxlength="13"
+                   value="<?php echo personValue('contact_no'); ?>">
             <div class="form-text i18n" data-en="Auto‑formats to 0921-3123-123. Digits only."
                  data-tl="Awtomatikong nagfo‑format sa 0921-3123-123. Numero lamang.">Auto‑formats to 0921-3123-123. Digits only.</div>
           </div>
@@ -362,19 +388,25 @@ $username = getUsername();
             <label class="form-label"><span class="i18n" data-en="Educational Attainment" data-tl="Antas ng Edukasyon">Educational Attainment</span></label>
             <select name="highest_educ_attainment" class="form-select form-select-lg">
               <option value="" class="i18n" data-en="Select" data-tl="Pumili">Select</option>
-              <option>Elementary</option><option>High School</option><option>Tech/Voc</option>
-              <option>College</option><option>Masters</option><option>Doctorate</option>
+              <option <?php echo personValue('highest_educ_attainment') === 'Elementary' ? 'selected' : ''; ?>>Elementary</option>
+              <option <?php echo personValue('highest_educ_attainment') === 'High School' ? 'selected' : ''; ?>>High School</option>
+              <option <?php echo personValue('highest_educ_attainment') === 'Tech/Voc' ? 'selected' : ''; ?>>Tech/Voc</option>
+              <option <?php echo personValue('highest_educ_attainment') === 'College' ? 'selected' : ''; ?>>College</option>
+              <option <?php echo personValue('highest_educ_attainment') === 'Masters' ? 'selected' : ''; ?>>Masters</option>
+              <option <?php echo personValue('highest_educ_attainment') === 'Doctorate' ? 'selected' : ''; ?>>Doctorate</option>
             </select>
           </div>
           <div class="col">
             <label class="form-label"><span class="i18n" data-en="Religion" data-tl="Relihiyon">Religion</span></label>
             <input type="text" name="religion" class="form-control form-control-lg i18n-ph"
-                   data-ph-en="e.g., Roman Catholic" data-ph-tl="Hal., Roman Catholic">
+                   data-ph-en="e.g., Roman Catholic" data-ph-tl="Hal., Roman Catholic"
+                   value="<?php echo personValue('religion'); ?>">
           </div>
           <div class="col">
             <label class="form-label"><span class="i18n" data-en="Occupation" data-tl="Trabaho">Occupation</span></label>
             <input type="text" name="occupation" class="form-control form-control-lg i18n-ph"
-                   data-ph-en="e.g., Farmer" data-ph-tl="Hal., Magsasaka">
+                   data-ph-en="e.g., Farmer" data-ph-tl="Hal., Magsasaka"
+                   value="<?php echo personValue('occupation'); ?>">
           </div>
         </div>
       </div>
@@ -393,22 +425,28 @@ $username = getUsername();
             <label class="form-label"><span class="i18n" data-en="Blood Type" data-tl="Uri ng Dugo">Blood Type</span></label>
             <select name="blood_type" class="form-select form-select-lg">
               <option value="" class="i18n" data-en="Select" data-tl="Pumili">Select</option>
-              <option value="A+">A+</option><option value="A-">A-</option>
-              <option value="B+">B+</option><option value="B-">B-</option>
-              <option value="AB+">AB+</option><option value="AB-">AB-</option>
-              <option value="O+">O+</option><option value="O-">O-</option>
+              <option value="A+" <?php echo personValue('blood_type') === 'A+' ? 'selected' : ''; ?>>A+</option>
+              <option value="A-" <?php echo personValue('blood_type') === 'A-' ? 'selected' : ''; ?>>A-</option>
+              <option value="B+" <?php echo personValue('blood_type') === 'B+' ? 'selected' : ''; ?>>B+</option>
+              <option value="B-" <?php echo personValue('blood_type') === 'B-' ? 'selected' : ''; ?>>B-</option>
+              <option value="AB+" <?php echo personValue('blood_type') === 'AB+' ? 'selected' : ''; ?>>AB+</option>
+              <option value="AB-" <?php echo personValue('blood_type') === 'AB-' ? 'selected' : ''; ?>>AB-</option>
+              <option value="O+" <?php echo personValue('blood_type') === 'O+' ? 'selected' : ''; ?>>O+</option>
+              <option value="O-" <?php echo personValue('blood_type') === 'O-' ? 'selected' : ''; ?>>O-</option>
             </select>
           </div>
           <div class="col">
             <label class="form-label"><span class="i18n" data-en="Disability (if any)" data-tl="Kapansanan (kung mayroon)">Disability (if any)</span></label>
-            <input type="text" name="disability" class="form-control form-control-lg i18n-ph"
-                   data-ph-en="Describe" data-ph-tl="Ilarawan">
+       <input type="text" name="disability" data-optional="true" class="form-control form-control-lg i18n-ph"
+                   data-ph-en="Describe" data-ph-tl="Ilarawan"
+                   value="<?php echo personValue('disability'); ?>">
           </div>
           <div class="col">
             <label class="form-label"><span class="i18n" data-en="Height" data-tl="Taas">Height</span></label>
             <div class="input-group input-group-lg">
               <input type="number" step="0.01" name="height_cm" class="form-control i18n-ph"
-                     data-ph-en="0.00" data-ph-tl="0.00">
+                     data-ph-en="0.00" data-ph-tl="0.00"
+                     value="<?php echo surveyValue('vitals', 'height_cm', personValue('height_cm')); ?>">
               <span class="input-group-text">cm</span>
             </div>
           </div>
@@ -416,7 +454,8 @@ $username = getUsername();
             <label class="form-label"><span class="i18n" data-en="Weight" data-tl="Timbang">Weight</span></label>
             <div class="input-group input-group-lg">
               <input type="number" step="0.01" name="weight_kg" class="form-control i18n-ph"
-                     data-ph-en="0.00" data-ph-tl="0.00">
+                     data-ph-en="0.00" data-ph-tl="0.00"
+                     value="<?php echo surveyValue('vitals', 'weight_kg', personValue('weight_kg')); ?>">
               <span class="input-group-text">kg</span>
             </div>
           </div>
@@ -424,12 +463,15 @@ $username = getUsername();
             <label class="form-label"><span class="i18n" data-en="Waist Circumference" data-tl="Baywang">Waist Circumference</span></label>
             <div class="input-group input-group-lg">
               <input type="number" step="0.01" name="waist_circumference_cm" class="form-control i18n-ph"
-                     data-ph-en="0.00" data-ph-tl="0.00">
+                     data-ph-en="0.00" data-ph-tl="0.00"
+                     value="<?php echo surveyValue('vitals', 'waist_circumference_cm', personValue('waist_circumference_cm')); ?>">
               <span class="input-group-text">cm</span>
             </div>
           </div>
         </div>
       </div>
+
+      </form>
 
       <!-- Sticky Actions -->
       <div class="sticky-actions shadow">
@@ -455,11 +497,55 @@ $username = getUsername();
   <!-- Dashboard footer -->
   <?php require_once $components . '/footerdashboard.php'; ?>
 
+  <!-- Informational modal: barangay health worker notice (auto-show once on Personal page) -->
+  <div class="modal fade" id="bhwInfoModal" tabindex="-1" aria-labelledby="bhwInfoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title i18n" id="bhwInfoModalLabel" data-en="Survey Assistance Notice" data-tl="Pabatid Tungkol sa Pagsusuri">Survey Assistance Notice</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="i18n" data-en="A barangay health worker will visit to complete this survey and perform measurements that require equipment (for example: blood pressure, blood glucose, and other vitals). You can answer any questions you know, but the health worker will handle any checks needing instruments." data-tl="Bibilhin ka ng isang barangay health worker para kumpletuhin ang pagsusuring ito at magsagawa ng mga pagsukat na nangangailangan ng kagamitan (hal., presyon ng dugo, blood glucose, at iba pang vital). Maaari mong sagutin ang mga tanong na alam mo, ngunit ang health worker ang gagawa ng mga pagsusuring nangangailangan ng instrumento."></p>
+          <p class="i18n" data-en="This visit also helps connect you with local health services and ensures appropriate follow-up. If you have concerns or symptoms, please mention them during the visit." data-tl="Ang pagbisitang ito ay tumutulong din na ikonekta ka sa mga lokal na serbisyo pangkalusugan at matiyak ang naaangkop na follow-up. Kung may mga alalahanin o sintomas, mangyaring banggitin ang mga ito sa pagbisita."></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><span class="i18n" data-en="Close" data-tl="Isara">Close</span></button>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal"><span class="i18n" data-en="Understood" data-tl="Naiintindihan">Understood</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Auto-show the BHW info modal once per user on the Personal page.
+    (function(){
+      try{
+        var key = 'bhwInfoShown_personal';
+        document.addEventListener('DOMContentLoaded', function(){
+          try{
+            if (!localStorage.getItem(key)){
+              var el = document.getElementById('bhwInfoModal');
+              if (el && (typeof bootstrap !== 'undefined' || (window.bootstrap && window.bootstrap.Modal))){
+                var modal = typeof bootstrap !== 'undefined' ? new bootstrap.Modal(el) : new window.bootstrap.Modal(el);
+                modal.show();
+                try{ localStorage.setItem(key, String(Date.now())); }catch(e){}
+              }
+            }
+          }catch(e){/* ignore */}
+        });
+      }catch(e){/* ignore */}
+    })();
+  </script>
+
   <!-- Vendor JS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
 
   <!-- Survey-only JS -->
   <script src="../../assets/js/Survey/wizard_personal.js"></script>
+  <script src="../../assets/js/Survey/survey-persistence.js"></script>
+  <script src="../../assets/js/Survey/save-survey.js"></script>
 </body>
 </html>

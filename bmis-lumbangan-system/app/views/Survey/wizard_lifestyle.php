@@ -1,10 +1,13 @@
 <?php
 // Require user authentication
 require_once dirname(__DIR__, 2) . '/helpers/session_helper.php';
+require_once dirname(__DIR__, 2) . '/helpers/survey_data_helper.php';
 requireUser();
 
 $appRoot    = dirname(__DIR__, 2); // .../app
 $components = $appRoot . '/components';
+
+$surveyData = loadSurveyData();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -23,7 +26,6 @@ $components = $appRoot . '/components';
   <!-- Survey-only CSS -->
   <link rel="stylesheet" href="../../assets/css/Survey/wizard_personal.css">
 
-  <!-- Page tokens + tiny utilities (scoped to this page) -->
   <style>
     /* Modern Scrollbar */
     ::-webkit-scrollbar {
@@ -44,7 +46,6 @@ $components = $appRoot . '/components';
       background: linear-gradient(180deg, #2c5282, #c53030);
     }
 
-    /* Floating shapes for background - Enhanced visibility */
     .floating-shapes {
       position: fixed;
       top: 0;
@@ -105,7 +106,6 @@ $components = $appRoot . '/components';
       z-index: 1;
     }
 
-    /* Additional styling for radio buttons and checkboxes */
     .form-check-input {
       width: 1.25rem;
       height: 1.25rem;
@@ -241,12 +241,11 @@ $components = $appRoot . '/components';
           <div class="mt-3">
             <label class="form-label fw-semibold">
               <span class="i18n" data-en="Current Smoking Status" data-tl="Kasalukuyang Katayuan sa Paninigarilyo">Current Smoking Status</span>
-              <span class="text-danger">*</span>
             </label>
             <div class="row g-3">
               <div class="col-md-6">
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="smoking_status" id="smoke-never" value="Never" required>
+                  <input class="form-check-input" type="radio" name="smoking_status" id="smoke-never" value="Never" <?php echo (isset($surveyData['lifestyle']) && ($surveyData['lifestyle']['smoking_status'] ?? '') === 'Never') ? 'checked' : ''; ?>>
                   <label class="form-check-label i18n" for="smoke-never" data-en="Never Smoked" data-tl="Hindi Kailanman Naninigarilyo">Never Smoked</label>
                 </div>
               </div>
@@ -258,19 +257,19 @@ $components = $appRoot . '/components';
               </div>
               <div class="col-md-6">
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="smoking_status" id="smoke-current" value="Current">
+                  <input class="form-check-input" type="radio" name="smoking_status" id="smoke-current" value="Current" <?php echo (isset($surveyData['lifestyle']) && ($surveyData['lifestyle']['smoking_status'] ?? '') === 'Current') ? 'checked' : ''; ?>>
                   <label class="form-check-label i18n" for="smoke-current" data-en="Current Smoker" data-tl="Kasalukuyang Naninigarilyo">Current Smoker</label>
                 </div>
               </div>
               <div class="col-md-6">
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="smoking_status" id="smoke-stopped-lt1" value="Stopped_lt_1yr">
+                  <input class="form-check-input" type="radio" name="smoking_status" id="smoke-stopped-lt1" value="Stopped_lt_1yr" <?php echo (isset($surveyData['lifestyle']) && ($surveyData['lifestyle']['smoking_status'] ?? '') === 'Stopped_lt_1yr') ? 'checked' : ''; ?>>
                   <label class="form-check-label i18n" for="smoke-stopped-lt1" data-en="Stopped (<1 year)" data-tl="Tumigil (<1 taon)">Stopped (<1 year)</label>
                 </div>
               </div>
               <div class="col-md-6">
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="smoking_status" id="smoke-passive" value="Passive">
+                  <input class="form-check-input" type="radio" name="smoking_status" id="smoke-passive" value="Passive" <?php echo (isset($surveyData['lifestyle']) && ($surveyData['lifestyle']['smoking_status'] ?? '') === 'Passive') ? 'checked' : ''; ?>>
                   <label class="form-check-label i18n" for="smoke-passive" data-en="Passive Smoker" data-tl="Passive na Naninigarilyo">Passive Smoker</label>
                 </div>
               </div>
@@ -284,7 +283,7 @@ $components = $appRoot . '/components';
             </label>
             <textarea name="smoking_comments" class="form-control i18n-ph" rows="2"
                       data-ph-en="e.g., Number of cigarettes per day, years smoked"
-                      data-ph-tl="Hal., Bilang ng sigarilyo bawat araw, taon ng paninigarilyo"></textarea>
+                      data-ph-tl="Hal., Bilang ng sigarilyo bawat araw, taon ng paninigarilyo"><?php echo isset($surveyData['lifestyle']) ? htmlspecialchars($surveyData['lifestyle']['smoking_comments'] ?? '') : ''; ?></textarea>
           </div>
         </div>
 
@@ -300,12 +299,11 @@ $components = $appRoot . '/components';
           <div class="mt-3">
             <label class="form-label fw-semibold">
               <span class="i18n" data-en="Alcohol Use Status" data-tl="Katayuan sa Pag-inom ng Alak">Alcohol Use Status</span>
-              <span class="text-danger">*</span>
             </label>
             <div class="row g-3">
               <div class="col-md-4">
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="alcohol_use" id="alcohol-never" value="Never" required>
+                  <input class="form-check-input" type="radio" name="alcohol_use" id="alcohol-never" value="Never" <?php echo (isset($surveyData['lifestyle']) && ($surveyData['lifestyle']['alcohol_use'] ?? '') === 'Never') ? 'checked' : ''; ?>>
                   <label class="form-check-label i18n" for="alcohol-never" data-en="Never" data-tl="Hindi Kailanman">Never</label>
                 </div>
               </div>
@@ -332,7 +330,7 @@ $components = $appRoot . '/components';
             <div class="row g-3">
               <div class="col-md-6">
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="excessive_alcohol" id="excessive-yes" value="1">
+                  <input class="form-check-input" type="radio" name="excessive_alcohol" id="excessive-yes" value="1" <?php echo (isset($surveyData['lifestyle']) && ($surveyData['lifestyle']['excessive_alcohol'] ?? '') == 1) ? 'checked' : ''; ?>>
                   <label class="form-check-label i18n" for="excessive-yes" data-en="Yes" data-tl="Oo">Yes</label>
                 </div>
               </div>
@@ -351,7 +349,7 @@ $components = $appRoot . '/components';
             </label>
             <textarea name="alcohol_notes" class="form-control i18n-ph" rows="2"
                       data-ph-en="e.g., Type of alcohol, frequency, quantity"
-                      data-ph-tl="Hal., Uri ng alak, dalas, dami"></textarea>
+                      data-ph-tl="Hal., Uri ng alak, dalas, dami"><?php echo isset($surveyData['lifestyle']) ? htmlspecialchars($surveyData['lifestyle']['alcohol_notes'] ?? '') : ''; ?></textarea>
           </div>
         </div>
 
@@ -371,7 +369,7 @@ $components = $appRoot . '/components';
             <div class="row g-3">
               <div class="col-md-6">
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="eats_processed_weekly" id="processed-yes" value="1">
+                  <input class="form-check-input" type="radio" name="eats_processed_weekly" id="processed-yes" value="1" <?php echo (isset($surveyData['lifestyle']) && ($surveyData['lifestyle']['eats_processed_weekly'] ?? '') == 1) ? 'checked' : ''; ?>>
                   <label class="form-check-label i18n" for="processed-yes" data-en="Yes" data-tl="Oo">Yes</label>
                 </div>
               </div>
@@ -391,7 +389,7 @@ $components = $appRoot . '/components';
             <div class="row g-3">
               <div class="col-md-6">
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="fruits_3_servings_daily" id="fruits-yes" value="1">
+                  <input class="form-check-input" type="radio" name="fruits_3_servings_daily" id="fruits-yes" value="1" <?php echo (isset($surveyData['lifestyle']) && ($surveyData['lifestyle']['fruits_3_servings_daily'] ?? '') == 1) ? 'checked' : ''; ?>>
                   <label class="form-check-label i18n" for="fruits-yes" data-en="Yes" data-tl="Oo">Yes</label>
                 </div>
               </div>
@@ -411,7 +409,7 @@ $components = $appRoot . '/components';
             <div class="row g-3">
               <div class="col-md-6">
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="vegetables_3_servings_daily" id="vegetables-yes" value="1">
+                  <input class="form-check-input" type="radio" name="vegetables_3_servings_daily" id="vegetables-yes" value="1" <?php echo (isset($surveyData['lifestyle']) && ($surveyData['lifestyle']['vegetables_3_servings_daily'] ?? '') == 1) ? 'checked' : ''; ?>>
                   <label class="form-check-label i18n" for="vegetables-yes" data-en="Yes" data-tl="Oo">Yes</label>
                 </div>
               </div>
@@ -439,9 +437,9 @@ $components = $appRoot . '/components';
               <span class="i18n" data-en="Exercise Days Per Week" data-tl="Mga Araw ng Ehersisyo Bawat Linggo">Exercise Days Per Week</span>
             </label>
             <div class="d-flex align-items-center gap-3">
-              <input type="range" class="form-range flex-grow-1" name="exercise_days_per_week" id="exercise-days" 
-                     min="0" max="7" value="0" step="1">
-              <span class="range-value" id="exercise-days-value">0</span>
+    <input type="range" class="form-range flex-grow-1" name="exercise_days_per_week" id="exercise-days" 
+      min="0" max="7" value="<?php echo isset($surveyData['lifestyle']) ? (int)($surveyData['lifestyle']['exercise_days_per_week'] ?? 0) : 0; ?>" step="1">
+    <span class="range-value" id="exercise-days-value"><?php echo isset($surveyData['lifestyle']) ? (int)($surveyData['lifestyle']['exercise_days_per_week'] ?? 0) : 0; ?></span>
               <span class="i18n" data-en="days" data-tl="araw">days</span>
             </div>
           </div>
@@ -451,9 +449,9 @@ $components = $appRoot . '/components';
               <span class="i18n" data-en="Exercise Minutes Per Day" data-tl="Mga Minuto ng Ehersisyo Bawat Araw">Exercise Minutes Per Day</span>
             </label>
             <div class="d-flex align-items-center gap-3">
-              <input type="range" class="form-range flex-grow-1" name="exercise_minutes_per_day" id="exercise-minutes" 
-                     min="0" max="180" value="0" step="5">
-              <span class="range-value" id="exercise-minutes-value">0</span>
+    <input type="range" class="form-range flex-grow-1" name="exercise_minutes_per_day" id="exercise-minutes" 
+      min="0" max="180" value="<?php echo isset($surveyData['lifestyle']) ? (int)($surveyData['lifestyle']['exercise_minutes_per_day'] ?? 0) : 0; ?>" step="5">
+    <span class="range-value" id="exercise-minutes-value"><?php echo isset($surveyData['lifestyle']) ? (int)($surveyData['lifestyle']['exercise_minutes_per_day'] ?? 0) : 0; ?></span>
               <span class="i18n" data-en="minutes" data-tl="minuto">minutes</span>
             </div>
           </div>
@@ -465,19 +463,19 @@ $components = $appRoot . '/components';
             <div class="row g-3">
               <div class="col-md-4">
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="exercise_intensity" id="intensity-light" value="Light">
+                  <input class="form-check-input" type="radio" name="exercise_intensity" id="intensity-light" value="Light" <?php echo (isset($surveyData['lifestyle']) && ($surveyData['lifestyle']['exercise_intensity'] ?? '') === 'Light') ? 'checked' : ''; ?>>
                   <label class="form-check-label i18n" for="intensity-light" data-en="Light" data-tl="Magaan">Light</label>
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="exercise_intensity" id="intensity-moderate" value="Moderate">
+                  <input class="form-check-input" type="radio" name="exercise_intensity" id="intensity-moderate" value="Moderate" <?php echo (isset($surveyData['lifestyle']) && ($surveyData['lifestyle']['exercise_intensity'] ?? '') === 'Moderate') ? 'checked' : ''; ?>>
                   <label class="form-check-label i18n" for="intensity-moderate" data-en="Moderate" data-tl="Katamtaman">Moderate</label>
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="exercise_intensity" id="intensity-vigorous" value="Vigorous">
+                  <input class="form-check-input" type="radio" name="exercise_intensity" id="intensity-vigorous" value="Vigorous" <?php echo (isset($surveyData['lifestyle']) && ($surveyData['lifestyle']['exercise_intensity'] ?? '') === 'Vigorous') ? 'checked' : ''; ?>>
                   <label class="form-check-label i18n" for="intensity-vigorous" data-en="Vigorous" data-tl="Mabigat">Vigorous</label>
                 </div>
               </div>
@@ -510,12 +508,78 @@ $components = $appRoot . '/components';
   </main>
 
   <?php include $components . '/footerdashboard.php'; ?>
+  
+  <div class="modal fade" id="bhwInfoModal" tabindex="-1" aria-labelledby="bhwInfoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title i18n" id="bhwInfoModalLabel" data-en="Survey Assistance Notice" data-tl="Pabatid Tungkol sa Pagsusuri">Survey Assistance Notice</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="i18n" data-en="A barangay health worker will visit to complete this survey and perform measurements that require equipment (for example: blood pressure, blood glucose, and other vitals). You can answer any questions you know, but the health worker will handle any checks needing instruments." data-tl="Bibilhin ka ng isang barangay health worker para kumpletuhin ang pagsusuring ito at magsagawa ng mga pagsukat na nangangailangan ng kagamitan (hal., presyon ng dugo, blood glucose, at iba pang vital). Maaari mong sagutin ang mga tanong na alam mo, ngunit ang health worker ang gagawa ng mga pagsusuring nangangailangan ng instrumento."></p>
+          <p class="i18n" data-en="This visit also helps connect you with local health services and ensures appropriate follow-up. If you have concerns or symptoms, please mention them during the visit." data-tl="Ang pagbisitang ito ay tumutulong din na ikonekta ka sa mga lokal na serbisyo pangkalusugan at matiyak ang naaangkop na follow-up. Kung may mga alalahanin o sintomas, mangyaring banggitin ang mga ito sa pagbisita."></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><span class="i18n" data-en="Close" data-tl="Isara">Close</span></button>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal"><span class="i18n" data-en="Understood" data-tl="Naiintindihan">Understood</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Vendor JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
+
+
+
   <!-- Page JS -->
   <script src="../../assets/js/Survey/wizard_lifestyle.js"></script>
+  <script src="../../assets/js/Survey/survey-persistence.js"></script>
+  <script src="../../assets/js/Survey/save-survey.js"></script>
+
+  <style>
+    #bhwFloatBtn{position:fixed; bottom:24px; right:24px; z-index:1060; width:56px; height:56px; border-radius:50%; background:#1e3a5f; color:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 20px rgba(0,0,0,0.18); cursor:grab}
+    #bhwFloatBtn:active{cursor:grabbing}
+    #bhwFloatBtn .fa-circle-info{font-size:1.35rem}
+    #bhwFloatBtn.hidden{display:none}
+    .bhw-hide-btn{position:absolute; top:-8px; right:-8px; background:#fff; color:#000; width:20px; height:20px; border-radius:50%; font-size:12px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(0,0,0,0.08)}
+  </style>
+
+  <div id="bhwFloatBtn" role="button" aria-label="Survey info" title="Survey info">
+    <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+    <button id="bhwFloatHide" class="bhw-hide-btn" aria-label="Hide info">×</button>
+  </div>
+
+  <script>
+    (function(){
+      var keyPos = 'bhwFloatPos';
+      var btn = document.getElementById('bhwFloatBtn');
+      var hideBtn = document.getElementById('bhwFloatHide');
+      var modalEl = document.getElementById('bhwInfoModal');
+      var modalInstance = modalEl && typeof bootstrap !== 'undefined' ? new bootstrap.Modal(modalEl) : null;
+
+      if (!btn) return;
+
+      // restore position
+      try{
+        var pos = localStorage.getItem(keyPos);
+        if (pos){ pos = JSON.parse(pos); btn.style.left = (pos.left || '') + 'px'; btn.style.top = (pos.top || '') + 'px'; btn.style.right = 'auto'; btn.style.bottom = 'auto'; btn.style.position = 'fixed'; }
+      }catch(e){}
+
+      btn.addEventListener('click', function(e){ if (e.target === hideBtn) return; if (modalInstance) modalInstance.show(); });
+
+      hideBtn.addEventListener('click', function(e){ e.stopPropagation(); btn.classList.add('hidden'); });
+
+      // draggable (mouse)
+      (function(){ var active=false, startX=0, startY=0, origX=0, origY=0; btn.addEventListener('mousedown', function(e){ if (e.target === hideBtn) return; active = true; startX = e.clientX; startY = e.clientY; var rect = btn.getBoundingClientRect(); origX = rect.left; origY = rect.top; document.addEventListener('mousemove', move); document.addEventListener('mouseup', up); }); function move(e){ if(!active) return; var dx = e.clientX - startX, dy = e.clientY - startY; btn.style.left = (origX + dx) + 'px'; btn.style.top = (origY + dy) + 'px'; btn.style.right = 'auto'; btn.style.bottom = 'auto'; } function up(){ if(!active) return; active=false; document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up); try{ localStorage.setItem(keyPos, JSON.stringify({left: parseInt(btn.style.left,10), top: parseInt(btn.style.top,10)})); }catch(e){} } })();
+
+      // touch events for mobile
+      (function(){ var active=false, sx=0, sy=0, ox=0, oy=0; btn.addEventListener('touchstart', function(e){ if (e.target === hideBtn) return; active=true; var t=e.touches[0]; sx=t.clientX; sy=t.clientY; var r=btn.getBoundingClientRect(); ox=r.left; oy=r.top; }, {passive:false}); btn.addEventListener('touchmove', function(e){ if(!active) return; var t=e.touches[0]; var dx=t.clientX-sx, dy=t.clientY-sy; btn.style.left=(ox+dx)+'px'; btn.style.top=(oy+dy)+'px'; btn.style.right='auto'; btn.style.bottom='auto'; e.preventDefault(); }, {passive:false}); btn.addEventListener('touchend', function(e){ if(!active) return; active=false; try{ localStorage.setItem(keyPos, JSON.stringify({left: parseInt(btn.style.left,10), top: parseInt(btn.style.top,10)})); }catch(e){} }); })();
+      window.bhwRestoreFloat_lifestyle = function(){ try{ localStorage.removeItem(keyPos); btn.classList.remove('hidden'); btn.style.left=''; btn.style.top=''; btn.style.right='24px'; btn.style.bottom='24px'; }catch(e){} };
+    })();
+  </script>
 
 </body>
 </html>

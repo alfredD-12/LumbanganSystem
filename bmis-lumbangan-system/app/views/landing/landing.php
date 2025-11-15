@@ -407,6 +407,12 @@ if (isLoggedIn()) {
         <div class="login-form-container login-sign-up" style="overflow-y: auto;">
           <form id="signupForm" method="POST" action="javascript:void(0);">
             <h1>Create Account</h1>
+            
+            <!-- Registration Error Alert (after heading) -->
+            <div id="registerErrorAlert" style="display: none; color: #d32f2f; margin: 15px 0; font-size: 13px; font-weight: 500;">
+              <i class="fas fa-exclamation-circle" style="color: #d32f2f; margin-right: 6px;"></i>
+              <span id="registerErrorMessage" style="color: #d32f2f;"></span>
+            </div>
             <div class="login-social-icons">
               <img src="https://upload.wikimedia.org/wikipedia/commons/0/0c/Seal_of_Batangas.png" alt="Batangas" style="width: 40px;">
               <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Seal_of_Nasugbu.png/599px-Seal_of_Nasugbu.png" style="width: 39px;">
@@ -445,6 +451,13 @@ if (isLoggedIn()) {
             <span style="color: #666; font-size: 0.9rem; margin-bottom: 15px; display: block;">Login as User or Official (auto-detected)</span>
             <input type="text" name="username" placeholder="Username" required>
             <input type="password" name="password" placeholder="Password" required>
+            
+            <!-- Login Error Alert (above Forget Password) -->
+            <div id="loginErrorAlert" style="display: none; color: #d32f2f; margin: 15px 0; font-size: 13px; font-weight: 500;">
+              <i class="fas fa-exclamation-circle" style="color: #d32f2f; margin-right: 6px;"></i>
+              <span id="loginErrorMessage" style="color: #d32f2f;"></span>
+            </div>
+            
             <a href="#">Forget Your Password?</a>
             <button type="submit">Sign In</button>
           </form>

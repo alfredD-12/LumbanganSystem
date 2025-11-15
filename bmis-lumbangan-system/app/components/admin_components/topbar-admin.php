@@ -124,10 +124,30 @@ if (strpos($_SERVER['SCRIPT_NAME'], '/views/') !== false) {
             </li>
             <li><hr class="dropdown-divider"></li>
             <li>
-                <a class="dropdown-item text-danger" href="../../controllers/AuthController.php?action=logout">
+                <a class="dropdown-item text-danger" href="#" onclick="handleLogout(event)">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </a>
             </li>
         </ul>
     </div>
 </div>
+
+<!-- Fallback handleLogout for admin topbar if global handler isn't present -->
+<script>
+    if (typeof window.handleLogout !== 'function') {
+        window.handleLogout = function(event) {
+            if (event && event.preventDefault) event.preventDefault();
+            try {
+                if (window.SurveyPersistence && typeof window.SurveyPersistence.clearAll === 'function') {
+                    window.SurveyPersistence.clearAll();
+                }
+            } catch (e) {}
+            try {
+                Object.keys(localStorage).forEach(function(k) {
+                    if (k && k.indexOf && k.indexOf('survey_') === 0) localStorage.removeItem(k);
+                });
+            } catch (e) {}
+            window.location.href = '../../controllers/AuthController.php?action=logout';
+        };
+    }
+</script>

@@ -1,10 +1,14 @@
 <?php
 // Require user authentication
 require_once dirname(__DIR__, 2) . '/helpers/session_helper.php';
+require_once dirname(__DIR__, 2) . '/helpers/survey_data_helper.php';
 requireUser();
 
 $appRoot    = dirname(__DIR__, 2); // .../app
 $components = $appRoot . '/components';
+
+// Load existing survey data from database
+$surveyData = loadSurveyData();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -105,51 +109,11 @@ $components = $appRoot . '/components';
       z-index: 1;
     }
 
-    /* Vital signs cards styling */
-    .vital-card {
-      background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-      border: 2px solid #e9ecef;
-      border-radius: 16px;
-      padding: 1.5rem;
-      transition: all 0.3s ease;
-    }
-
-    .vital-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 24px rgba(30, 58, 95, 0.15);
-      border-color: #1e3a5f;
-    }
-
-    .vital-icon {
-      width: 64px;
-      height: 64px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.75rem;
-      margin-bottom: 1rem;
-    }
-
-    .vital-icon.bp {
-      background: linear-gradient(135deg, #dc3545, #e74c3c);
-      color: white;
-    }
-
-    .vital-icon.pulse {
-      background: linear-gradient(135deg, #fd7e14, #ff6b6b);
-      color: white;
-    }
-
-    .vital-icon.respiratory {
-      background: linear-gradient(135deg, #20c997, #17a2b8);
-      color: white;
-    }
-
-    .vital-icon.temperature {
-      background: linear-gradient(135deg, #ffc107, #ff9800);
-      color: white;
-    }
+    /* specific color variants kept for each icon */
+    .vital-icon.bp { background: linear-gradient(135deg, #dc3545, #e74c3c); color: white; }
+    .vital-icon.pulse { background: linear-gradient(135deg, #fd7e14, #ff6b6b); color: white; }
+    .vital-icon.respiratory { background: linear-gradient(135deg, #20c997, #17a2b8); color: white; }
+    .vital-icon.temperature { background: linear-gradient(135deg, #ffc107, #ff9800); color: white; }
 
     .input-group-text {
       font-weight: 600;
@@ -270,11 +234,11 @@ $components = $appRoot . '/components';
               <div class="mb-3">
                 <label class="form-label fw-semibold">
                   <span class="i18n" data-en="Systolic (mmHg)" data-tl="Systolic (mmHg)">Systolic (mmHg)</span>
-                  <span class="text-danger">*</span>
                 </label>
                 <input type="number" name="bp_systolic" class="form-control form-control-lg i18n-ph" 
                        data-ph-en="e.g., 120" data-ph-tl="Hal., 120"
-                       min="70" max="250" required>
+                       min="70" max="250" 
+                      value="<?php echo surveyValue('vitals', 'bp_systolic'); ?>">
                 <div class="form-text i18n" data-en="Normal: 90-120 mmHg" data-tl="Normal: 90-120 mmHg">Normal: 90-120 mmHg</div>
                 <div class="invalid-feedback i18n" data-en="Please enter systolic blood pressure." data-tl="Mangyaring ilagay ang systolic blood pressure.">Please enter systolic blood pressure.</div>
               </div>
@@ -282,11 +246,11 @@ $components = $appRoot . '/components';
               <div>
                 <label class="form-label fw-semibold">
                   <span class="i18n" data-en="Diastolic (mmHg)" data-tl="Diastolic (mmHg)">Diastolic (mmHg)</span>
-                  <span class="text-danger">*</span>
                 </label>
                 <input type="number" name="bp_diastolic" class="form-control form-control-lg i18n-ph" 
                        data-ph-en="e.g., 80" data-ph-tl="Hal., 80"
-                       min="40" max="150" required>
+                       min="40" max="150" 
+                       value="<?php echo surveyValue('vitals', 'bp_diastolic'); ?>">
                 <div class="form-text i18n" data-en="Normal: 60-80 mmHg" data-tl="Normal: 60-80 mmHg">Normal: 60-80 mmHg</div>
                 <div class="invalid-feedback i18n" data-en="Please enter diastolic blood pressure." data-tl="Mangyaring ilagay ang diastolic blood pressure.">Please enter diastolic blood pressure.</div>
               </div>
@@ -306,11 +270,11 @@ $components = $appRoot . '/components';
               <div class="mb-3">
                 <label class="form-label fw-semibold">
                   <span class="i18n" data-en="Beats per Minute (bpm)" data-tl="Beats per Minute (bpm)">Beats per Minute (bpm)</span>
-                  <span class="text-danger">*</span>
                 </label>
                 <input type="number" name="pulse" class="form-control form-control-lg i18n-ph" 
                        data-ph-en="e.g., 72" data-ph-tl="Hal., 72"
-                       min="40" max="200" required>
+                       min="40" max="200" 
+                       value="<?php echo surveyValue('vitals', 'pulse'); ?>">
                 <div class="form-text i18n" data-en="Normal: 60-100 bpm" data-tl="Normal: 60-100 bpm">Normal: 60-100 bpm</div>
                 <div class="invalid-feedback i18n" data-en="Please enter pulse rate." data-tl="Mangyaring ilagay ang pulso.">Please enter pulse rate.</div>
               </div>
@@ -332,11 +296,11 @@ $components = $appRoot . '/components';
               <div>
                 <label class="form-label fw-semibold">
                   <span class="i18n" data-en="Breaths per Minute" data-tl="Mga Paghinga bawat Minuto">Breaths per Minute</span>
-                  <span class="text-danger">*</span>
                 </label>
                 <input type="number" name="respiratory_rate" class="form-control form-control-lg i18n-ph" 
                        data-ph-en="e.g., 16" data-ph-tl="Hal., 16"
-                       min="8" max="40" required>
+                       min="8" max="40" 
+                       value="<?php echo surveyValue('vitals', 'respiratory_rate'); ?>">
                 <div class="form-text i18n" data-en="Normal: 12-20 breaths/min" data-tl="Normal: 12-20 paghinga/minuto">Normal: 12-20 breaths/min</div>
                 <div class="invalid-feedback i18n" data-en="Please enter respiratory rate." data-tl="Mangyaring ilagay ang respiratory rate.">Please enter respiratory rate.</div>
               </div>
@@ -356,12 +320,12 @@ $components = $appRoot . '/components';
               <div>
                 <label class="form-label fw-semibold">
                   <span class="i18n" data-en="Temperature (°C)" data-tl="Temperatura (°C)">Temperature (°C)</span>
-                  <span class="text-danger">*</span>
                 </label>
                 <div class="input-group input-group-lg">
-                  <input type="number" step="0.1" name="temperature_c" class="form-control i18n-ph" 
+        <input type="number" step="0.1" name="temperature_c" class="form-control i18n-ph" 
                          data-ph-en="e.g., 36.5" data-ph-tl="Hal., 36.5"
-                         min="35.0" max="42.0" required>
+                         min="35.0" max="42.0" 
+          value="<?php echo surveyValue('vitals', 'temperature_c'); ?>">
                   <span class="input-group-text">°C</span>
                 </div>
                 <div class="form-text i18n" data-en="Normal: 36.1-37.2°C" data-tl="Normal: 36.1-37.2°C">Normal: 36.1-37.2°C</div>
@@ -397,12 +361,83 @@ $components = $appRoot . '/components';
   </main>
 
   <?php include $components . '/footerdashboard.php'; ?>
+  
+  <!-- Informational modal: barangay health worker notice -->
+  <div class="modal fade" id="bhwInfoModal" tabindex="-1" aria-labelledby="bhwInfoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title i18n" id="bhwInfoModalLabel" data-en="Survey Assistance Notice" data-tl="Pabatid Tungkol sa Pagsusuri">Survey Assistance Notice</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="i18n" data-en="A barangay health worker will visit to complete this survey and perform measurements that require equipment (for example: blood pressure, blood glucose, and other vitals). You can answer any questions you know, but the health worker will handle any checks needing instruments." data-tl="Bibilhin ka ng isang barangay health worker para kumpletuhin ang pagsusuring ito at magsagawa ng mga pagsukat na nangangailangan ng kagamitan (hal., presyon ng dugo, blood glucose, at iba pang vital). Maaari mong sagutin ang mga tanong na alam mo, ngunit ang health worker ang gagawa ng mga pagsusuring nangangailangan ng instrumento."></p>
+          <p class="i18n" data-en="This visit also helps connect you with local health services and ensures appropriate follow-up. If you have concerns or symptoms, please mention them during the visit." data-tl="Ang pagbisitang ito ay tumutulong din na ikonekta ka sa mga lokal na serbisyo pangkalusugan at matiyak ang naaangkop na follow-up. Kung may mga alalahanin o sintomas, mangyaring banggitin ang mga ito sa pagbisita."></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><span class="i18n" data-en="Close" data-tl="Isara">Close</span></button>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal"><span class="i18n" data-en="Understood" data-tl="Naiintindihan">Understood</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Vendor JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
+  <!-- Floating info button (draggable & persist position) -->
+  <style>
+    #bhwFloatBtn{position:fixed; bottom:24px; right:24px; z-index:1060; width:56px; height:56px; border-radius:50%; background:#1e3a5f; color:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 20px rgba(0,0,0,0.18); cursor:grab}
+    #bhwFloatBtn:active{cursor:grabbing}
+    #bhwFloatBtn .fa-circle-info{font-size:1.35rem}
+    #bhwFloatBtn.hidden{display:none}
+    .bhw-hide-btn{position:absolute; top:-8px; right:-8px; background:#fff; color:#000; width:20px; height:20px; border-radius:50%; font-size:12px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(0,0,0,0.08)}
+  </style>
+
+  <div id="bhwFloatBtn" role="button" aria-label="Survey info" title="Survey info">
+    <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+    <button id="bhwFloatHide" class="bhw-hide-btn" aria-label="Hide info">×</button>
+  </div>
+
+  <script>
+    (function(){
+      // Use a single global key so position is consistent across pages
+      var keyPos = 'bhwFloatPos';
+      var btn = document.getElementById('bhwFloatBtn');
+      var hideBtn = document.getElementById('bhwFloatHide');
+      var modalEl = document.getElementById('bhwInfoModal');
+      var modalInstance = modalEl && typeof bootstrap !== 'undefined' ? new bootstrap.Modal(modalEl) : null;
+
+      if (!btn) return;
+
+      // restore position
+      try{
+        var pos = localStorage.getItem(keyPos);
+        if (pos){ pos = JSON.parse(pos); btn.style.left = (pos.left || '') + 'px'; btn.style.top = (pos.top || '') + 'px'; btn.style.right = 'auto'; btn.style.bottom = 'auto'; btn.style.position = 'fixed'; }
+      }catch(e){}
+
+      // open modal on click (but ignore hide button clicks)
+      btn.addEventListener('click', function(e){ if (e.target === hideBtn) return; if (modalInstance) modalInstance.show(); });
+
+      // hide control - only hide for this page load (do not persist)
+      hideBtn.addEventListener('click', function(e){ e.stopPropagation(); btn.classList.add('hidden'); });
+
+      // draggable (mouse)
+      (function(){ var active=false, startX=0, startY=0, origX=0, origY=0; btn.addEventListener('mousedown', function(e){ if (e.target === hideBtn) return; active = true; startX = e.clientX; startY = e.clientY; var rect = btn.getBoundingClientRect(); origX = rect.left; origY = rect.top; document.addEventListener('mousemove', move); document.addEventListener('mouseup', up); }); function move(e){ if(!active) return; var dx = e.clientX - startX, dy = e.clientY - startY; btn.style.left = (origX + dx) + 'px'; btn.style.top = (origY + dy) + 'px'; btn.style.right = 'auto'; btn.style.bottom = 'auto'; } function up(){ if(!active) return; active=false; document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up); try{ localStorage.setItem(keyPos, JSON.stringify({left: parseInt(btn.style.left,10), top: parseInt(btn.style.top,10)})); }catch(e){} } })();
+
+      // touch events for mobile
+      (function(){ var active=false, sx=0, sy=0, ox=0, oy=0; btn.addEventListener('touchstart', function(e){ if (e.target === hideBtn) return; active=true; var t=e.touches[0]; sx=t.clientX; sy=t.clientY; var r=btn.getBoundingClientRect(); ox=r.left; oy=r.top; }, {passive:false}); btn.addEventListener('touchmove', function(e){ if(!active) return; var t=e.touches[0]; var dx=t.clientX-sx, dy=t.clientY-sy; btn.style.left=(ox+dx)+'px'; btn.style.top=(oy+dy)+'px'; btn.style.right='auto'; btn.style.bottom='auto'; e.preventDefault(); }, {passive:false}); btn.addEventListener('touchend', function(e){ if(!active) return; active=false; try{ localStorage.setItem(keyPos, JSON.stringify({left: parseInt(btn.style.left,10), top: parseInt(btn.style.top,10)})); }catch(e){} }); })();
+
+      // developer helper: restore button and clear saved position for this page
+      window.bhwRestoreFloat_vitals = function(){ try{ localStorage.removeItem(keyPos); btn.classList.remove('hidden'); btn.style.left=''; btn.style.top=''; btn.style.right='24px'; btn.style.bottom='24px'; }catch(e){} };
+    })();
+  </script>
+
+
   <!-- Page JS -->
   <script src="../../assets/js/Survey/wizard_vitals.js"></script>
+  <script src="../../assets/js/Survey/survey-persistence.js"></script>
+  <script src="../../assets/js/Survey/save-survey.js"></script>
 
 </body>
 </html>

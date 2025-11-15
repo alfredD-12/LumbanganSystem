@@ -53,32 +53,37 @@
   // ============================================
   // 1) Language Toggle
   // ============================================
-  const langENRadio = document.getElementById('lang-en');
-  const langTLRadio = document.getElementById('lang-tl');
+  // Language radio buttons (may be absent in some embed contexts)
+  const langENRadio = document.getElementById('lang-en') || null;
+  const langTLRadio = document.getElementById('lang-tl') || null;
 
   // On page load, read saved language from localStorage
   const savedLang = localStorage.getItem('survey_language') || 'en';
   if (savedLang === 'tl') {
-    langTLRadio.checked = true;
+    if (langTLRadio) langTLRadio.checked = true;
   } else {
-    langENRadio.checked = true;
+    if (langENRadio) langENRadio.checked = true;
   }
   applyLanguage(savedLang);
 
-  // Listen for language toggle
-  langENRadio.addEventListener('change', function() {
-    if (this.checked) {
-      localStorage.setItem('survey_language', 'en');
-      applyLanguage('en');
-    }
-  });
+  // Listen for language toggle (guarded)
+  if (langENRadio) {
+    langENRadio.addEventListener('change', function() {
+      if (this.checked) {
+        localStorage.setItem('survey_language', 'en');
+        applyLanguage('en');
+      }
+    });
+  }
 
-  langTLRadio.addEventListener('change', function() {
-    if (this.checked) {
-      localStorage.setItem('survey_language', 'tl');
-      applyLanguage('tl');
-    }
-  });
+  if (langTLRadio) {
+    langTLRadio.addEventListener('change', function() {
+      if (this.checked) {
+        localStorage.setItem('survey_language', 'tl');
+        applyLanguage('tl');
+      }
+    });
+  }
 
   /**
    * Apply language to all .i18n elements
@@ -97,6 +102,18 @@
       }
     });
   }
+
+  // Re-apply language after DOMContentLoaded as a recover step in case earlier
+  // execution encountered an error before the first call.
+  document.addEventListener('DOMContentLoaded', function() {
+    try {
+      const lang = localStorage.getItem('survey_language') || 'en';
+      applyLanguage(lang);
+    } catch (e) {
+      // swallow - language toggle is non-fatal
+      console.error('Language apply failed on DOMContentLoaded', e);
+    }
+  });
 
   // ============================================
   // 2) Blood Sugar Validation
@@ -230,13 +247,11 @@
   // 4) Form Submission
   // ============================================
   form.addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    // Bootstrap validation
+    // Only block submission when invalid; allow central handler to POST when valid
     if (!form.checkValidity()) {
+      e.preventDefault();
       e.stopPropagation();
       form.classList.add('was-validated');
-      
       // Scroll to first invalid field
       const firstInvalid = form.querySelector(':invalid');
       if (firstInvalid) {
@@ -246,11 +261,8 @@
       return;
     }
 
-    form.classList.add('was-validated');
-
-    // Collect form data
+    // Form valid: save draft locally and let central save-survey.js handle POST and navigation
     const formData = new FormData(form);
-    
     const diabetesData = {
       known_diabetes: formData.get('known_diabetes'),
       on_medications: formData.get('on_medications'),
@@ -267,19 +279,9 @@
       screen_positive: calculateScreening() ? '1' : '0'
     };
 
-    // Save to localStorage
     localStorage.setItem('survey_diabetes', JSON.stringify(diabetesData));
-
-    console.log('Diabetes data saved:', diabetesData);
-
-    // Show success message
-    const lang = localStorage.getItem('survey_language') || 'en';
-    const successMsg = lang === 'tl' ? 'Nai-save na!' : 'Saved!';
-    
-    console.log(successMsg);
-
-    // Navigate to household step
-    window.location.href = 'wizard_household.php';
+    console.log('Diabetes draft saved, delegating to central save handler');
+    // Do not navigate here; save-survey.js will perform POST and redirect on success
   });
 
   // ============================================
@@ -319,8 +321,11 @@
   // 6) Load saved data on page load
   // ============================================
   window.addEventListener('DOMContentLoaded', function() {
+    // Only restore local draft when the server already has diabetes data for this person.
+    // This prevents restoring another user's saved draft (privacy/leak) when no server
+    // data exists for the current person.
     const savedData = localStorage.getItem('survey_diabetes');
-    if (savedData) {
+    if (savedData && window.__has_server_diabetes) {
       try {
         const data = JSON.parse(savedData);
         
@@ -390,6 +395,11 @@
       } catch (err) {
         console.error('Error loading saved diabetes data:', err);
       }
+    } else if (savedData && !window.__has_server_diabetes) {
+      // If there is a local draft but no server record for this person, do NOT restore it.
+      // This avoids cross-account leakage. Optionally, we can remove the draft so it doesn't
+      // persist unexpectedly — but we'll leave it intact for now and rely on logout clearing.
+      console.log('Found local diabetes draft but no server record; skipping auto-restore');
     }
   });
 

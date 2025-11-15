@@ -1,10 +1,14 @@
 <?php
 // Require user authentication
 require_once dirname(__DIR__, 2) . '/helpers/session_helper.php';
+require_once dirname(__DIR__, 2) . '/helpers/survey_data_helper.php';
 requireUser();
 
 $appRoot    = dirname(__DIR__, 2); // .../app
 $components = $appRoot . '/components';
+
+// Load existing survey data from database
+$surveyData = loadSurveyData();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -217,15 +221,14 @@ $components = $appRoot . '/components';
             <div class="col-md-6">
               <label class="form-label fw-semibold">
                 <span class="i18n" data-en="Do you have known diabetes?" data-tl="Mayroon ka bang kilalang diabetes?">Do you have known diabetes?</span>
-                <span class="text-danger">*</span>
               </label>
-              <div class="d-flex gap-3">
+                <div class="d-flex gap-3">
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="known_diabetes" id="known_diabetes_yes" value="1" required>
+                  <input class="form-check-input" type="radio" name="known_diabetes" id="known_diabetes_yes" value="1" <?php echo (isset($surveyData['diabetes']) && ($surveyData['diabetes']['known_diabetes'] ?? '') == 1) ? 'checked' : ''; ?>>
                   <label class="form-check-label i18n" for="known_diabetes_yes" data-en="Yes" data-tl="Oo">Yes</label>
                 </div>
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="known_diabetes" id="known_diabetes_no" value="0">
+                  <input class="form-check-input" type="radio" name="known_diabetes" id="known_diabetes_no" value="0" <?php echo (isset($surveyData['diabetes']) && ($surveyData['diabetes']['known_diabetes'] ?? '') == 0 && ($surveyData['diabetes']['known_diabetes'] !== null)) ? 'checked' : ''; ?>>
                   <label class="form-check-label i18n" for="known_diabetes_no" data-en="No" data-tl="Hindi">No</label>
                 </div>
               </div>
@@ -235,15 +238,14 @@ $components = $appRoot . '/components';
             <div class="col-md-6">
               <label class="form-label fw-semibold">
                 <span class="i18n" data-en="Are you on diabetes medications?" data-tl="Ikaw ba ay umiinom ng gamot para sa diabetes?">Are you on diabetes medications?</span>
-                <span class="text-danger">*</span>
               </label>
               <div class="d-flex gap-3">
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="on_medications" id="on_medications_yes" value="1" required>
+                  <input class="form-check-input" type="radio" name="on_medications" id="on_medications_yes" value="1" <?php echo (isset($surveyData['diabetes']) && ($surveyData['diabetes']['on_medications'] ?? '') == 1) ? 'checked' : ''; ?>>
                   <label class="form-check-label i18n" for="on_medications_yes" data-en="Yes" data-tl="Oo">Yes</label>
                 </div>
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="on_medications" id="on_medications_no" value="0">
+                  <input class="form-check-input" type="radio" name="on_medications" id="on_medications_no" value="0" <?php echo (isset($surveyData['diabetes']) && ($surveyData['diabetes']['on_medications'] ?? '') == 0 && ($surveyData['diabetes']['on_medications'] !== null)) ? 'checked' : ''; ?>>
                   <label class="form-check-label i18n" for="on_medications_no" data-en="No" data-tl="Hindi">No</label>
                 </div>
               </div>
@@ -253,15 +255,14 @@ $components = $appRoot . '/components';
             <div class="col-12">
               <label class="form-label fw-semibold">
                 <span class="i18n" data-en="Family history of diabetes?" data-tl="Kasaysayan ng pamilya ng diabetes?">Family history of diabetes?</span>
-                <span class="text-danger">*</span>
               </label>
               <div class="d-flex gap-3">
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="family_history" id="family_history_yes" value="1" required>
+                  <input class="form-check-input" type="radio" name="family_history" id="family_history_yes" value="1" <?php echo (isset($surveyData['diabetes']) && ($surveyData['diabetes']['family_history'] ?? '') == 1) ? 'checked' : ''; ?>>
                   <label class="form-check-label i18n" for="family_history_yes" data-en="Yes" data-tl="Oo">Yes</label>
                 </div>
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="family_history" id="family_history_no" value="0">
+                  <input class="form-check-input" type="radio" name="family_history" id="family_history_no" value="0" <?php echo (isset($surveyData['diabetes']) && ($surveyData['diabetes']['family_history'] ?? '') == 0 && ($surveyData['diabetes']['family_history'] !== null)) ? 'checked' : ''; ?>>
                   <label class="form-check-label i18n" for="family_history_no" data-en="No" data-tl="Hindi">No</label>
                 </div>
               </div>
@@ -283,11 +284,10 @@ $components = $appRoot . '/components';
             <div class="col-md-6">
               <label class="form-label fw-semibold">
                 <span class="i18n" data-en="Polyuria (frequent urination)?" data-tl="Polyuria (madalas umihi)?">Polyuria (frequent urination)?</span>
-                <span class="text-danger">*</span>
               </label>
               <div class="d-flex gap-3">
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="polyuria" id="polyuria_yes" value="1" required>
+                  <input class="form-check-input" type="radio" name="polyuria" id="polyuria_yes" value="1">
                   <label class="form-check-label i18n" for="polyuria_yes" data-en="Yes" data-tl="Oo">Yes</label>
                 </div>
                 <div class="form-check">
@@ -301,11 +301,10 @@ $components = $appRoot . '/components';
             <div class="col-md-6">
               <label class="form-label fw-semibold">
                 <span class="i18n" data-en="Polydipsia (excessive thirst)?" data-tl="Polydipsia (labis na uhaw)?">Polydipsia (excessive thirst)?</span>
-                <span class="text-danger">*</span>
               </label>
               <div class="d-flex gap-3">
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="polydipsia" id="polydipsia_yes" value="1" required>
+                  <input class="form-check-input" type="radio" name="polydipsia" id="polydipsia_yes" value="1">
                   <label class="form-check-label i18n" for="polydipsia_yes" data-en="Yes" data-tl="Oo">Yes</label>
                 </div>
                 <div class="form-check">
@@ -319,11 +318,10 @@ $components = $appRoot . '/components';
             <div class="col-md-6">
               <label class="form-label fw-semibold">
                 <span class="i18n" data-en="Polyphagia (excessive hunger)?" data-tl="Polyphagia (labis na gutom)?">Polyphagia (excessive hunger)?</span>
-                <span class="text-danger">*</span>
               </label>
               <div class="d-flex gap-3">
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="polyphagia" id="polyphagia_yes" value="1" required>
+                  <input class="form-check-input" type="radio" name="polyphagia" id="polyphagia_yes" value="1">
                   <label class="form-check-label i18n" for="polyphagia_yes" data-en="Yes" data-tl="Oo">Yes</label>
                 </div>
                 <div class="form-check">
@@ -337,11 +335,10 @@ $components = $appRoot . '/components';
             <div class="col-md-6">
               <label class="form-label fw-semibold">
                 <span class="i18n" data-en="Unexplained weight loss?" data-tl="Hindi maipaliwanag na pagbaba ng timbang?">Unexplained weight loss?</span>
-                <span class="text-danger">*</span>
               </label>
               <div class="d-flex gap-3">
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="weight_loss" id="weight_loss_yes" value="1" required>
+                  <input class="form-check-input" type="radio" name="weight_loss" id="weight_loss_yes" value="1">
                   <label class="form-check-label i18n" for="weight_loss_yes" data-en="Yes" data-tl="Oo">Yes</label>
                 </div>
                 <div class="form-check">
@@ -403,11 +400,10 @@ $components = $appRoot . '/components';
             <div class="col-md-6">
               <label class="form-label fw-semibold">
                 <span class="i18n" data-en="Urine Ketone present?" data-tl="May Urine Ketone?">Urine Ketone present?</span>
-                <span class="text-danger">*</span>
               </label>
               <div class="d-flex gap-3">
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="urine_ketone" id="urine_ketone_yes" value="1" required>
+                  <input class="form-check-input" type="radio" name="urine_ketone" id="urine_ketone_yes" value="1">
                   <label class="form-check-label i18n" for="urine_ketone_yes" data-en="Yes" data-tl="Oo">Yes</label>
                 </div>
                 <div class="form-check">
@@ -421,11 +417,10 @@ $components = $appRoot . '/components';
             <div class="col-md-6">
               <label class="form-label fw-semibold">
                 <span class="i18n" data-en="Urine Protein present?" data-tl="May Urine Protein?">Urine Protein present?</span>
-                <span class="text-danger">*</span>
               </label>
               <div class="d-flex gap-3">
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="urine_protein" id="urine_protein_yes" value="1" required>
+                  <input class="form-check-input" type="radio" name="urine_protein" id="urine_protein_yes" value="1">
                   <label class="form-check-label i18n" for="urine_protein_yes" data-en="Yes" data-tl="Oo">Yes</label>
                 </div>
                 <div class="form-check">
@@ -463,12 +458,89 @@ $components = $appRoot . '/components';
   </main>
 
   <?php include $components . '/footerdashboard.php'; ?>
+  
+  <!-- Informational modal: barangay health worker notice -->
+  <div class="modal fade" id="bhwInfoModal" tabindex="-1" aria-labelledby="bhwInfoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title i18n" id="bhwInfoModalLabel" data-en="Survey Assistance Notice" data-tl="Pabatid Tungkol sa Pagsusuri">Survey Assistance Notice</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="i18n" data-en="A barangay health worker will visit to complete this survey and perform measurements that require equipment (for example: blood pressure, blood glucose, and other vitals). You can answer any questions you know, but the health worker will handle any checks needing instruments." data-tl="Bibilhin ka ng isang barangay health worker para kumpletuhin ang pagsusuring ito at magsagawa ng mga pagsukat na nangangailangan ng kagamitan (hal., presyon ng dugo, blood glucose, at iba pang vital). Maaari mong sagutin ang mga tanong na alam mo, ngunit ang health worker ang gagawa ng mga pagsusuring nangangailangan ng instrumento."></p>
+          <p class="i18n" data-en="This visit also helps connect you with local health services and ensures appropriate follow-up. If you have concerns or symptoms, please mention them during the visit." data-tl="Ang pagbisitang ito ay tumutulong din na ikonekta ka sa mga lokal na serbisyo pangkalusugan at matiyak ang naaangkop na follow-up. Kung may mga alalahanin o sintomas, mangyaring banggitin ang mga ito sa pagbisita."></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><span class="i18n" data-en="Close" data-tl="Isara">Close</span></button>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal"><span class="i18n" data-en="Understood" data-tl="Naiintindihan">Understood</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Vendor JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
+
+
+
   <!-- Page JS -->
+  <!-- Expose whether server already has diabetes data for this person -->
+  <script>
+    window.__has_server_diabetes = <?php echo (!empty($surveyData['diabetes']) ? 'true' : 'false'); ?>;
+  </script>
   <script src="../../assets/js/Survey/wizard_diabetes.js"></script>
+  <script src="../../assets/js/Survey/survey-persistence.js"></script>
+  <script src="../../assets/js/Survey/save-survey.js"></script>
+
+  <!-- Floating info button (draggable & persist position) -->
+  <style>
+    #bhwFloatBtn{position:fixed; bottom:24px; right:24px; z-index:1060; width:56px; height:56px; border-radius:50%; background:#1e3a5f; color:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 20px rgba(0,0,0,0.18); cursor:grab}
+    #bhwFloatBtn:active{cursor:grabbing}
+    #bhwFloatBtn .fa-circle-info{font-size:1.35rem}
+    #bhwFloatBtn.hidden{display:none}
+    .bhw-hide-btn{position:absolute; top:-8px; right:-8px; background:#fff; color:#000; width:20px; height:20px; border-radius:50%; font-size:12px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(0,0,0,0.08)}
+  </style>
+
+  <div id="bhwFloatBtn" role="button" aria-label="Survey info" title="Survey info">
+    <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+    <button id="bhwFloatHide" class="bhw-hide-btn" aria-label="Hide info">×</button>
+  </div>
+
+  <script>
+    (function(){
+      // Use a single global key so position is consistent across pages
+      var keyPos = 'bhwFloatPos';
+      var btn = document.getElementById('bhwFloatBtn');
+      var hideBtn = document.getElementById('bhwFloatHide');
+      var modalEl = document.getElementById('bhwInfoModal');
+      var modalInstance = modalEl && typeof bootstrap !== 'undefined' ? new bootstrap.Modal(modalEl) : null;
+
+      if (!btn) return;
+
+      // restore position
+      try{
+        var pos = localStorage.getItem(keyPos);
+        if (pos){ pos = JSON.parse(pos); btn.style.left = (pos.left || '') + 'px'; btn.style.top = (pos.top || '') + 'px'; btn.style.right = 'auto'; btn.style.bottom = 'auto'; btn.style.position = 'fixed'; }
+      }catch(e){}
+
+      // open modal on click (but ignore hide button clicks)
+      btn.addEventListener('click', function(e){ if (e.target === hideBtn) return; if (modalInstance) modalInstance.show(); });
+
+      // hide control - only hide for this page load (do not persist)
+      hideBtn.addEventListener('click', function(e){ e.stopPropagation(); btn.classList.add('hidden'); });
+
+      // draggable (mouse)
+      (function(){ var active=false, startX=0, startY=0, origX=0, origY=0; btn.addEventListener('mousedown', function(e){ if (e.target === hideBtn) return; active = true; startX = e.clientX; startY = e.clientY; var rect = btn.getBoundingClientRect(); origX = rect.left; origY = rect.top; document.addEventListener('mousemove', move); document.addEventListener('mouseup', up); }); function move(e){ if(!active) return; var dx = e.clientX - startX, dy = e.clientY - startY; btn.style.left = (origX + dx) + 'px'; btn.style.top = (origY + dy) + 'px'; btn.style.right = 'auto'; btn.style.bottom = 'auto'; } function up(){ if(!active) return; active=false; document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up); try{ localStorage.setItem(keyPos, JSON.stringify({left: parseInt(btn.style.left,10), top: parseInt(btn.style.top,10)})); }catch(e){} } })();
+
+      // touch events for mobile
+      (function(){ var active=false, sx=0, sy=0, ox=0, oy=0; btn.addEventListener('touchstart', function(e){ if (e.target === hideBtn) return; active=true; var t=e.touches[0]; sx=t.clientX; sy=t.clientY; var r=btn.getBoundingClientRect(); ox=r.left; oy=r.top; }, {passive:false}); btn.addEventListener('touchmove', function(e){ if(!active) return; var t=e.touches[0]; var dx=t.clientX-sx, dy=t.clientY-sy; btn.style.left=(ox+dx)+'px'; btn.style.top=(oy+dy)+'px'; btn.style.right='auto'; btn.style.bottom='auto'; e.preventDefault(); }, {passive:false}); btn.addEventListener('touchend', function(e){ if(!active) return; active=false; try{ localStorage.setItem(keyPos, JSON.stringify({left: parseInt(btn.style.left,10), top: parseInt(btn.style.top,10)})); }catch(e){} }); })();
+
+      // developer helper: restore button and clear saved position for this page
+      window.bhwRestoreFloat_diabetes = function(){ try{ localStorage.removeItem(keyPos); btn.classList.remove('hidden'); btn.style.left=''; btn.style.top=''; btn.style.right='24px'; btn.style.bottom='24px'; }catch(e){} };
+    })();
+  </script>
 
 </body>
 </html>

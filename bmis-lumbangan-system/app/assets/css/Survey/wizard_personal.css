@@ -452,9 +452,10 @@ body.bg-surface{
   transition: left 0.6s;
 }
 .section-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-4px) scale(1.02) !important;
   box-shadow: 0 20px 40px rgba(0,0,0,.1);
   border-color: rgba(30, 58, 95, 0.1);
+  will-change: transform;
 }
 .section-card:hover::before {
   left: 100%;
@@ -484,10 +485,12 @@ body.bg-surface{
   box-shadow: 0 4px 10px rgba(30, 58, 95, 0.15);
 }
 .section-card:hover .section-icon {
-  transform: rotate(360deg) scale(1.1);
+  /* Subtle grow + slight tilt instead of full spin */
+  transform: scale(1.08) rotate(-12deg) translateY(-2px);
+  transform-origin: center center;
   background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
   color: white;
-  box-shadow: 0 6px 15px rgba(30, 58, 95, 0.3);
+  box-shadow: 0 8px 22px rgba(30, 58, 95, 0.28);
 }
 
 .section-title{ 
@@ -499,12 +502,124 @@ body.bg-surface{
   color: var(--secondary-blue);
 }
 
+/* ========== VITALS CARD STYLES ========== */
+/* These styles are used on the vitals wizard page to layout each metric card */
+.vital-card{
+  background:#fff;
+  border-radius:18px;
+  border:1px solid rgba(0,0,0,.06);
+  box-shadow:0 12px 28px rgba(0,0,0,.06);
+  transition: var(--transition-smooth);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.6s ease-out;
+  padding:18px;
+}
+.vital-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(30, 58, 95, 0.03), transparent);
+  transition: left 0.6s;
+}
+.vital-card:hover {
+  transform: translateY(-4px) scale(1.02) !important;
+  box-shadow: 0 20px 40px rgba(0,0,0,.1);
+  border-color: rgba(30, 58, 95, 0.1);
+  will-change: transform;
+}
+.vital-card:hover::before {
+  left: 100%;
+}
+.vital-card:hover .vital-icon {
+  transform: scale(1.08) rotate(-12deg) translateY(-2px);
+  transform-origin: center center;
+  background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+  color: white;
+  box-shadow: 0 8px 22px rgba(30,58,95,0.28);
+}
+.vital-card:nth-child(1) { animation-delay: 0.1s; }
+.vital-card:nth-child(2) { animation-delay: 0.2s; }
+.vital-card:nth-child(3) { animation-delay: 0.3s; }
+.vital-card:nth-child(4) { animation-delay: 0.4s; }
+.vital-card h5{ margin-top: 8px; margin-bottom: 12px; color:var(--dark-text); }
+
+.vital-icon{
+  width:44px;
+  height:44px;
+  border-radius:10px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  font-size:18px;
+  box-shadow: 0 6px 18px rgba(30,58,95,0.12);
+
+  /* Smooth transform for hover tilt effect copied from .section-icon */
+  transition: var(--transition-smooth);
+}
+.vital-icon i{ font-size:1.05rem; }
+
+/* Make the vital icon tilt and change background on card hover (same effect as personal cards) */
+.vital-card:hover .vital-icon {
+  transform: scale(1.08) rotate(-12deg) translateY(-2px);
+  transform-origin: center center;
+  background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+  color: white;
+  box-shadow: 0 8px 22px rgba(30,58,95,0.28);
+}
+
+.vital-card .form-text{ color: #6b7280; }
+
+
 .section-divider{
   height: 14px;
   background: repeating-linear-gradient(-45deg,#e5e7eb,#e5e7eb 8px,#f5f6fa 8px,#f5f6fa 16px);
   border-radius: 8px; 
   margin: 18px 0;
 }
+
+/* ========== FAMILY HISTORY / CHECKBOX LIST STYLES ========== */
+.health-checkbox{
+  background: #fff;
+  border: 1px solid rgba(14, 22, 38, 0.06);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: var(--transition-smooth);
+  min-height: 56px;
+}
+.health-checkbox .condition-icon{
+  width:40px;
+  height:40px;
+  border-radius:10px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background: linear-gradient(135deg, rgba(30, 58, 95, 0.06), rgba(44, 82, 130, 0.06));
+  color: var(--primary-blue);
+  box-shadow: 0 4px 10px rgba(30,58,95,0.06);
+  flex: 0 0 40px;
+}
+.health-checkbox label { cursor: pointer; margin: 0; font-weight: 500; color: var(--dark-text); }
+.health-checkbox input[type="checkbox"]{ width: 18px; height: 18px; margin-right: 8px; accent-color: var(--primary-blue); }
+
+/* checked state applied by JS */
+.health-checkbox.checked{
+  background: linear-gradient(135deg, #f8fafc, #f1f7fb);
+  border-color: rgba(30,58,95,0.08);
+}
+.health-checkbox.checked .condition-icon{
+  background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+  color: #fff;
+  box-shadow: 0 8px 22px rgba(30,58,95,0.12);
+}
+
 
 /* ========== FORM CONTROLS ========== */
 .form-control-lg, .form-select-lg{

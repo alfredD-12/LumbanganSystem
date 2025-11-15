@@ -1775,3 +1775,33 @@ a:focus, button:focus, .nav-link:focus { outline: 3px solid rgba(30,58,95,0.12);
         left: 15px;
     }
 }
+
+/* Login/Register Error Alert Styling */
+#loginErrorAlert,
+#registerErrorAlert {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin: 15px 0;
+    font-size: 13px;
+    color: #d32f2f !important;
+    line-height: 1.4;
+    text-align: left;
+}
+
+#loginErrorAlert i,
+#registerErrorAlert i {
+    color: #d32f2f !important;
+    font-size: 14px;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+#loginErrorMessage,
+#registerErrorMessage {
+    vertical-align: middle;
+    color: #d32f2f !important;
+    font-weight: 500;
+}

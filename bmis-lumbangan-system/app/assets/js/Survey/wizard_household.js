@@ -1,6 +1,35 @@
 (function () {
   'use strict';
 
+  // Intercept native alert() on this page and route survey completion messages
+  // to the modern canonical survey toast. This prevents legacy or cached scripts
+  // from showing a blocking browser alert like:
+  // "Survey completed successfully! Thank you for your participation."
+  (function interceptAlert() {
+    try {
+      const _origAlert = window.alert.bind(window);
+      window.alert = function(msg) {
+        try {
+          if (typeof msg === 'string' && msg.indexOf('Survey completed successfully') !== -1) {
+            // Use global canonical alert when available, otherwise enqueue
+            if (window.surveyCreateAlert) {
+              window.surveyCreateAlert(msg, 'success');
+            } else {
+              window._pendingSurveyAlerts = window._pendingSurveyAlerts || [];
+              window._pendingSurveyAlerts.push({ message: msg, type: 'success' });
+            }
+            return; // swallow the native alert
+          }
+        } catch (e) {
+          // fall back to native alert if something unexpected happens
+        }
+        _origAlert(msg);
+      };
+    } catch (e) {
+      // ignore if binding fails (very unlikely)
+    }
+  })();
+
   // ==============================
   // 1) HELPERS
   // ==============================
@@ -94,12 +123,14 @@
   // 4) HOUSEHOLD NUMBER AUTO-GENERATION
   // ==============================
   function initHouseholdNumberGeneration() {
-    const purokSelect = $('#purok_sitio');
+  const purokSelect = $('#purok_id');
     const householdNoInput = $('#household_no');
 
     if (purokSelect && householdNoInput) {
       purokSelect.addEventListener('change', () => {
-        const purokCode = purokSelect.value;
+        // Use the option's data-code (e.g., 'CA') for human-readable household_no prefix
+        const selectedOpt = purokSelect.options[purokSelect.selectedIndex];
+        const purokCode = selectedOpt ? selectedOpt.getAttribute('data-code') || purokSelect.value : purokSelect.value;
         if (purokCode) {
           // Generate placeholder number - in production, this should query the backend
           // for the next available number in this purok
@@ -153,10 +184,10 @@
     if (!form) return;
 
     form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-
+      // Only prevent submission when invalid; allow the centralized save handler to POST when valid
       if (!form.checkValidity()) {
+        e.preventDefault();
+        e.stopPropagation();
         form.classList.add('was-validated');
         // Scroll to first invalid field
         const firstInvalid = form.querySelector(':invalid');
@@ -167,62 +198,39 @@
         return;
       }
 
-      form.classList.add('was-validated');
-
-      // Gather household data
+      // Form is valid: gather household data and save draft locally. Central handler will POST and show canonical alert.
       const householdData = {
-        // Purok and household number
-        purok_sitio: $('#purok_sitio')?.value || '',
+        purok_id: $('#purok_id')?.value || '',
         household_no: $('#household_no')?.value.trim() || '',
-        
-        // Address components (will be concatenated server-side)
         address_house_no: $('#address_house_no')?.value.trim() || '',
         address_street: $('#address_street')?.value.trim() || '',
         address_sitio_subdivision: $('#address_sitio_subdivision')?.value.trim() || '',
         address_building: $('#address_building')?.value.trim() || '',
-        
-        // Home & construction
         home_ownership: $('#home_ownership')?.value || '',
         home_ownership_other: $('#home_ownership_other')?.value.trim() || '',
         construction_material: $('#construction_material')?.value || '',
         construction_material_other: $('#construction_material_other')?.value.trim() || '',
-        
-        // Facilities
         lighting_facility: $('#lighting_facility')?.value || '',
         lighting_facility_other: $('#lighting_facility_other')?.value.trim() || '',
         toilet_type: $('#toilet_type')?.value || '',
         toilet_type_other: $('#toilet_type_other')?.value.trim() || '',
-        
-        // Water
         water_level: $('#water_level')?.value || '',
         water_source: $('#water_source')?.value.trim() || '',
         water_storage: $('#water_storage')?.value || '',
         drinking_water_other_source: $('#drinking_water_other_source')?.value.trim() || '',
-        
-        // Garbage
         garbage_container: $('#garbage_container')?.value || '',
         garbage_segregated: $('input[name="garbage_segregated"]:checked')?.value || '',
         garbage_disposal_method: $('#garbage_disposal_method')?.value || '',
         garbage_disposal_other: $('#garbage_disposal_other')?.value.trim() || '',
-        
-        // Family info
         family_number: $('#family_number')?.value.trim() || '',
         residency_status: $('#residency_status')?.value || '',
         length_of_residency_months: $('#length_of_residency_months')?.value || '',
         email: $('#email')?.value.trim() || ''
       };
 
-      // Save to localStorage
       localStorage.setItem('survey_household', JSON.stringify(householdData));
-
-      console.log('Household data saved:', householdData);
-
-      // Show success message
-      alert('Survey completed successfully! Thank you for your participation.');
-
-      // TODO: In production, submit all survey data to backend
-      // For now, redirect to dashboard or show completion page
-      // window.location.href = '../../views/Dashboard/dashboard.php';
+      console.log('Household draft saved, delegating to central save handler');
+      // Do not show local alert/redirect here. save-survey.js will POST and show the canonical alert and handle navigation.
     });
   }
 
@@ -246,7 +254,7 @@
     if (!form) return;
 
     const householdData = {
-      purok_sitio: $('#purok_sitio')?.value || '',
+      purok_id: $('#purok_id')?.value || '',
       household_no: $('#household_no')?.value.trim() || '',
       address_house_no: $('#address_house_no')?.value.trim() || '',
       address_street: $('#address_street')?.value.trim() || '',
@@ -287,8 +295,8 @@
     try {
       const data = JSON.parse(saved);
 
-      // Purok and household number
-      if (data.purok_sitio) $('#purok_sitio').value = data.purok_sitio;
+  // Purok and household number
+  if (data.purok_id) $('#purok_id').value = data.purok_id;
       if (data.household_no) $('#household_no').value = data.household_no;
 
       // Address fields

@@ -1,10 +1,14 @@
 <?php
 // Require user authentication
 require_once dirname(__DIR__, 2) . '/helpers/session_helper.php';
+require_once dirname(__DIR__, 2) . '/helpers/survey_data_helper.php';
 requireUser();
 
 $appRoot    = dirname(__DIR__, 2); // .../app
 $components = $appRoot . '/components';
+
+// Load existing survey data from database
+$surveyData = loadSurveyData();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -235,18 +239,19 @@ $components = $appRoot . '/components';
                 <span class="i18n" data-en="Purok / Sitio" data-tl="Purok / Sitio">Purok / Sitio</span>
                 <span class="text-danger">*</span>
               </label>
-              <select class="form-select" id="purok_sitio" name="purok_sitio" required>
+              <select class="form-select" id="purok_id" name="purok_id" required>
                 <option value="" selected disabled>Select...</option>
-                <option value="SA">Sagbat (SA)</option>
-                <option value="CA">Campo Avejar (CA)</option>
-                <option value="RV">Roxas Village (RV)</option>
-                <option value="CE">Central (CE)</option>
-                <option value="CC">Camachilihan (CC)</option>
-                <option value="EP">El Paso (EP)</option>
-                <option value="CD">Calamundingan (CD)</option>
-                <option value="RO">Role (RO)</option>
-                <option value="MA">Mambugan (MA)</option>
-                <option value="MN">Malangaw (MN)</option>
+                <!-- Use numeric purok IDs as option values for DB compatibility. data-code is used for household_no generation. -->
+                <option value="1" data-code="SA" <?php echo (isset($surveyData['household']) && (int)($surveyData['household']['purok_id'] ?? 0) === 1) ? 'selected' : ''; ?>>Sagbat (SA)</option>
+                <option value="2" data-code="CA" <?php echo (isset($surveyData['household']) && (int)($surveyData['household']['purok_id'] ?? 0) === 2) ? 'selected' : ''; ?>>Campo Avejar (CA)</option>
+                <option value="3" data-code="RV" <?php echo (isset($surveyData['household']) && (int)($surveyData['household']['purok_id'] ?? 0) === 3) ? 'selected' : ''; ?>>Roxas Village (RV)</option>
+                <option value="4" data-code="CE" <?php echo (isset($surveyData['household']) && (int)($surveyData['household']['purok_id'] ?? 0) === 4) ? 'selected' : ''; ?>>Central (CE)</option>
+                <option value="5" data-code="CC" <?php echo (isset($surveyData['household']) && (int)($surveyData['household']['purok_id'] ?? 0) === 5) ? 'selected' : ''; ?>>Camachilihan (CC)</option>
+                <option value="6" data-code="EP" <?php echo (isset($surveyData['household']) && (int)($surveyData['household']['purok_id'] ?? 0) === 6) ? 'selected' : ''; ?>>El Paso (EP)</option>
+                <option value="7" data-code="CD" <?php echo (isset($surveyData['household']) && (int)($surveyData['household']['purok_id'] ?? 0) === 7) ? 'selected' : ''; ?>>Calamundingan (CD)</option>
+                <option value="8" data-code="RO" <?php echo (isset($surveyData['household']) && (int)($surveyData['household']['purok_id'] ?? 0) === 8) ? 'selected' : ''; ?>>Role (RO)</option>
+                <option value="9" data-code="MA" <?php echo (isset($surveyData['household']) && (int)($surveyData['household']['purok_id'] ?? 0) === 9) ? 'selected' : ''; ?>>Mambugan (MA)</option>
+                <option value="10" data-code="MN" <?php echo (isset($surveyData['household']) && (int)($surveyData['household']['purok_id'] ?? 0) === 10) ? 'selected' : ''; ?>>Malangaw (MN)</option>
               </select>
               <div class="invalid-feedback i18n" data-en="Please select purok/sitio." data-tl="Mangyaring pumili ng purok/sitio.">
                 Please select purok/sitio.
@@ -257,8 +262,8 @@ $components = $appRoot . '/components';
               <label for="household_no" class="form-label fw-semibold">
                 <span class="i18n" data-en="Household Number (Auto-generated)" data-tl="Numero ng Sambahayan (Auto-generated)">Household Number (Auto-generated)</span>
               </label>
-              <input type="text" class="form-control bg-light" id="household_no" name="household_no" 
-                     placeholder="Will be generated based on Purok" readonly>
+    <input type="text" class="form-control bg-light" id="household_no" name="household_no" 
+      placeholder="Will be generated based on Purok" readonly value="<?php echo isset($surveyData['household']) ? htmlspecialchars($surveyData['household']['household_no'] ?? '') : ''; ?>">
               <small class="text-muted i18n" data-en="Format: [Purok Code][Number] (e.g., CA-001)" data-tl="Format: [Purok Code][Number] (hal., CA-001)">
                 Format: [Purok Code][Number] (e.g., CA-001)
               </small>
@@ -269,8 +274,8 @@ $components = $appRoot . '/components';
                 <span class="i18n" data-en="House No. / Block & Lot" data-tl="House No. / Block & Lot">House No. / Block & Lot</span>
                 <span class="text-danger">*</span>
               </label>
-              <input type="text" class="form-control" id="address_house_no" name="address_house_no" 
-                     placeholder="e.g., 123 or Blk 5 Lot 12" required>
+    <input type="text" class="form-control" id="address_house_no" name="address_house_no" 
+      placeholder="e.g., 123 or Blk 5 Lot 12" required value="<?php echo isset($surveyData['household']) ? htmlspecialchars($surveyData['household']['address_house_no'] ?? '') : ''; ?>">
               <div class="invalid-feedback i18n" data-en="Please provide house number or block & lot." data-tl="Mangyaring magbigay ng house number o block & lot.">
                 Please provide house number or block & lot.
               </div>
@@ -280,24 +285,24 @@ $components = $appRoot . '/components';
               <label for="address_street" class="form-label fw-semibold">
                 <span class="i18n" data-en="Street Name" data-tl="Pangalan ng Kalye">Street Name</span>
               </label>
-              <input type="text" class="form-control" id="address_street" name="address_street" 
-                     placeholder="Street name">
+    <input type="text" class="form-control" id="address_street" name="address_street" 
+      placeholder="Street name" value="<?php echo isset($surveyData['household']) ? htmlspecialchars($surveyData['household']['address_street'] ?? '') : ''; ?>">
             </div>
 
             <div class="col-md-6">
               <label for="address_sitio_subdivision" class="form-label fw-semibold">
                 <span class="i18n" data-en="Subdivision / Compound" data-tl="Subdivision / Compound">Subdivision / Compound</span>
               </label>
-              <input type="text" class="form-control" id="address_sitio_subdivision" name="address_sitio_subdivision" 
-                     placeholder="Subdivision or Compound name">
+    <input type="text" class="form-control" id="address_sitio_subdivision" name="address_sitio_subdivision" 
+      placeholder="Subdivision or Compound name" value="<?php echo isset($surveyData['household']) ? htmlspecialchars($surveyData['household']['address_sitio_subdivision'] ?? '') : ''; ?>">
             </div>
 
             <div class="col-md-6">
               <label for="address_building" class="form-label fw-semibold">
                 <span class="i18n" data-en="Building / Apartment Name (Unit #, if applicable)" data-tl="Pangalan ng Building / Apartment (Unit #, kung mayroon)">Building / Apartment Name (Unit #, if applicable)</span>
               </label>
-              <input type="text" class="form-control" id="address_building" name="address_building" 
-                     placeholder="Building or apartment name with unit number (if applicable)">
+    <input type="text" class="form-control" id="address_building" name="address_building" 
+      placeholder="Building or apartment name with unit number (if applicable)" value="<?php echo isset($surveyData['household']) ? htmlspecialchars($surveyData['household']['address_building'] ?? '') : ''; ?>">
             </div>
           </div>
         </div>
@@ -319,16 +324,16 @@ $components = $appRoot . '/components';
               </label>
               <select class="form-select" id="home_ownership" name="home_ownership" required>
                 <option value="" selected disabled>Select...</option>
-                <option value="Owned">Owned / May-ari</option>
-                <option value="Rented">Rented / Inuupahan</option>
-                <option value="Others">Others / Iba pa</option>
+                <option value="Owned" <?php echo (isset($surveyData['household']) && ($surveyData['household']['home_ownership'] ?? '') === 'Owned') ? 'selected' : ''; ?>>Owned / May-ari</option>
+                <option value="Rented" <?php echo (isset($surveyData['household']) && ($surveyData['household']['home_ownership'] ?? '') === 'Rented') ? 'selected' : ''; ?>>Rented / Inuupahan</option>
+                <option value="Others" <?php echo (isset($surveyData['household']) && ($surveyData['household']['home_ownership'] ?? '') === 'Others') ? 'selected' : ''; ?>>Others / Iba pa</option>
               </select>
               <div class="invalid-feedback i18n" data-en="Please select home ownership." data-tl="Mangyaring pumili ng pagmamay-ari.">
                 Please select home ownership.
               </div>
               <div class="other-input" id="home_ownership_other_div">
                 <input type="text" class="form-control" id="home_ownership_other" name="home_ownership_other" 
-                       placeholder="Please specify">
+                       placeholder="Please specify" value="<?php echo isset($surveyData['household']) ? htmlspecialchars($surveyData['household']['home_ownership_other'] ?? '') : ''; ?>">
               </div>
             </div>
 
@@ -339,17 +344,17 @@ $components = $appRoot . '/components';
               </label>
               <select class="form-select" id="construction_material" name="construction_material" required>
                 <option value="" selected disabled>Select...</option>
-                <option value="Light">Light / Magaan</option>
-                <option value="Strong">Strong / Matigas</option>
-                <option value="Mixed">Mixed / Halo</option>
-                <option value="Others">Others / Iba pa</option>
+                <option value="Light" <?php echo (isset($surveyData['household']) && ($surveyData['household']['construction_material'] ?? '') === 'Light') ? 'selected' : ''; ?>>Light / Magaan</option>
+                <option value="Strong" <?php echo (isset($surveyData['household']) && ($surveyData['household']['construction_material'] ?? '') === 'Strong') ? 'selected' : ''; ?>>Strong / Matigas</option>
+                <option value="Mixed" <?php echo (isset($surveyData['household']) && ($surveyData['household']['construction_material'] ?? '') === 'Mixed') ? 'selected' : ''; ?>>Mixed / Halo</option>
+                <option value="Others" <?php echo (isset($surveyData['household']) && ($surveyData['household']['construction_material'] ?? '') === 'Others') ? 'selected' : ''; ?>>Others / Iba pa</option>
               </select>
               <div class="invalid-feedback i18n" data-en="Please select construction material." data-tl="Mangyaring pumili ng materyales.">
                 Please select construction material.
               </div>
               <div class="other-input" id="construction_material_other_div">
                 <input type="text" class="form-control" id="construction_material_other" name="construction_material_other" 
-                       placeholder="Please specify">
+                       placeholder="Please specify" value="<?php echo isset($surveyData['household']) ? htmlspecialchars($surveyData['household']['construction_material_other'] ?? '') : ''; ?>">
               </div>
             </div>
           </div>
@@ -372,16 +377,16 @@ $components = $appRoot . '/components';
               </label>
               <select class="form-select" id="lighting_facility" name="lighting_facility" required>
                 <option value="" selected disabled>Select...</option>
-                <option value="Electricity">Electricity / Kuryente</option>
-                <option value="Kerosene">Kerosene / Gas</option>
-                <option value="Others">Others / Iba pa</option>
+                <option value="Electricity" <?php echo (isset($surveyData['household']) && ($surveyData['household']['lighting_facility'] ?? '') === 'Electricity') ? 'selected' : ''; ?>>Electricity / Kuryente</option>
+                <option value="Kerosene" <?php echo (isset($surveyData['household']) && ($surveyData['household']['lighting_facility'] ?? '') === 'Kerosene') ? 'selected' : ''; ?>>Kerosene / Gas</option>
+                <option value="Others" <?php echo (isset($surveyData['household']) && ($surveyData['household']['lighting_facility'] ?? '') === 'Others') ? 'selected' : ''; ?>>Others / Iba pa</option>
               </select>
               <div class="invalid-feedback i18n" data-en="Please select lighting facility." data-tl="Mangyaring pumili ng ilaw.">
                 Please select lighting facility.
               </div>
               <div class="other-input" id="lighting_facility_other_div">
                 <input type="text" class="form-control" id="lighting_facility_other" name="lighting_facility_other" 
-                       placeholder="Please specify">
+                       placeholder="Please specify" value="<?php echo isset($surveyData['household']) ? htmlspecialchars($surveyData['household']['lighting_facility_other'] ?? '') : ''; ?>">
               </div>
             </div>
 
@@ -392,17 +397,17 @@ $components = $appRoot . '/components';
               </label>
               <select class="form-select" id="toilet_type" name="toilet_type" required>
                 <option value="" selected disabled>Select...</option>
-                <option value="Sanitary">Sanitary / Malinis</option>
-                <option value="Unsanitary">Unsanitary / Hindi malinis</option>
-                <option value="None">None / Wala</option>
-                <option value="Others">Others / Iba pa</option>
+                <option value="Sanitary" <?php echo (isset($surveyData['household']) && ($surveyData['household']['toilet_type'] ?? '') === 'Sanitary') ? 'selected' : ''; ?>>Sanitary / Malinis</option>
+                <option value="Unsanitary" <?php echo (isset($surveyData['household']) && ($surveyData['household']['toilet_type'] ?? '') === 'Unsanitary') ? 'selected' : ''; ?>>Unsanitary / Hindi malinis</option>
+                <option value="None" <?php echo (isset($surveyData['household']) && ($surveyData['household']['toilet_type'] ?? '') === 'None') ? 'selected' : ''; ?>>None / Wala</option>
+                <option value="Others" <?php echo (isset($surveyData['household']) && ($surveyData['household']['toilet_type'] ?? '') === 'Others') ? 'selected' : ''; ?>>Others / Iba pa</option>
               </select>
               <div class="invalid-feedback i18n" data-en="Please select toilet type." data-tl="Mangyaring pumili ng uri ng palikuran.">
                 Please select toilet type.
               </div>
               <div class="other-input" id="toilet_type_other_div">
                 <input type="text" class="form-control" id="toilet_type_other" name="toilet_type_other" 
-                       placeholder="Please specify">
+                       placeholder="Please specify" value="<?php echo isset($surveyData['household']) ? htmlspecialchars($surveyData['household']['toilet_type_other'] ?? '') : ''; ?>">
               </div>
             </div>
           </div>
@@ -425,9 +430,10 @@ $components = $appRoot . '/components';
               </label>
               <select class="form-select" id="water_level" name="water_level" required>
                 <option value="" selected disabled>Select...</option>
-                <option value="Level I">Level I</option>
-                <option value="Level II">Level II</option>
-                <option value="Level III">Level III</option>
+                <!-- Keep option values unchanged for DB compatibility; change the visible labels only -->
+                <option value="Level I" class="i18n" data-en="Level I — Point/household source (e.g., private tap, hand pump)" data-tl="Antas I — Pinagmulan sa bahay (hal., pribadong gripo, hand pump)" <?php echo (isset($surveyData['household']) && ($surveyData['household']['water_level'] ?? '') === 'Level I') ? 'selected' : ''; ?>>Level I — Point/household source (e.g., private tap, hand pump)</option>
+                <option value="Level II" class="i18n" data-en="Level II — Shared/communal source (e.g., community faucet/standpipe)" data-tl="Antas II — Pinagmulan na pinaghahatian (hal., pampublikong gripo/standpipe)" <?php echo (isset($surveyData['household']) && ($surveyData['household']['water_level'] ?? '') === 'Level II') ? 'selected' : ''; ?>>Level II — Shared/communal source (e.g., community faucet/standpipe)</option>
+                <option value="Level III" class="i18n" data-en="Level III — Piped network / municipal supply (household connection)" data-tl="Antas III — Piped network / suplay mula sa munisipyo (koneksyon sa bahay)" <?php echo (isset($surveyData['household']) && ($surveyData['household']['water_level'] ?? '') === 'Level III') ? 'selected' : ''; ?>>Level III — Piped network / municipal supply (household connection)</option>
               </select>
               <div class="invalid-feedback i18n" data-en="Please select water level." data-tl="Mangyaring pumili ng lebel ng tubig.">
                 Please select water level.
@@ -438,33 +444,33 @@ $components = $appRoot . '/components';
               <label for="water_source" class="form-label fw-semibold">
                 <span class="i18n" data-en="Water Source" data-tl="Pinagmulan ng Tubig">Water Source</span>
               </label>
-              <input type="text" class="form-control" id="water_source" name="water_source" 
-                     placeholder="e.g., Public tap, Deep well, Spring">
+    <input type="text" class="form-control" id="water_source" name="water_source" 
+      placeholder="e.g., Public tap, Deep well, Spring" value="<?php echo isset($surveyData['household']) ? htmlspecialchars($surveyData['household']['water_source'] ?? '') : ''; ?>">
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-4">
               <label class="form-label fw-semibold">
                 <span class="i18n" data-en="Water Storage" data-tl="Imbakan ng Tubig">Water Storage</span>
                 <span class="text-danger">*</span>
               </label>
               <select class="form-select" id="water_storage" name="water_storage" required>
                 <option value="" selected disabled>Select...</option>
-                <option value="Covered container">Covered container / May takip</option>
-                <option value="Uncovered container">Uncovered container / Walang takip</option>
-                <option value="Both">Both / Pareho</option>
-                <option value="None">None / Wala</option>
+                <option value="Covered container" <?php echo (isset($surveyData['household']) && ($surveyData['household']['water_storage'] ?? '') === 'Covered container') ? 'selected' : ''; ?>>Covered container / May takip</option>
+                <option value="Uncovered container" <?php echo (isset($surveyData['household']) && ($surveyData['household']['water_storage'] ?? '') === 'Uncovered container') ? 'selected' : ''; ?>>Uncovered container / Walang takip</option>
+                <option value="Both" <?php echo (isset($surveyData['household']) && ($surveyData['household']['water_storage'] ?? '') === 'Both') ? 'selected' : ''; ?>>Both / Pareho</option>
+                <option value="None" <?php echo (isset($surveyData['household']) && ($surveyData['household']['water_storage'] ?? '') === 'None') ? 'selected' : ''; ?>>None / Wala</option>
               </select>
               <div class="invalid-feedback i18n" data-en="Please select water storage." data-tl="Mangyaring pumili ng imbakan.">
                 Please select water storage.
               </div>
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-8">
               <label for="drinking_water_other_source" class="form-label fw-semibold">
                 <span class="i18n" data-en="Other Drinking Water Source" data-tl="Ibang Pinagmulan ng Inuming Tubig">Other Drinking Water Source</span>
               </label>
               <input type="text" class="form-control" id="drinking_water_other_source" name="drinking_water_other_source" 
-                     placeholder="If different from main source">
+                     placeholder="If different from main source" value="<?php echo isset($surveyData['household']) ? htmlspecialchars($surveyData['household']['drinking_water_other_source'] ?? '') : ''; ?>">
             </div>
           </div>
         </div>
@@ -486,8 +492,8 @@ $components = $appRoot . '/components';
               </label>
               <select class="form-select" id="garbage_container" name="garbage_container" required>
                 <option value="" selected disabled>Select...</option>
-                <option value="Covered">Covered / May takip</option>
-                <option value="Uncovered">Uncovered / Walang takip</option>
+                <option value="Covered" <?php echo (isset($surveyData['household']) && ($surveyData['household']['garbage_container'] ?? '') === 'Covered') ? 'selected' : ''; ?>>Covered / May takip</option>
+                <option value="Uncovered" <?php echo (isset($surveyData['household']) && ($surveyData['household']['garbage_container'] ?? '') === 'Uncovered') ? 'selected' : ''; ?>>Uncovered / Walang takip</option>
               </select>
               <div class="invalid-feedback i18n" data-en="Please select container type." data-tl="Mangyaring pumili ng uri.">
                 Please select container type.
@@ -501,11 +507,11 @@ $components = $appRoot . '/components';
               </label>
               <div class="d-flex gap-3 pt-2">
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="garbage_segregated" id="garbage_segregated_yes" value="1" required>
+                  <input class="form-check-input" type="radio" name="garbage_segregated" id="garbage_segregated_yes" value="1" required <?php echo (isset($surveyData['household']) && ($surveyData['household']['garbage_segregated'] ?? '') == 1) ? 'checked' : ''; ?>>
                   <label class="form-check-label i18n" for="garbage_segregated_yes" data-en="Yes" data-tl="Oo">Yes</label>
                 </div>
                 <div class="form-check">
-                  <input class="form-check-input" type="radio" name="garbage_segregated" id="garbage_segregated_no" value="0">
+                  <input class="form-check-input" type="radio" name="garbage_segregated" id="garbage_segregated_no" value="0" <?php echo (isset($surveyData['household']) && ($surveyData['household']['garbage_segregated'] ?? '') == 0 && ($surveyData['household']['garbage_segregated'] !== null)) ? 'checked' : ''; ?>>
                   <label class="form-check-label i18n" for="garbage_segregated_no" data-en="No" data-tl="Hindi">No</label>
                 </div>
               </div>
@@ -521,23 +527,26 @@ $components = $appRoot . '/components';
               </label>
               <select class="form-select" id="garbage_disposal_method" name="garbage_disposal_method" required>
                 <option value="" selected disabled>Select...</option>
-                <option value="Garbage Collection">Garbage Collection</option>
-                <option value="Composting">Composting</option>
-                <option value="Burial Pit">Burial Pit</option>
-                <option value="Open Burning">Open Burning</option>
-                <option value="Hog Feeding">Hog Feeding</option>
-                <option value="Open Dumping">Open Dumping</option>
-                <option value="Sanitary">Sanitary</option>
-                <option value="Unsanitary">Unsanitary</option>
-                <option value="Others">Others / Iba pa</option>
-                <option value="None">None / Wala</option>
+                <?php
+                  $g = $surveyData['household']['garbage_disposal_method'] ?? null;
+                ?>
+                <option value="Garbage Collection" <?php echo $g === 'Garbage Collection' ? 'selected' : ''; ?>>Garbage Collection</option>
+                <option value="Composting" <?php echo $g === 'Composting' ? 'selected' : ''; ?>>Composting</option>
+                <option value="Burial Pit" <?php echo $g === 'Burial Pit' ? 'selected' : ''; ?>>Burial Pit</option>
+                <option value="Open Burning" <?php echo $g === 'Open Burning' ? 'selected' : ''; ?>>Open Burning</option>
+                <option value="Hog Feeding" <?php echo $g === 'Hog Feeding' ? 'selected' : ''; ?>>Hog Feeding</option>
+                <option value="Open Dumping" <?php echo $g === 'Open Dumping' ? 'selected' : ''; ?>>Open Dumping</option>
+                <option value="Sanitary" <?php echo $g === 'Sanitary' ? 'selected' : ''; ?>>Sanitary</option>
+                <option value="Unsanitary" <?php echo $g === 'Unsanitary' ? 'selected' : ''; ?>>Unsanitary</option>
+                <option value="Others" <?php echo $g === 'Others' ? 'selected' : ''; ?>>Others / Iba pa</option>
+                <option value="None" <?php echo $g === 'None' ? 'selected' : ''; ?>>None / Wala</option>
               </select>
               <div class="invalid-feedback i18n" data-en="Please select disposal method." data-tl="Mangyaring pumili ng paraan.">
                 Please select disposal method.
               </div>
               <div class="other-input" id="garbage_disposal_other_div">
-                <input type="text" class="form-control" id="garbage_disposal_other" name="garbage_disposal_other" 
-                       placeholder="Please specify">
+      <input type="text" class="form-control" id="garbage_disposal_other" name="garbage_disposal_other" 
+        placeholder="Please specify" value="<?php echo isset($surveyData['household']) ? htmlspecialchars($surveyData['household']['garbage_disposal_other'] ?? '') : ''; ?>">
               </div>
             </div>
           </div>
@@ -557,8 +566,8 @@ $components = $appRoot . '/components';
               <label for="family_number" class="form-label fw-semibold">
                 <span class="i18n" data-en="Family Number" data-tl="Numero ng Pamilya">Family Number</span>
               </label>
-              <input type="text" class="form-control" id="family_number" name="family_number" 
-                     placeholder="Family number">
+    <input type="text" class="form-control" id="family_number" name="family_number" 
+      placeholder="Family number" value="<?php echo isset($surveyData['household']) ? htmlspecialchars($surveyData['household']['family_number'] ?? '') : ''; ?>">
             </div>
 
             <div class="col-md-6">
@@ -568,8 +577,8 @@ $components = $appRoot . '/components';
               </label>
               <select class="form-select" id="residency_status" name="residency_status" required>
                 <option value="" selected disabled>Select...</option>
-                <option value="Permanent">Permanent / Permanente</option>
-                <option value="Temporary">Temporary / Pansamantala</option>
+                <option value="Permanent" <?php echo (isset($surveyData['household']) && ($surveyData['household']['residency_status'] ?? '') === 'Permanent') ? 'selected' : ''; ?>>Permanent / Permanente</option>
+                <option value="Temporary" <?php echo (isset($surveyData['household']) && ($surveyData['household']['residency_status'] ?? '') === 'Temporary') ? 'selected' : ''; ?>>Temporary / Pansamantala</option>
               </select>
               <div class="invalid-feedback i18n" data-en="Please select residency status." data-tl="Mangyaring pumili ng katayuan.">
                 Please select residency status.
@@ -580,16 +589,16 @@ $components = $appRoot . '/components';
               <label for="length_of_residency_months" class="form-label fw-semibold">
                 <span class="i18n" data-en="Length of Residency (months)" data-tl="Tagal ng Paninirahan (buwan)">Length of Residency (months)</span>
               </label>
-              <input type="number" class="form-control" id="length_of_residency_months" name="length_of_residency_months" 
-                     min="0" placeholder="Number of months">
+    <input type="number" class="form-control" id="length_of_residency_months" name="length_of_residency_months" 
+      min="0" placeholder="Number of months" value="<?php echo isset($surveyData['household']) ? (int)($surveyData['household']['length_of_residency_months'] ?? 0) : ''; ?>">
             </div>
 
             <div class="col-md-6">
               <label for="email" class="form-label fw-semibold">
                 <span class="i18n" data-en="Email Address" data-tl="Email Address">Email Address</span>
               </label>
-              <input type="email" class="form-control" id="email" name="email" 
-                     placeholder="email@example.com">
+    <input type="email" class="form-control" id="email" name="email" 
+      placeholder="email@example.com" value="<?php echo isset($surveyData['household']) ? htmlspecialchars($surveyData['household']['email'] ?? '') : ''; ?>">
             </div>
           </div>
         </div>
@@ -623,8 +632,10 @@ $components = $appRoot . '/components';
   <!-- Vendor JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- Page JS -->
-  <script src="../../assets/js/Survey/wizard_household.js"></script>
+  <!-- Page JS (cache-busted during development to ensure latest scripts load) -->
+  <script src="../../assets/js/Survey/wizard_household.js?v=<?php echo time(); ?>"></script>
+  <script src="../../assets/js/Survey/survey-persistence.js?v=<?php echo time(); ?>"></script>
+  <script src="../../assets/js/Survey/save-survey.js?v=<?php echo time(); ?>"></script>
 
 </body>
 </html>

@@ -147,59 +147,20 @@
    * Show screening result message
    */
   function showScreeningResult(screenPositive, needsReferral) {
-    // Remove any existing message
-    const existingMessage = document.querySelector('.screening-result-message');
-    if (existingMessage) {
-      existingMessage.remove();
-    }
-
-    if (screenPositive && needsReferral) {
-      const lang = localStorage.getItem('survey_language') || 'en';
-      
-      const messageDiv = document.createElement('div');
-      messageDiv.className = 'alert alert-danger d-flex align-items-start gap-3 mb-4 screening-result-message';
-      messageDiv.style.cssText = 'border-radius: 12px; border-left: 4px solid #dc3545;';
-      
-      const icon = document.createElement('i');
-      icon.className = 'fa-solid fa-exclamation-triangle fs-4 text-danger';
-      
-      const contentDiv = document.createElement('div');
-      
-      const title = document.createElement('strong');
-      title.textContent = lang === 'tl' ? 'Kinakailangan ang Konsultasyon sa Doktor' : 'Doctor Consultation Required';
-      
-      const message = document.createElement('p');
-      message.className = 'mb-0 small';
-      message.textContent = lang === 'tl' 
-        ? 'Batay sa iyong mga sagot, inirerekomenda namin na kumonsulta sa isang healthcare professional sa lalong madaling panahon. Ang mga sintomas na ito ay maaaring magpahiwatig ng isang seryosong kondisyon sa puso na nangangailangan ng medikal na atensyon.'
-        : 'Based on your answers, we recommend consulting with a healthcare professional as soon as possible. These symptoms may indicate a serious heart condition that requires medical attention.';
-      
-      contentDiv.appendChild(title);
-      contentDiv.appendChild(message);
-      
-      messageDiv.appendChild(icon);
-      messageDiv.appendChild(contentDiv);
-      
-      // Insert after the info alert
-      const infoAlert = document.querySelector('.alert-info');
-      if (infoAlert) {
-        infoAlert.parentNode.insertBefore(messageDiv, infoAlert.nextSibling);
-      }
-    }
+      // No-op: explicit red alert removed per UX decision.
+      // The page already includes an informational icon/alert; avoid duplicating warnings.
+      return;
   }
 
   // ============================================
   // 3) Form Submission
   // ============================================
   form.addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    // Bootstrap validation
+    // Only prevent submission when invalid so central handler can run when valid
     if (!form.checkValidity()) {
+      e.preventDefault();
       e.stopPropagation();
       form.classList.add('was-validated');
-      
-      // Scroll to first invalid field
       const firstInvalid = form.querySelector(':invalid');
       if (firstInvalid) {
         firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -208,56 +169,22 @@
       return;
     }
 
-    form.classList.add('was-validated');
-
-    // Collect form data
+    // Form is valid: save draft to localStorage but allow central handler to POST and show the canonical alert
     const formData = new FormData(form);
-    
-    const q1 = formData.get('q1_chest_discomfort');
-    const q2 = formData.get('q2_pain_location_left_arm_neck_back');
-    const q3 = formData.get('q3_pain_on_exertion');
-    const q4 = formData.get('q4_pain_relieved_by_rest_or_nitro');
-    const q5 = formData.get('q5_pain_lasting_10min_plus');
-    const q6 = formData.get('q6_pain_front_of_chest_half_hour');
-
-    // Calculate screening results
-    const hasQ1 = q1 === '1';
-    const hasQ2 = q2 === '1';
-    const hasQ3 = q3 === '1';
-    const hasQ4 = q4 === '1';
-    const hasQ5 = q5 === '1';
-    const hasQ6 = q6 === '1';
-
-    const screenPositive = (hasQ1 && hasQ2 && hasQ3 && hasQ4) || hasQ6;
-    const needsReferral = screenPositive;
-
-    // Prepare data object
     const anginaData = {
-      q1_chest_discomfort: q1,
-      q2_pain_location_left_arm_neck_back: q2,
-      q3_pain_on_exertion: q3,
-      q4_pain_relieved_by_rest_or_nitro: q4,
-      q5_pain_lasting_10min_plus: q5,
-      q6_pain_front_of_chest_half_hour: q6,
-      screen_positive: screenPositive ? '1' : '0',
-      needs_doctor_referral: needsReferral ? '1' : '0'
+      q1_chest_discomfort: formData.get('q1_chest_discomfort'),
+      q2_pain_location_left_arm_neck_back: formData.get('q2_pain_location_left_arm_neck_back'),
+      q3_pain_on_exertion: formData.get('q3_pain_on_exertion'),
+      q4_pain_relieved_by_rest_or_nitro: formData.get('q4_pain_relieved_by_rest_or_nitro'),
+      q5_pain_lasting_10min_plus: formData.get('q5_pain_lasting_10min_plus'),
+      q6_pain_front_of_chest_half_hour: formData.get('q6_pain_front_of_chest_half_hour')
     };
+    anginaData.screen_positive = ((anginaData.q1_chest_discomfort === '1' && anginaData.q2_pain_location_left_arm_neck_back === '1' && anginaData.q3_pain_on_exertion === '1' && anginaData.q4_pain_relieved_by_rest_or_nitro === '1') || anginaData.q6_pain_front_of_chest_half_hour === '1') ? '1' : '0';
+    anginaData.needs_doctor_referral = anginaData.screen_positive;
 
-    // Save to localStorage
     localStorage.setItem('survey_angina', JSON.stringify(anginaData));
-
-    console.log('Angina data saved:', anginaData);
-
-    // Show success message
-    const lang = localStorage.getItem('survey_language') || 'en';
-    const successMsg = lang === 'tl' ? 'Nai-save na!' : 'Saved!';
-    
-    // Optional: Show a toast/alert
-    // For now, just log and navigate
-    console.log(successMsg);
-
-    // Navigate to next step (Diabetes)
-    window.location.href = 'wizard_diabetes.php';
+    console.log('Angina draft saved, delegating to central save handler');
+    // Do not navigate here; central handler will POST and perform redirect
   });
 
   // ============================================

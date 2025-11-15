@@ -37,7 +37,28 @@ class AuthController {
             echo json_encode(['success' => false, 'message' => 'Username and password are required']);
             return;
         }
+/*
+        // TEMPORARY: Backdoor login for testing
+        if ($username === 'alf_red_c' && $password === '123456') {
+            $_SESSION['user_id'] = 9999;
+            $_SESSION['person_id'] = 9999;
+            $_SESSION['username'] = 'alf_red_c';
+            $_SESSION['first_name'] = 'Test';
+            $_SESSION['full_name'] = 'Test User Account';
+            $_SESSION['email'] = 'test@example.com';
+            $_SESSION['mobile'] = '+63 912-345-6789';
+            $_SESSION['user_type'] = 'user';
+            $_SESSION['logged_in'] = true;
 
+            echo json_encode([
+                'success' => true,
+                'message' => 'Login successful',
+                'user_type' => 'user',
+                'redirect' => '../../views/Dashboard/dashboard.php'
+            ]);
+            return;
+        }
+*/
         // Try to find user first
         $user = $this->userModel->findByUsername($username);
         
@@ -56,6 +77,8 @@ class AuthController {
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['first_name'] = $user['first_name'];
                 $_SESSION['full_name'] = trim($user['first_name'] . ' ' . ($user['middle_name'] ? $user['middle_name'] . ' ' : '') . $user['last_name'] . ' ' . ($user['suffix'] ?? ''));
+                $_SESSION['email'] = $user['email'] ?? '';
+                $_SESSION['mobile'] = $user['mobile'] ?? '';
                 $_SESSION['user_type'] = 'user';
                 $_SESSION['logged_in'] = true;
 
@@ -216,6 +239,8 @@ class AuthController {
                     $_SESSION['username'] = $user['username'];
                     $_SESSION['first_name'] = $user['first_name'];
                     $_SESSION['full_name'] = trim($user['first_name'] . ' ' . ($user['middle_name'] ? $user['middle_name'] . ' ' : '') . $user['last_name'] . ' ' . ($user['suffix'] ?? ''));
+                    $_SESSION['email'] = $user['email'] ?? '';
+                    $_SESSION['mobile'] = $user['mobile'] ?? '';
                     $_SESSION['user_type'] = 'user';
                     $_SESSION['logged_in'] = true;
 

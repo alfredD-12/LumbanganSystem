@@ -77,7 +77,7 @@ $firstName = getFirstName();
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="#survey-status">
+                                <a class="dropdown-item" href="../Survey/wizard_personal.php" data-navigate="true">
                                     <i class="fas fa-poll"></i>
                                     Survey Status
                                 </a>
@@ -151,7 +151,7 @@ $firstName = getFirstName();
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <a class="dropdown-item text-danger" href="../../controllers/AuthController.php?action=logout">
+                                <a class="dropdown-item text-danger" href="#" onclick="handleLogout(event)">
                                     <i class="fas fa-sign-out-alt"></i>
                                     Logout
                                 </a>
@@ -1653,17 +1653,17 @@ $firstName = getFirstName();
                         <div>
                             <div class="profile-info-item" style="margin-bottom: 1rem;">
                                 <label style="color: #999; font-weight: 500; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.3px; display: block; margin-bottom: 0.3rem;">Full Name</label>
-                                <p id="profileName" style="color: var(--primary-blue); font-weight: 600; font-size: 1rem; margin: 0;">Juan Dela Cruz</p>
+                                <p id="profileName" style="color: var(--primary-blue); font-weight: 600; font-size: 1rem; margin: 0;"><?php echo htmlspecialchars($fullName); ?></p>
                             </div>
 
                             <div class="profile-info-item" style="margin-bottom: 1rem;">
                                 <label style="color: #999; font-weight: 500; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.3px; display: block; margin-bottom: 0.3rem;">Email Address</label>
-                                <p id="profileEmail" style="color: #666; font-size: 0.95rem; margin: 0;">juan.delacruz@email.com</p>
+                                <p id="profileEmail" style="color: #666; font-size: 0.95rem; margin: 0;"><?php echo htmlspecialchars($_SESSION['email'] ?? 'Not provided'); ?></p>
                             </div>
 
                             <div class="profile-info-item">
                                 <label style="color: #999; font-weight: 500; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.3px; display: block; margin-bottom: 0.3rem;">Contact Number</label>
-                                <p id="profileContact" style="color: #666; font-size: 0.95rem; margin: 0;">+63 9XX-XXX-XXXX</p>
+                                <p id="profileContact" style="color: #666; font-size: 0.95rem; margin: 0;"><?php echo htmlspecialchars($_SESSION['mobile'] ?? 'Not provided'); ?></p>
                             </div>
                         </div>
                     </div>
@@ -1787,50 +1787,64 @@ $firstName = getFirstName();
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Handle navigation for survey status - runs BEFORE dashboard.js
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a[data-navigate="true"]');
+            if (link) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                const href = link.getAttribute('href');
+                if (href) {
+                    window.location.href = href;
+                }
+            }
+        }, true); // Use capture phase to run before dashboard.js
+    </script>
+    
     <script src="../../assets/js/Dashboard/dashboard.js"></script>
     <script src="../../assets/js/Dashboard/scroll-animations.js"></script>
 
     <script>
-        // Generate random email and contact number on page load
+        // Ensure a fallback handleLogout exists on this page in case the global header script
+        // (which defines window.handleLogout) isn't loaded. This mirrors the clearing logic
+        // used elsewhere so survey_ localStorage keys are always removed on logout.
+        if (typeof window.handleLogout !== 'function') {
+            window.handleLogout = function(event) {
+                if (event && event.preventDefault) event.preventDefault();
+
+                try {
+                    if (window.SurveyPersistence && typeof window.SurveyPersistence.clearAll === 'function') {
+                        window.SurveyPersistence.clearAll();
+                    }
+                } catch (e) {
+                    // ignore
+                }
+
+                try {
+                    // Remove any survey_ keys
+                    Object.keys(localStorage).forEach(function(k) {
+                        if (k && k.indexOf && k.indexOf('survey_') === 0) {
+                            localStorage.removeItem(k);
+                        }
+                    });
+                } catch (e) {
+                    // ignore
+                }
+
+                // Redirect to server logout handler
+                window.location.href = '../../controllers/AuthController.php?action=logout';
+            };
+        }
+    </script>
+
+    <script>
+        // Profile modal functionality
         document.addEventListener('DOMContentLoaded', function() {
-            generateUserProfile();
             setupEditProfileModal();
         });
-
-        function generateRandomEmail() {
-            const firstNames = ['juan', 'maria', 'carlos', 'rosa', 'miguel', 'lucia', 'antonio', 'isabel'];
-            const lastNames = ['delacruz', 'santos', 'rivera', 'torres', 'gomez', 'flores', 'reyes', 'garcia'];
-            const domains = ['email.com', 'gmail.com', 'yahoo.com', 'outlook.com'];
-            
-            const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
-            const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-            const domain = domains[Math.floor(Math.random() * domains.length)];
-            
-            return `${firstName}.${lastName}@${domain}`;
-        }
-
-        function generateRandomContact() {
-            const firstDigits = ['917', '918', '919', '920', '921', '922', '923', '924', '925', '926', '927', '928', '929'];
-            const first = firstDigits[Math.floor(Math.random() * firstDigits.length)];
-            const middle = Math.floor(Math.random() * 900) + 100;
-            const last = Math.floor(Math.random() * 9000) + 1000;
-            
-            return `+63 ${first}-${middle}-${last}`;
-        }
-
-        function generateUserProfile() {
-            const randomEmail = generateRandomEmail();
-            const randomContact = generateRandomContact();
-            
-            // Set the values in the view modal
-            document.getElementById('profileEmail').textContent = randomEmail;
-            document.getElementById('profileContact').textContent = randomContact;
-            
-            // Store values in sessionStorage
-            sessionStorage.setItem('userEmail', randomEmail);
-            sessionStorage.setItem('userContact', randomContact);
-            sessionStorage.setItem('userName', 'Juan Dela Cruz');
-        }
 
         function setupEditProfileModal() {
             // When opening the edit modal, populate the form with current values
@@ -1863,27 +1877,19 @@ $firstName = getFirstName();
                 return;
             }
 
-            // Update the profile display
-            document.getElementById('profileName').textContent = newName;
-            document.getElementById('profileEmail').textContent = newEmail;
-            document.getElementById('profileContact').textContent = newContact;
-
-            // Store in sessionStorage
-            sessionStorage.setItem('userName', newName);
-            sessionStorage.setItem('userEmail', newEmail);
-            sessionStorage.setItem('userContact', newContact);
+            // TODO: Send AJAX request to server to update profile in database
+            console.log('Profile update requested:', {
+                name: newName,
+                email: newEmail,
+                contact: newContact
+            });
 
             // Show success message
-            showSuccessNotification('Profile updated successfully!');
+            showSuccessNotification('Profile update feature coming soon! Changes are not saved yet.');
 
-            // Close the edit modal and show the view modal
+            // Close the edit modal
             const editModal = bootstrap.Modal.getInstance(document.getElementById('editProfileModal'));
             editModal.hide();
-
-            setTimeout(() => {
-                const viewModal = new bootstrap.Modal(document.getElementById('userProfileModal'));
-                viewModal.show();
-            }, 300);
         }
 
         function showSuccessNotification(message) {
@@ -1905,21 +1911,7 @@ $firstName = getFirstName();
             }, 3000);
         }
 
-        // Persist data on page refresh
-        window.addEventListener('beforeunload', function() {
-            // Data will be maintained in sessionStorage
-        });
 
-        // Restore data if page is refreshed
-        window.addEventListener('load', function() {
-            const storedName = sessionStorage.getItem('userName');
-            const storedEmail = sessionStorage.getItem('userEmail');
-            const storedContact = sessionStorage.getItem('userContact');
-
-            if (storedName) document.getElementById('profileName').textContent = storedName;
-            if (storedEmail) document.getElementById('profileEmail').textContent = storedEmail;
-            if (storedContact) document.getElementById('profileContact').textContent = storedContact;
-        });
 
         // ============ RESIDENT DIRECTORY STACKED CARDS CAROUSEL ============
         

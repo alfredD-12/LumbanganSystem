@@ -1,10 +1,14 @@
 <?php
 // Require user authentication
 require_once dirname(__DIR__, 2) . '/helpers/session_helper.php';
+require_once dirname(__DIR__, 2) . '/helpers/survey_data_helper.php';
 requireUser();
 
 $appRoot    = dirname(__DIR__, 2); // .../app
 $components = $appRoot . '/components';
+
+// Load existing survey data from database
+$surveyData = loadSurveyData();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -588,6 +592,8 @@ $components = $appRoot . '/components';
 
   <!-- Custom JS -->
   <script src="../../assets/js/Survey/wizard_family.js"></script>
+  <script src="../../assets/js/Survey/survey-persistence.js"></script>
+  <script src="../../assets/js/Survey/save-survey.js"></script>
 
 </body>
 </html>

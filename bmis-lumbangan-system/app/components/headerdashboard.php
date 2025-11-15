@@ -1,9 +1,44 @@
 <?php
 // Header component: Loads namespaced CSS to prevent bleeding, but mirrors dashboard.css styling exactly
 
+// Get user info from session
+$headerUsername = $_SESSION['username'] ?? 'User';
+$headerFullName = $_SESSION['full_name'] ?? 'User';
+$headerFirstName = $_SESSION['first_name'] ?? 'User';
+$headerEmail = $_SESSION['email'] ?? '';
+$headerMobile = $_SESSION['mobile'] ?? '';
+
 $scriptDir   = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
 $projectBase = rtrim(preg_replace('#/app/.*$#', '', $scriptDir), '/');
 $assetBase   = $projectBase . '/app/assets';
+
+// Set appRoot for path resolution if not already set
+if (!isset($appRoot)) {
+    $appRoot = dirname(__DIR__); // Points to /app directory
+}
+
+// Calculate relative path to app directory from current script
+$currentDir = dirname($_SERVER['SCRIPT_FILENAME']);
+$appDir = dirname(__DIR__); // Points to /app directory
+$relativePath = '';
+
+// Determine depth (how many ../ needed)
+$currentParts = explode(DIRECTORY_SEPARATOR, str_replace('/', DIRECTORY_SEPARATOR, $currentDir));
+$appParts = explode(DIRECTORY_SEPARATOR, str_replace('/', DIRECTORY_SEPARATOR, $appDir));
+
+// Find common path
+$i = 0;
+while (isset($currentParts[$i]) && isset($appParts[$i]) && $currentParts[$i] === $appParts[$i]) {
+    $i++;
+}
+
+// Build relative path
+$depth = count($currentParts) - $i;
+$relativePath = str_repeat('../', $depth);
+$relativePath .= implode('/', array_slice($appParts, $i));
+if ($relativePath && substr($relativePath, -1) !== '/') {
+    $relativePath .= '/';
+}
 
 if (!defined('HEADER_ASSETS_LOADED')) {
   define('HEADER_ASSETS_LOADED', true);
@@ -14,6 +49,7 @@ if (!defined('HEADER_ASSETS_LOADED')) {
   addOnce('header-fonts','<link id="header-fonts" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">');
   addOnce('header-fa','<link id="header-fa" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">');
   addOnce('header-css','<link id="header-css" rel="stylesheet" href="{$assetBase}/css/Dashboard/headerfooter-bdhf.css">');
+    addOnce('cards-css','<link id="cards-css" rel="stylesheet" href="{$assetBase}/css/Shared/cards-hover.css">');
   // Ensure Bootstrap 5 bundle is available
   if(!('bootstrap' in window) && !d.getElementById('header-bs')){
     var s=d.createElement('script'); s.id='header-bs'; s.defer=true; s.src='https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js'; h.appendChild(s);
@@ -26,7 +62,7 @@ HTML;
 <!-- User Dashboard Header -->
 <nav class="navbar navbar-expand-lg dashboard-header user-navbar navbar-light">
     <div class="container">
-        <a class="navbar-brand" href="#dashboard">
+        <a class="navbar-brand" href="<?php echo $projectBase; ?>/app/views/Dashboard/dashboard.php">
             <div class="logo-circle">
                 <i class="fas fa-landmark"></i>
             </div>
@@ -43,7 +79,7 @@ HTML;
         <div class="collapse navbar-collapse" id="userNavbar">
             <ul class="navbar-nav ms-auto me-3">
                 <li class="nav-item">
-                    <a class="nav-link" href="#dashboard" id="dashboardLink">
+                    <a class="nav-link" href="<?php echo $projectBase; ?>/app/views/Dashboard/dashboard.php" id="dashboardLink">
                         <i class="fas fa-home"></i> Dashboard
                     </a>
                 </li>
@@ -73,7 +109,7 @@ HTML;
                             </a>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="#survey-status">
+                            <a class="dropdown-item" href="/Github/LumbanganSystem/bmis-lumbangan-system/app/views/Survey/wizard_personal.php" id="surveyStatusLink" data-navigate="true">
                                 <i class="fas fa-poll"></i>
                                 Survey Status
                             </a>
@@ -125,25 +161,36 @@ HTML;
                 <div class="dropdown" style="margin-left: 0.5rem; border-left: 1px solid rgba(0,0,0,0.1); padding-left: 0.5rem;">
                     <button class="user-profile-btn dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
                         <div class="user-avatar"><i class="fas fa-user"></i></div>
-                        <span class="d-none d-sm-inline">User</span>
+                        <span class="d-none d-sm-inline"><?php echo htmlspecialchars($headerUsername); ?></span>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown" style="min-width: 250px;">
+                        <li class="px-3 py-2 border-bottom">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="user-avatar" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="flex-grow-1 small">
+                                    <div class="fw-bold text-truncate"><?php echo htmlspecialchars($headerFullName); ?></div>
+                                    <div class="text-muted text-truncate" style="font-size: 0.8rem;">@<?php echo htmlspecialchars($headerUsername); ?></div>
+                                </div>
+                            </div>
+                        </li>
                         <li>
                             <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#userProfileModal">
-                                <i class="fas fa-user"></i>
+                                <i class="fas fa-user me-2"></i>
                                 My Profile
                             </a>
                         </li>
                         <li>
                             <a class="dropdown-item" href="#settings">
-                                <i class="fas fa-cog"></i>
+                                <i class="fas fa-cog me-2"></i>
                                 Settings
                             </a>
                         </li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
-                            <a class="dropdown-item text-danger" href="#logout">
-                                <i class="fas fa-sign-out-alt"></i>
+                            <a class="dropdown-item text-danger" href="#" id="logoutBtn" onclick="handleLogout(event)">
+                                <i class="fas fa-sign-out-alt me-2"></i>
                                 Logout
                             </a>
                         </li>
@@ -152,6 +199,11 @@ HTML;
             </div>
     </div>
 </nav>
+<!-- Floating info button removed from header to avoid showing globally.
+     The floating info button is now provided per-view in survey pages
+     (vitals, history, lifestyle, angina, diabetes). This prevents duplication
+     and confines the floating control to the intended survey screens. -->
+
 <script>
 // Initialize shrink-on-scroll for the header (runs once)
 (function(){
@@ -491,17 +543,17 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div>
                                 <div class="profile-info-item" style="padding: 1rem; background: #f7fafc; border-radius: 8px; border-left: 4px solid #2c5282; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); margin-bottom: 1rem; cursor: pointer;" onmouseover="this.style.background='#edf2f7'; this.style.transform='translateX(4px)';" onmouseout="this.style.background='#f7fafc'; this.style.transform='translateX(0)';">
                                     <label style="color: #718096; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 0.5rem; font-family: 'Poppins', sans-serif;">Full Name</label>
-                                    <p id="profileName" style="color: #2d3748; font-size: 1rem; margin: 0; font-family: 'Poppins', sans-serif;">Juan Dela Cruz</p>
+                                    <p id="profileName" style="color: #2d3748; font-size: 1rem; margin: 0; font-family: 'Poppins', sans-serif;"><?php echo htmlspecialchars($headerFullName); ?></p>
                                 </div>
 
                                 <div class="profile-info-item" style="padding: 1rem; background: #f7fafc; border-radius: 8px; border-left: 4px solid #2c5282; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); margin-bottom: 1rem; cursor: pointer;" onmouseover="this.style.background='#edf2f7'; this.style.transform='translateX(4px)';" onmouseout="this.style.background='#f7fafc'; this.style.transform='translateX(0)';">
                                     <label style="color: #718096; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 0.5rem; font-family: 'Poppins', sans-serif;">Email Address</label>
-                                    <p id="profileEmail" style="color: #2d3748; font-size: 1rem; margin: 0; font-family: 'Poppins', sans-serif;">juan.delacruz@email.com</p>
+                                    <p id="profileEmail" style="color: #2d3748; font-size: 1rem; margin: 0; font-family: 'Poppins', sans-serif;"><?php echo htmlspecialchars($headerEmail); ?></p>
                                 </div>
 
                                 <div class="profile-info-item" style="padding: 1rem; background: #f7fafc; border-radius: 8px; border-left: 4px solid #2c5282; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer;" onmouseover="this.style.background='#edf2f7'; this.style.transform='translateX(4px)';" onmouseout="this.style.background='#f7fafc'; this.style.transform='translateX(0)';">
                                     <label style="color: #718096; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 0.5rem; font-family: 'Poppins', sans-serif;">Contact Number</label>
-                                    <p id="profileContact" style="color: #2d3748; font-size: 1rem; margin: 0; font-family: 'Poppins', sans-serif;">+63 9XX-XXX-XXXX</p>
+                                    <p id="profileContact" style="color: #2d3748; font-size: 1rem; margin: 0; font-family: 'Poppins', sans-serif;"><?php echo htmlspecialchars($headerMobile); ?></p>
                                 </div>
                             </div>
                         </div>
@@ -585,5 +637,42 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Start checking for Bootstrap
     checkBootstrap();
+    
+    // Handle navigation for survey status and other links with data-navigate
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('a[data-navigate="true"]');
+        if (link) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            const href = link.getAttribute('href');
+            if (href) {
+                window.location.href = href;
+            }
+        }
+    }, true); // Use capture phase to run before dashboard.js
+    
+    // Logout handler - clears localStorage before redirecting
+    window.handleLogout = function(event) {
+        event.preventDefault();
+        
+        // Clear all survey data from localStorage
+        if (window.SurveyPersistence) {
+            window.SurveyPersistence.clearAll();
+        }
+        
+        // Clear any other localStorage items related to this app
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('survey_')) {
+                keysToRemove.push(key);
+            }
+        }
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        
+        // Redirect to logout
+        window.location.href = '<?php echo $projectBase; ?>/app/controllers/AuthController.php?action=logout';
+    };
 });
 </script>

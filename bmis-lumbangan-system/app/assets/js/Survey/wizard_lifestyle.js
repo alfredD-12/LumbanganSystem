@@ -115,14 +115,12 @@
   function handleFormSubmit() {
     const form = $('#form-lifestyle');
     if (!form) return;
-
     form.addEventListener('submit', function(e) {
-      e.preventDefault();
-      
+      // Validate only. If invalid prevent submission so user can fix fields.
       if (!form.checkValidity()) {
+        e.preventDefault();
         e.stopPropagation();
         form.classList.add('was-validated');
-        
         const firstInvalid = $('.form-control:invalid, .form-check-input:invalid', form);
         if (firstInvalid) {
           firstInvalid.focus();
@@ -130,48 +128,8 @@
         }
         return;
       }
-
-      // Collect form data
-      const formData = new FormData(form);
-      const data = {};
-      
-      formData.forEach((value, key) => {
-        data[key] = value;
-      });
-
-      console.log('Lifestyle data to submit:', data);
-
-      // TODO: Send to backend
-      // For now, just show success and navigate
-      showSuccessMessage();
-      
-      // Navigate to next step after delay
-      setTimeout(() => {
-        window.location.href = 'wizard_angina.php'; // Next step (when created)
-      }, 1500);
+      // If valid, allow the centralized save handler to perform the POST and show the single centered alert.
     });
-  }
-
-  function showSuccessMessage() {
-    const alertDiv = document.createElement('div');
-    alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
-    alertDiv.style.zIndex = '9999';
-    alertDiv.innerHTML = `
-      <i class="fa-solid fa-check-circle me-2"></i>
-      <span class="i18n" data-en="Lifestyle information saved successfully!" data-tl="Matagumpay na nai-save ang impormasyon sa pamumuhay!">
-        Lifestyle information saved successfully!
-      </span>
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-    document.body.appendChild(alertDiv);
-
-    // Apply current language to the message
-    const savedLang = localStorage.getItem('survey_language') || 'en';
-    setLang(savedLang);
-
-    setTimeout(() => {
-      alertDiv.remove();
-    }, 3000);
   }
 
   // ========== SMOOTH SCROLLING ==========

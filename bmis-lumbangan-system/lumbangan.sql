@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 15, 2025 at 01:19 AM
+-- Generation Time: Nov 15, 2025 at 01:43 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -226,7 +226,8 @@ INSERT INTO `families` (`id`, `household_id`, `family_number`, `head_person_id`,
 (2, 1, NULL, NULL, NULL, NULL, NULL, '2025-11-12', '2025-11-12 12:29:29', '2025-11-12 14:58:59'),
 (3, 1, NULL, 1, NULL, NULL, NULL, '2025-11-12', '2025-11-12 14:58:59', '2025-11-12 14:58:59'),
 (4, 2, NULL, 2, 'Permanent', NULL, NULL, NULL, '2025-11-12 17:45:46', '2025-11-12 17:45:46'),
-(5, 3, NULL, 3, 'Permanent', NULL, NULL, NULL, '2025-11-12 18:01:59', '2025-11-12 18:01:59');
+(5, 3, NULL, 3, 'Permanent', NULL, NULL, NULL, '2025-11-12 18:01:59', '2025-11-12 18:01:59'),
+(6, 4, NULL, 4, 'Permanent', NULL, NULL, NULL, '2025-11-15 08:37:46', '2025-11-15 08:37:46');
 
 --
 -- Triggers `families`
@@ -337,7 +338,8 @@ CREATE TABLE `households` (
 INSERT INTO `households` (`id`, `purok_id`, `household_no`, `address`, `latitude`, `longitude`, `home_ownership`, `home_ownership_other`, `construction_material`, `construction_material_other`, `lighting_facility`, `lighting_facility_other`, `water_level`, `water_source`, `water_storage`, `drinking_water_other_source`, `garbage_container`, `garbage_segregated`, `garbage_disposal_method`, `garbage_disposal_other`, `toilet_type`, `toilet_type_other`, `created_at`, `updated_at`) VALUES
 (1, 2, 'CA-001', 'Blk 2 Lt 25, Bougainvillea Street, Camia Homes', NULL, NULL, 'Rented', '', 'Strong', '', 'Electricity', '', 'Level III', '', 'Covered container', '', 'Covered', 1, 'Garbage Collection', '', 'Sanitary', '', '2025-11-12 12:28:27', '2025-11-12 17:35:46'),
 (2, NULL, NULL, 'Pending - To be updated', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-12 17:45:46', '2025-11-12 17:45:46'),
-(3, NULL, NULL, 'Pending - To be updated', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-12 18:01:59', '2025-11-12 18:01:59');
+(3, NULL, NULL, 'Pending - To be updated', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-12 18:01:59', '2025-11-12 18:01:59'),
+(4, NULL, NULL, 'Pending - To be updated', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-15 08:37:46', '2025-11-15 08:37:46');
 
 -- --------------------------------------------------------
 
@@ -459,7 +461,8 @@ CREATE TABLE `persons` (
 INSERT INTO `persons` (`id`, `family_id`, `last_name`, `first_name`, `middle_name`, `suffix`, `family_position`, `sex`, `birthdate`, `marital_status`, `blood_type`, `disability`, `highest_educ_attainment`, `occupation`, `religion`, `is_pregnant`, `is_deceased`, `created_at`, `updated_at`) VALUES
 (1, 3, 'Gludo', 'David Alfred', 'Cabali', NULL, 'Head', 'M', '2004-08-12', 'Single', 'O+', NULL, 'College', 'Student', 'Roman Catholic', NULL, 0, '2025-11-12 12:28:27', '2025-11-12 14:58:59'),
 (2, 4, 'Condicion', 'Marlo', 'Humarang', NULL, 'Head', NULL, NULL, 'Single', NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-12 17:45:46', '2025-11-12 17:45:46'),
-(3, 5, 'Celso', 'Pierre', 'Verastigue', NULL, 'Head', NULL, NULL, 'Single', NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-12 18:01:59', '2025-11-12 18:01:59');
+(3, 5, 'Celso', 'Pierre', 'Verastigue', NULL, 'Head', NULL, NULL, 'Single', NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-12 18:01:59', '2025-11-12 18:01:59'),
+(4, 6, 'Samontanez', 'Charles', 'Desuloc', NULL, 'Head', NULL, NULL, 'Single', NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-15 08:37:46', '2025-11-15 08:37:46');
 
 --
 -- Triggers `persons`
@@ -641,7 +644,8 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `person_id`, `username`, `email`, `mobile`, `password_hash`, `status`, `last_login_at`, `created_at`, `updated_at`) VALUES
 (1, 1, 'alf_red_c', 'davidgludo@gmail.com', '0995-3373-692', '$2y$10$aCljJqZ/lGcYvVeTLmFJvOypD.b0ZVo7mfqrOOFbcVT5vrdO03tDG', 'active', '2025-11-14 22:08:47', '2025-11-12 12:28:27', '2025-11-14 22:08:47'),
 (2, 2, 'conMarlo', 'marlo@gmail.com', NULL, '$2y$10$8xD1Cz3aAuuqhj7Dc1l1IuJNRIKkCS2B9ijvLF8mJ4hd7gpfkNwhC', 'active', '2025-11-12 18:19:28', '2025-11-12 17:45:46', '2025-11-12 18:19:28'),
-(3, 3, 'pierreee', 'pierre@gmail.com', NULL, '$2y$10$61rJ0tYOfyF1XDQbcucuy.Xln8qFPqreupuif4VnsWcqY.givrJnW', 'active', '2025-11-12 18:19:03', '2025-11-12 18:01:59', '2025-11-12 18:19:03');
+(3, 3, 'pierreee', 'pierre@gmail.com', NULL, '$2y$10$61rJ0tYOfyF1XDQbcucuy.Xln8qFPqreupuif4VnsWcqY.givrJnW', 'active', '2025-11-12 18:19:03', '2025-11-12 18:01:59', '2025-11-12 18:19:03'),
+(4, 4, 'chals', 'charles@gmail.com', NULL, '$2y$10$a4d5A9W6iYxnqlJxfYuSduiuyGc8qeE1A6skwJ8YrHx0SoJbd0Qhq', 'active', '2025-11-15 08:37:46', '2025-11-15 08:37:46', '2025-11-15 08:37:46');
 
 -- --------------------------------------------------------
 
@@ -1121,7 +1125,7 @@ ALTER TABLE `document_types`
 -- AUTO_INCREMENT for table `families`
 --
 ALTER TABLE `families`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `health_family_history`
@@ -1133,7 +1137,7 @@ ALTER TABLE `health_family_history`
 -- AUTO_INCREMENT for table `households`
 --
 ALTER TABLE `households`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `lifestyle_risk`
@@ -1163,7 +1167,7 @@ ALTER TABLE `officials`
 -- AUTO_INCREMENT for table `persons`
 --
 ALTER TABLE `persons`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `person_relationships`
@@ -1187,7 +1191,7 @@ ALTER TABLE `puroks`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `vitals`

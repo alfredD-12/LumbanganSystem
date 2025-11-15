@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 11, 2025 at 02:48 PM
+-- Generation Time: Nov 15, 2025 at 01:19 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -46,7 +46,7 @@ CREATE TABLE `angina_stroke_screening` (
 --
 
 INSERT INTO `angina_stroke_screening` (`id`, `cvd_id`, `q1_chest_discomfort`, `q2_pain_location_left_arm_neck_back`, `q3_pain_on_exertion`, `q4_pain_relieved_by_rest_or_nitro`, `q5_pain_lasting_10min_plus`, `q6_pain_front_of_chest_half_hour`, `screen_positive`, `needs_doctor_referral`, `created_at`) VALUES
-(1, 1, 0, 0, 0, 0, 0, 0, 0, 0, '2025-11-11 20:54:57');
+(1, 1, 1, 1, 1, 0, 1, 0, 0, 0, '2025-11-12 16:06:21');
 
 -- --------------------------------------------------------
 
@@ -110,7 +110,7 @@ CREATE TABLE `cvd_ncd_risk_assessments` (
 --
 
 INSERT INTO `cvd_ncd_risk_assessments` (`id`, `person_id`, `answered_at`, `surveyed_by_official_id`, `survey_date`, `notes`, `is_approved`, `approved_by_official_id`, `approved_at`, `review_notes`) VALUES
-(1, 1, '2025-11-11 15:03:56', NULL, '2025-11-11', NULL, 0, NULL, NULL, NULL);
+(1, 1, '2025-11-12 12:28:41', NULL, '2025-11-12', NULL, 0, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -154,6 +154,13 @@ CREATE TABLE `diabetes_screening` (
   `created_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `diabetes_screening`
+--
+
+INSERT INTO `diabetes_screening` (`id`, `cvd_id`, `known_diabetes`, `on_medications`, `family_history`, `polyuria`, `polydipsia`, `polyphagia`, `weight_loss`, `rbs_mg_dl`, `fbs_mg_dl`, `hba1c_percent`, `urine_ketone`, `urine_protein`, `screen_positive`, `created_at`) VALUES
+(1, 1, 1, 0, 1, 0, 0, 0, 0, 0.00, 0.00, 0.00, 0, 0, NULL, '2025-11-12 18:37:49');
+
 -- --------------------------------------------------------
 
 --
@@ -172,7 +179,9 @@ CREATE TABLE `document_requests` (
   `remarks` text DEFAULT NULL,
   `proof_upload` varchar(255) DEFAULT NULL,
   `approved_by` int(11) DEFAULT NULL,
-  `released_by` int(11) DEFAULT NULL
+  `released_by` int(11) DEFAULT NULL,
+  `requested_for` varchar(150) DEFAULT NULL,
+  `relation_to_requestee` varchar(150) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -213,13 +222,11 @@ CREATE TABLE `families` (
 --
 
 INSERT INTO `families` (`id`, `household_id`, `family_number`, `head_person_id`, `residency_status`, `length_of_residency_months`, `email`, `survey_date`, `created_at`, `updated_at`) VALUES
-(1, 1, NULL, NULL, 'Permanent', NULL, NULL, NULL, '2025-11-09 10:04:31', '2025-11-11 20:54:48'),
-(2, 1, NULL, NULL, NULL, NULL, NULL, '2025-11-11', '2025-11-11 20:54:48', '2025-11-11 20:55:07'),
-(3, 1, NULL, NULL, NULL, NULL, NULL, '2025-11-11', '2025-11-11 20:55:07', '2025-11-11 20:55:07'),
-(4, 1, NULL, NULL, NULL, NULL, NULL, '2025-11-11', '2025-11-11 20:55:07', '2025-11-11 20:55:11'),
-(5, 1, NULL, NULL, NULL, NULL, NULL, '2025-11-11', '2025-11-11 20:55:11', '2025-11-11 20:55:17'),
-(6, 1, NULL, NULL, NULL, NULL, NULL, '2025-11-11', '2025-11-11 20:55:17', '2025-11-11 21:33:31'),
-(7, 1, NULL, 1, NULL, NULL, NULL, '2025-11-11', '2025-11-11 21:33:31', '2025-11-11 21:33:31');
+(1, 1, NULL, NULL, 'Permanent', NULL, NULL, NULL, '2025-11-12 12:28:27', '2025-11-12 12:29:29'),
+(2, 1, NULL, NULL, NULL, NULL, NULL, '2025-11-12', '2025-11-12 12:29:29', '2025-11-12 14:58:59'),
+(3, 1, NULL, 1, NULL, NULL, NULL, '2025-11-12', '2025-11-12 14:58:59', '2025-11-12 14:58:59'),
+(4, 2, NULL, 2, 'Permanent', NULL, NULL, NULL, '2025-11-12 17:45:46', '2025-11-12 17:45:46'),
+(5, 3, NULL, 3, 'Permanent', NULL, NULL, NULL, '2025-11-12 18:01:59', '2025-11-12 18:01:59');
 
 --
 -- Triggers `families`
@@ -288,7 +295,7 @@ CREATE TABLE `health_family_history` (
 --
 
 INSERT INTO `health_family_history` (`id`, `person_id`, `hypertension`, `stroke`, `heart_attack`, `asthma`, `diabetes`, `cancer`, `kidney_disease`, `recorded_at`) VALUES
-(1, 1, 0, 0, 0, 0, 0, 0, 0, '2025-11-11');
+(1, 1, 0, 0, 0, 0, 0, 0, 0, '2025-11-12');
 
 -- --------------------------------------------------------
 
@@ -328,7 +335,9 @@ CREATE TABLE `households` (
 --
 
 INSERT INTO `households` (`id`, `purok_id`, `household_no`, `address`, `latitude`, `longitude`, `home_ownership`, `home_ownership_other`, `construction_material`, `construction_material_other`, `lighting_facility`, `lighting_facility_other`, `water_level`, `water_source`, `water_storage`, `drinking_water_other_source`, `garbage_container`, `garbage_segregated`, `garbage_disposal_method`, `garbage_disposal_other`, `toilet_type`, `toilet_type_other`, `created_at`, `updated_at`) VALUES
-(1, NULL, NULL, 'Pending - To be updated', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-09 10:04:31', '2025-11-09 10:04:31');
+(1, 2, 'CA-001', 'Blk 2 Lt 25, Bougainvillea Street, Camia Homes', NULL, NULL, 'Rented', '', 'Strong', '', 'Electricity', '', 'Level III', '', 'Covered container', '', 'Covered', 1, 'Garbage Collection', '', 'Sanitary', '', '2025-11-12 12:28:27', '2025-11-12 17:35:46'),
+(2, NULL, NULL, 'Pending - To be updated', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-12 17:45:46', '2025-11-12 17:45:46'),
+(3, NULL, NULL, 'Pending - To be updated', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-12 18:01:59', '2025-11-12 18:01:59');
 
 -- --------------------------------------------------------
 
@@ -357,7 +366,7 @@ CREATE TABLE `lifestyle_risk` (
 --
 
 INSERT INTO `lifestyle_risk` (`id`, `cvd_id`, `smoking_status`, `smoking_comments`, `alcohol_use`, `excessive_alcohol`, `alcohol_notes`, `eats_processed_weekly`, `fruits_3_servings_daily`, `vegetables_3_servings_daily`, `exercise_days_per_week`, `exercise_minutes_per_day`, `exercise_intensity`) VALUES
-(1, 1, NULL, '', NULL, NULL, '', NULL, NULL, NULL, 0, 0, NULL);
+(1, 1, 'Never', '', 'Never', 1, '', 1, 1, 1, 3, 90, 'Moderate');
 
 -- --------------------------------------------------------
 
@@ -415,13 +424,6 @@ CREATE TABLE `officials` (
   `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `officials`
---
-
-INSERT INTO `officials` (`id`, `full_name`, `username`, `password_hash`, `last_login_at`, `role`, `contact_no`, `email`, `photo_url`, `active`, `created_at`, `updated_at`) VALUES
-(1, 'Juan Dela Cruz', 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', NULL, 'Administrator', '09123456789', 'admin@lumbangan.gov.ph', NULL, 1, '2025-11-09 09:22:28', '2025-11-09 09:22:28');
-
 -- --------------------------------------------------------
 
 --
@@ -455,7 +457,9 @@ CREATE TABLE `persons` (
 --
 
 INSERT INTO `persons` (`id`, `family_id`, `last_name`, `first_name`, `middle_name`, `suffix`, `family_position`, `sex`, `birthdate`, `marital_status`, `blood_type`, `disability`, `highest_educ_attainment`, `occupation`, `religion`, `is_pregnant`, `is_deceased`, `created_at`, `updated_at`) VALUES
-(1, 7, 'Gludo', 'David Alfred', 'Cabali', NULL, 'Head', 'M', '2004-08-12', 'Single', 'O+', NULL, 'College', 'Student', 'Roman Catholic', NULL, 0, '2025-11-09 10:04:31', '2025-11-11 21:33:31');
+(1, 3, 'Gludo', 'David Alfred', 'Cabali', NULL, 'Head', 'M', '2004-08-12', 'Single', 'O+', NULL, 'College', 'Student', 'Roman Catholic', NULL, 0, '2025-11-12 12:28:27', '2025-11-12 14:58:59'),
+(2, 4, 'Condicion', 'Marlo', 'Humarang', NULL, 'Head', NULL, NULL, 'Single', NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-12 17:45:46', '2025-11-12 17:45:46'),
+(3, 5, 'Celso', 'Pierre', 'Verastigue', NULL, 'Head', NULL, NULL, 'Single', NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-12 18:01:59', '2025-11-12 18:01:59');
 
 --
 -- Triggers `persons`
@@ -635,7 +639,9 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `person_id`, `username`, `email`, `mobile`, `password_hash`, `status`, `last_login_at`, `created_at`, `updated_at`) VALUES
-(1, 1, 'alf_red_c', 'davidgludo@gmail.com', NULL, '$2y$10$I4nDEJTEdqiWD8.Azf6YEe7mgUsfNLNYWWDXOmXEadXU6WDvb.hzK', 'active', '2025-11-11 21:08:02', '2025-11-09 10:04:31', '2025-11-11 21:08:02');
+(1, 1, 'alf_red_c', 'davidgludo@gmail.com', '0995-3373-692', '$2y$10$aCljJqZ/lGcYvVeTLmFJvOypD.b0ZVo7mfqrOOFbcVT5vrdO03tDG', 'active', '2025-11-14 22:08:47', '2025-11-12 12:28:27', '2025-11-14 22:08:47'),
+(2, 2, 'conMarlo', 'marlo@gmail.com', NULL, '$2y$10$8xD1Cz3aAuuqhj7Dc1l1IuJNRIKkCS2B9ijvLF8mJ4hd7gpfkNwhC', 'active', '2025-11-12 18:19:28', '2025-11-12 17:45:46', '2025-11-12 18:19:28'),
+(3, 3, 'pierreee', 'pierre@gmail.com', NULL, '$2y$10$61rJ0tYOfyF1XDQbcucuy.Xln8qFPqreupuif4VnsWcqY.givrJnW', 'active', '2025-11-12 18:19:03', '2025-11-12 18:01:59', '2025-11-12 18:19:03');
 
 -- --------------------------------------------------------
 
@@ -661,6 +667,13 @@ CREATE TABLE `vitals` (
   `temperature_c` decimal(4,1) DEFAULT NULL,
   `obesity_flag` tinyint(1) GENERATED ALWAYS AS (case when `bmi` is not null and `bmi` >= 30 then 1 else 0 end) VIRTUAL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `vitals`
+--
+
+INSERT INTO `vitals` (`id`, `cvd_id`, `height_cm`, `weight_kg`, `bmi`, `central_adiposity`, `raised_bp`, `raised_blood_sugar`, `dyslipidemia`, `waist_circumference_cm`, `bp_systolic`, `bp_diastolic`, `pulse`, `respiratory_rate`, `temperature_c`) VALUES
+(1, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 90, 80, 80, 16, 37.0);
 
 --
 -- Triggers `vitals`
@@ -1090,7 +1103,7 @@ ALTER TABLE `deaths`
 -- AUTO_INCREMENT for table `diabetes_screening`
 --
 ALTER TABLE `diabetes_screening`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `document_requests`
@@ -1108,19 +1121,19 @@ ALTER TABLE `document_types`
 -- AUTO_INCREMENT for table `families`
 --
 ALTER TABLE `families`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `health_family_history`
 --
 ALTER TABLE `health_family_history`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `households`
 --
 ALTER TABLE `households`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `lifestyle_risk`
@@ -1144,13 +1157,13 @@ ALTER TABLE `morbidity_logs`
 -- AUTO_INCREMENT for table `officials`
 --
 ALTER TABLE `officials`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `persons`
 --
 ALTER TABLE `persons`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `person_relationships`
@@ -1174,13 +1187,13 @@ ALTER TABLE `puroks`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `vitals`
 --
 ALTER TABLE `vitals`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- Constraints for dumped tables

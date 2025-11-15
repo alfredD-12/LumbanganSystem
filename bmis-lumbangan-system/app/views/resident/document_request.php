@@ -146,7 +146,7 @@
 </main>
 
 
-<?php include __DIR__ . '/../../components/footer.php'; ?>
+<?php include_once __DIR__ . '/../../components/resident_components/footer-resident.php'?>
 
 
 

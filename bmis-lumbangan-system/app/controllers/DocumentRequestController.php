@@ -27,7 +27,7 @@ class DocumentRequestController {
         //     exit;
         // }
 
-        $userId = 1;
+        $userId = 2;
 
         // Fetch all document types for the dropdown
         $stmt = $this->documentType->readAll();

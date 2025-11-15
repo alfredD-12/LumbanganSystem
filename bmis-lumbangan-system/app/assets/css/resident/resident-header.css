@@ -1,6 +1,6 @@
 /* For inbox modal */
 /* Force perfect rounded corners on modals */
-    .modal-content {
+    /* .modal-content {
         overflow: hidden !important;
     }
     .modal-header {
@@ -10,7 +10,7 @@
     .modal-footer {
         border-bottom-left-radius: 0 !important;
         border-bottom-right-radius: 0 !important;
-    }
+    } */
     
     .message-item {
         padding: 1.5rem;

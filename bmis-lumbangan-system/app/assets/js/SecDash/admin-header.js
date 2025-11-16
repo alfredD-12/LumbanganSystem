@@ -5,35 +5,6 @@
 
 // Initialize all components
 document.addEventListener("DOMContentLoaded", function () {
-  // Topbar Dropdown
-  const dropdownToggle = document.querySelector(
-    ".admin-avatar.dropdown-toggle"
-  );
-  const dropdownMenu = document.querySelector(".admin-profile .dropdown-menu");
-
-  if (dropdownToggle && dropdownMenu) {
-    // Manual click handler
-    dropdownToggle.addEventListener("click", function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      // Toggle show class
-      dropdownMenu.classList.toggle("show");
-      dropdownToggle.classList.toggle("show");
-    });
-
-    // Close dropdown when clicking outside
-    document.addEventListener("click", function (e) {
-      if (
-        !dropdownToggle.contains(e.target) &&
-        !dropdownMenu.contains(e.target)
-      ) {
-        dropdownMenu.classList.remove("show");
-        dropdownToggle.classList.remove("show");
-      }
-    });
-  }
-
   // Sidebar Toggle Setup
   const sidebar = document.querySelector(".sidebar");
   const toggleBtn = document.querySelector(".sidebar-toggle");

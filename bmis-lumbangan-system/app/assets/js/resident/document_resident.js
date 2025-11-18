@@ -290,7 +290,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Initialize dropdowns with a slight delay to ensure DOM is ready
     setTimeout(function () {
       initializeDropdowns();
-      addManualDropdownListeners();
+      //   addManualDropdownListeners();
     }, 200);
   }
 

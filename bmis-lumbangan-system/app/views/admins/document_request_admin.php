@@ -157,4 +157,4 @@
 </div>
 
 
-<?php include_once __DIR__ . '/../../components/footer.php'?>
+<?php include_once __DIR__ . '/../../components/admin_components/footer-admin.php'?>

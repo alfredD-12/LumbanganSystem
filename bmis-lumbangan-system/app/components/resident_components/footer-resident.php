@@ -66,6 +66,21 @@
     <!-- JS FOR DOCUMENT REQUEST -->
     <script src="<?php echo BASE_URL . 'assets/js/document_request.js'; ?>"></script>
     <!-- PAKILAGAY NALANG DIN SA BABA NG DEPENDENCIES OR CDNS -->
+    
+    <!-- Page JS -->
+    <script src="../../assets/js/Survey/wizard_angina.js"></script>
+    <script src="../../assets/js/Survey/wizard_diabetes.js"></script>
+    <script src="../../assets/js/Survey/wizard_family_history.js"></script>
+    <script src="../../assets/js/Survey/wizard_family.js"></script>
+    <script src="../../assets/js/Survey/wizard_family.js"></script>
+    <script src="../../assets/js/Survey/wizard_lifestyle.js"></script>
+    <script src="../../assets/js/Survey/wizard_lifestyle.js"></script>
+    <script src="../../assets/js/Survey/wizard_vitals.js"></script>
+
+    <script src="../../assets/js/Survey/survey-persistence.js"></script>
+    <script src="../../assets/js/Survey/save-survey.js"></script>
+    <script src="../../assets/js/Survey/tree-enhance.js"></script>
+    <script src="../../assets/js/Survey/bhw-float-control.js"></script>
 
 </body>
 </html>

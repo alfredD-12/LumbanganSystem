@@ -13,9 +13,8 @@
     <!-- Additional for inbox modal -->
     <link rel="stylesheet" href="<?php echo BASE_URL . 'assets/css/resident/resident-header.css'; ?>">
     <!-- If may iba kayong need or idagdag na link pakilagay nalang sa baba -->
-     
-
-    
+    <link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/Survey/wizard_personal.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/Survey/bhw-float.css?v=<?php echo time(); ?>">
 
 </head>
 <body>

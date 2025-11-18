@@ -82,5 +82,6 @@
     <script src="../../assets/js/Survey/tree-enhance.js"></script>
     <script src="../../assets/js/Survey/bhw-float-control.js"></script>
 
+    <script src="<?php echo BASE_URL; ?>assets/js/announcement/public_announcements.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>

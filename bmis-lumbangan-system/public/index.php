@@ -71,6 +71,16 @@ switch ($page) {
         $adminController = new AdminDocumentController();
         $adminController->showAdminDocumentRequestsPage();
         break;
+    case 'public_announcement':
+        require_once __DIR__ . '/../app/controllers/PublicAnnouncementController.php';
+        $pubController = new PublicAnnouncementController();
+        $pubController->index();
+        break;
+    case 'admin_announcements':
+        require_once __DIR__ . '/../app/controllers/AnnouncementController.php';
+        $annController = new AnnouncementController();
+        $annController->index();
+        break;
 
     // Example for future pages
     // case 'resident_list':

@@ -52,7 +52,7 @@ class BatangasNewsFetcher {
             this.newsLoading.style.display = 'none';
         }
         if (this.newsContent) {
-            this.newsContent.style.display = 'flex';
+            this.newsContent.style.display = 'block';
         }
         if (this.newsError) {
             this.newsError.style.display = 'none';
@@ -119,37 +119,55 @@ class BatangasNewsFetcher {
     displayNews(news) {
         if (!this.newsContent) return;
         
-        this.newsContent.innerHTML = '';
+        const container = document.getElementById('newsCarouselContainer');
+        const indicators = document.getElementById('newsCarouselIndicators');
+        if (!container) return;
         
-        news.forEach(article => {
-            const col = document.createElement('div');
-            col.className = 'col-md-6 col-lg-4 mb-4';
-            
-            col.innerHTML = `
-                <div class="card news-card h-100">
+        container.innerHTML = '';
+        const newsItems = news.slice(0, 6);
+        
+        newsItems.forEach((article, index) => {
+            const card = document.createElement('div');
+            card.className = 'news-carousel-card';
+            card.setAttribute('data-index', index);
+            card.innerHTML = `
+                <div class="news-carousel-card-img">
                     ${article.image ? `
-                        <img src="${article.image}" class="card-img-top" alt="${article.title}"
-                             onerror="this.src='https://portal.batangas.gov.ph/wp-content/uploads/2025/06/batangaslogo2025.png'">
+                        <img src="${article.image}" alt="${article.title}"
+                             onerror="this.style.display='none'; this.parentElement.querySelector('i').style.display='flex';">
+                        <i class="fas fa-newspaper" style="display: none;"></i>
+                    ` : `<i class="fas fa-newspaper"></i>`}
+                </div>
+                <div class="news-carousel-card-content">
+                    ${article.date ? `
+                        <div class="news-carousel-card-date">
+                            <i class="far fa-calendar-alt"></i> ${article.date}
+                        </div>
                     ` : ''}
-                    <div class="card-body d-flex flex-column">
-                        ${article.date ? `
-                            <div class="news-date">
-                                <i class="far fa-calendar-alt me-2"></i>${article.date}
-                            </div>
-                        ` : ''}
-                        <h5 class="card-title">${article.title}</h5>
-                        <p class="card-text flex-grow-1">${article.excerpt}</p>
-                        <a href="${article.link}" class="btn btn-link news-read-more mt-auto" target="_blank">
-                            Read More <i class="fas fa-arrow-right ms-2"></i>
-                        </a>
-                    </div>
+                    <h4 class="news-carousel-card-title">${article.title}</h4>
+                    <p class="news-carousel-card-excerpt">${article.excerpt}</p>
+                    <a href="${article.link}" class="news-carousel-card-link" target="_blank">
+                        Read Full Article <i class="fas fa-arrow-right"></i>
+                    </a>
                 </div>
             `;
-            
-            this.newsContent.appendChild(col);
+            container.appendChild(card);
         });
         
+        if (indicators) {
+            indicators.innerHTML = '';
+            newsItems.forEach((_, index) => {
+                const indicator = document.createElement('span');
+                indicator.className = 'news-indicator' + (index === 0 ? ' active' : '');
+                indicator.setAttribute('onclick', `goToNews(${index})`);
+                indicators.appendChild(indicator);
+            });
+        }
+        
         this.showContent();
+        if (typeof updateNewsCarousel === 'function') {
+            setTimeout(() => updateNewsCarousel(), 100);
+        }
     }
 }
 
@@ -164,4 +182,76 @@ if (document.readyState === 'loading') {
     if (document.getElementById('newsContent')) {
         new BatangasNewsFetcher();
     }
+}
+
+// News Carousel Functions
+let currentNewsIndex = 0;
+
+function updateNewsCarousel() {
+    const cards = document.querySelectorAll('.news-carousel-card');
+    const indicators = document.querySelectorAll('.news-indicator');
+    const totalNewsItems = cards.length;
+    if (totalNewsItems === 0) return;
+    
+    cards.forEach((card, index) => {
+        const dataIndex = parseInt(card.getAttribute('data-index'));
+        let position = dataIndex - currentNewsIndex;
+        if (position > totalNewsItems / 2) position -= totalNewsItems;
+        if (position < -totalNewsItems / 2) position += totalNewsItems;
+        
+        card.classList.remove('active');
+        if (position === 0) {
+            card.style.transform = 'translateX(0) scale(1) rotateY(0deg)';
+            card.style.zIndex = '3';
+            card.style.opacity = '1';
+            card.style.filter = 'blur(0px)';
+            card.style.pointerEvents = 'auto';
+            card.classList.add('active');
+        } else if (position === 1) {
+            card.style.transform = 'translateX(100%) scale(0.85) rotateY(-15deg)';
+            card.style.zIndex = '2';
+            card.style.opacity = '0.5';
+            card.style.filter = 'blur(2px)';
+            card.style.pointerEvents = 'none';
+        } else if (position === -1) {
+            card.style.transform = 'translateX(-100%) scale(0.85) rotateY(15deg)';
+            card.style.zIndex = '2';
+            card.style.opacity = '0.5';
+            card.style.filter = 'blur(2px)';
+            card.style.pointerEvents = 'none';
+        } else {
+            card.style.transform = position > 0 ? 'translateX(100%) scale(0.7)' : 'translateX(-100%) scale(0.7)';
+            card.style.zIndex = '1';
+            card.style.opacity = '0';
+            card.style.filter = 'blur(3px)';
+            card.style.pointerEvents = 'none';
+        }
+    });
+    
+    indicators.forEach((indicator, index) => {
+        if (index === currentNewsIndex) {
+            indicator.classList.add('active');
+        } else {
+            indicator.classList.remove('active');
+        }
+    });
+}
+
+function nextNews() {
+    const totalNewsItems = document.querySelectorAll('.news-carousel-card').length;
+    if (totalNewsItems === 0) return;
+    currentNewsIndex = (currentNewsIndex + 1) % totalNewsItems;
+    updateNewsCarousel();
+}
+
+function previousNews() {
+    const totalNewsItems = document.querySelectorAll('.news-carousel-card').length;
+    if (totalNewsItems === 0) return;
+    currentNewsIndex = (currentNewsIndex - 1 + totalNewsItems) % totalNewsItems;
+    updateNewsCarousel();
+}
+
+function goToNews(index) {
+    currentNewsIndex = index;
+    updateNewsCarousel();
 }

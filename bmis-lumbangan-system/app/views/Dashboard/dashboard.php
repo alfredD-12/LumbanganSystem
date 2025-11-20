@@ -1,11 +1,19 @@
 <?php
 // Require user authentication
 require_once dirname(__DIR__, 2) . '/helpers/session_helper.php';
+require_once dirname(__DIR__, 2) . '/helpers/dashboard_helper.php';
 requireUser(); // Only allow logged-in users to access this page
 
 $fullName = getFullName();
 $username = getUsername();
 $firstName = getFirstName();
+$userId = $_SESSION['user_id'] ?? null;
+
+// Get dynamic dashboard stats
+$dashboardStats = getUserDashboardStats($userId);
+$pendingRequests = $dashboardStats['pending_requests'];
+$completedRequests = $dashboardStats['completed_requests'];
+$memberSinceYear = $dashboardStats['member_since'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -240,17 +248,17 @@ $firstName = getFirstName();
                         <div style="display: flex; gap: 2rem; padding: 1.5rem; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid rgba(255,255,255,0.8);">
                             <div style="flex: 1;">
                                 <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.3rem; font-weight: 500;">Pending Requests</div>
-                                <div style="font-size: 1.8rem; font-weight: 700; color: #1e3a5f;">3</div>
+                                <div style="font-size: 1.8rem; font-weight: 700; color: #1e3a5f;"><?php echo $pendingRequests; ?></div>
                             </div>
                             <div style="width: 1px; background: #e2e8f0;"></div>
                             <div style="flex: 1;">
                                 <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.3rem; font-weight: 500;">Completed</div>
-                                <div style="font-size: 1.8rem; font-weight: 700; color: #10b981;">12</div>
+                                <div style="font-size: 1.8rem; font-weight: 700; color: #10b981;"><?php echo $completedRequests; ?></div>
                             </div>
                             <div style="width: 1px; background: #e2e8f0;"></div>
                             <div style="flex: 1;">
                                 <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.3rem; font-weight: 500;">Member Since</div>
-                                <div style="font-size: 1.8rem; font-weight: 700; color: #c53030;">2024</div>
+                                <div style="font-size: 1.8rem; font-weight: 700; color: #c53030;"><?php echo $memberSinceYear; ?></div>
                             </div>
                         </div>
                     </div>

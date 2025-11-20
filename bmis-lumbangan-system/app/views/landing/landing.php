@@ -4,6 +4,12 @@
 
 // Check if user is already logged in - redirect to appropriate dashboard
 require_once dirname(__DIR__, 2) . '/helpers/session_helper.php';
+require_once dirname(__DIR__, 2) . '/config/Database.php';
+require_once dirname(__DIR__, 2) . '/models/Gallery.php';
+
+// Fetch gallery items
+$galleryModel = new Gallery();
+$galleryItems = $galleryModel->getAll(true);
 
 if (isLoggedIn()) {
     if (isUser()) {
@@ -261,7 +267,16 @@ if (isLoggedIn()) {
         <p>Unable to load news at this time. Please try again later.</p>
       </div>
 
-      <div id="newsContent" class="row" style="display: none;"></div>
+      <div id="newsContent" class="news-carousel-wrapper" style="display: none;">
+        <button class="news-carousel-nav news-carousel-prev" onclick="previousNews()">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="news-carousel-nav news-carousel-next" onclick="nextNews()">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+        <div class="news-carousel-container" id="newsCarouselContainer"></div>
+        <div class="news-carousel-indicators" id="newsCarouselIndicators"></div>
+      </div>
 
       <div class="text-center mt-5">
         <button id="refreshNews" class="btn btn-custom btn-primary-custom">
@@ -279,14 +294,67 @@ if (isLoggedIn()) {
         <h2 class="section-title">Gallery</h2>
         <p class="section-subtitle">Capturing moments of community spirit and progress</p>
       </div>
-      <div class="gallery-grid">
-        <div class="gallery-item"><div class="gallery-img"><i class="fas fa-image"></i></div></div>
-        <div class="gallery-item"><div class="gallery-img"><i class="fas fa-image"></i></div></div>
-        <div class="gallery-item"><div class="gallery-img"><i class="fas fa-image"></i></div></div>
-        <div class="gallery-item"><div class="gallery-img"><i class="fas fa-image"></i></div></div>
-        <div class="gallery-item"><div class="gallery-img"><i class="fas fa-image"></i></div></div>
-        <div class="gallery-item"><div class="gallery-img"><i class="fas fa-image"></i></div></div>
+      
+      <!-- 3D Gallery Carousel -->
+      <div class="gallery-carousel-wrapper">
+        
+        <!-- Navigation Buttons -->
+        <button class="gallery-carousel-nav gallery-carousel-prev" onclick="previousGallery()">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+
+        <button class="gallery-carousel-nav gallery-carousel-next" onclick="nextGallery()">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+
+        <!-- Gallery Cards Container -->
+        <div class="gallery-carousel-container">
+          
+          <?php if (empty($galleryItems)): ?>
+            <!-- Default placeholder if no gallery items -->
+            <div class="gallery-carousel-card active" data-index="0">
+              <div class="gallery-img"><i class="fas fa-image"></i></div>
+              <div class="gallery-card-overlay">
+                <h4>No Gallery Items</h4>
+                <p>Gallery items will appear here</p>
+              </div>
+            </div>
+          <?php else: ?>
+            <?php foreach ($galleryItems as $index => $item): ?>
+              <?php 
+                $imagePath = dirname(__DIR__, 2) . '/uploads/gallery/' . $item['image_path'];
+                $imageUrl = '../../uploads/gallery/' . $item['image_path'];
+              ?>
+              <div class="gallery-carousel-card <?php echo $index === 0 ? 'active' : ''; ?>" data-index="<?php echo $index; ?>">
+                <div class="gallery-img" style="cursor: pointer;" onclick="openImageLightbox('<?php echo htmlspecialchars($imageUrl); ?>')">
+                  <?php if (!empty($item['image_path']) && file_exists($imagePath)): ?>
+                    <img src="<?php echo htmlspecialchars($imageUrl); ?>" alt="<?php echo htmlspecialchars($item['title']); ?>">
+                  <?php else: ?>
+                    <i class="fas fa-image"></i>
+                  <?php endif; ?>
+                </div>
+                <div class="gallery-card-overlay">
+                  <h4><?php echo htmlspecialchars($item['title']); ?></h4>
+                  <p><?php echo htmlspecialchars($item['description']); ?></p>
+                </div>
+              </div>
+            <?php endforeach; ?>
+          <?php endif; ?>
+
+        </div>
+
+        <!-- Carousel Indicators -->
+        <div class="gallery-carousel-indicators">
+          <?php if (!empty($galleryItems)): ?>
+            <?php foreach ($galleryItems as $index => $item): ?>
+              <span class="gallery-indicator <?php echo $index === 0 ? 'active' : ''; ?>" onclick="goToGallery(<?php echo $index; ?>)"></span>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <span class="gallery-indicator active" onclick="goToGallery(0)"></span>
+          <?php endif; ?>
+        </div>
       </div>
+      
     </div>
   </section>
 
@@ -418,7 +486,6 @@ if (isLoggedIn()) {
               <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Seal_of_Nasugbu.png/599px-Seal_of_Nasugbu.png" style="width: 39px;">
               <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Bagong_Pilipinas_logo.png" style="width: 41px;">
             </div>
-            <span>or use your email for registeration</span>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
               <input type="text" name="first_name" placeholder="First Name" required>
               <input type="text" name="middle_name" placeholder="Middle Name">
@@ -483,9 +550,126 @@ if (isLoggedIn()) {
     </div>
   </div>
 
+  <!-- Image Lightbox -->
+  <div id="imageLightbox" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:99999; justify-content:center; align-items:center; cursor:pointer;" onclick="closeImageLightbox()">
+    <img id="lightboxImg" style="max-width:90%; max-height:90vh; object-fit:contain; border-radius:8px; box-shadow:0 10px 50px rgba(0,0,0,0.7);" onclick="event.stopPropagation()">
+  </div>
+
   <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
   <script src="../../assets/js/Landing/Landing.js?v=2"></script>
   <script src="../../assets/js/Landing/login.js?v=2"></script>
+  
+  <script>
+    function openImageLightbox(imgSrc) {
+      document.getElementById('imageLightbox').style.display = 'flex';
+      document.getElementById('lightboxImg').src = imgSrc;
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function closeImageLightbox() {
+      document.getElementById('imageLightbox').style.display = 'none';
+      document.body.style.overflow = 'auto';
+    }
+    
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeImageLightbox();
+    });
+  </script>
+  
+  <!-- Gallery Carousel Script -->
+  <script>
+    let currentGalleryIndex = 0;
+    const totalGalleryItems = <?php echo !empty($galleryItems) ? count($galleryItems) : 1; ?>;
+
+    function updateGalleryCarousel() {
+        const cards = document.querySelectorAll('.gallery-carousel-card');
+        const indicators = document.querySelectorAll('.gallery-indicator');
+        
+        cards.forEach((card, index) => {
+            const dataIndex = parseInt(card.getAttribute('data-index'));
+            let position = dataIndex - currentGalleryIndex;
+            
+            // Handle wrapping
+            if (position > totalGalleryItems / 2) position -= totalGalleryItems;
+            if (position < -totalGalleryItems / 2) position += totalGalleryItems;
+            
+            card.classList.remove('active');
+            
+            if (position === 0) {
+                // Center card - active
+                card.style.transform = 'translateX(0) scale(1) rotateY(0deg)';
+                card.style.zIndex = '3';
+                card.style.opacity = '1';
+                card.style.filter = 'blur(0px)';
+                card.style.pointerEvents = 'auto';
+                card.classList.add('active');
+            } else if (position === 1) {
+                // Right card
+                card.style.transform = 'translateX(550px) scale(0.85) rotateY(-15deg)';
+                card.style.zIndex = '2';
+                card.style.opacity = '0.5';
+                card.style.filter = 'blur(2px)';
+                card.style.pointerEvents = 'none';
+            } else if (position === -1) {
+                // Left card
+                card.style.transform = 'translateX(-550px) scale(0.85) rotateY(15deg)';
+                card.style.zIndex = '2';
+                card.style.opacity = '0.5';
+                card.style.filter = 'blur(2px)';
+                card.style.pointerEvents = 'none';
+            } else {
+                // Hidden cards
+                card.style.transform = position > 0 ? 'translateX(550px) scale(0.7)' : 'translateX(-550px) scale(0.7)';
+                card.style.zIndex = '1';
+                card.style.opacity = '0';
+                card.style.filter = 'blur(3px)';
+                card.style.pointerEvents = 'none';
+            }
+        });
+        
+        // Update indicators
+        indicators.forEach((indicator, index) => {
+            if (index === currentGalleryIndex) {
+                indicator.classList.add('active');
+            } else {
+                indicator.classList.remove('active');
+            }
+        });
+    }
+
+    function nextGallery() {
+        currentGalleryIndex = (currentGalleryIndex + 1) % totalGalleryItems;
+        updateGalleryCarousel();
+    }
+
+    function previousGallery() {
+        currentGalleryIndex = (currentGalleryIndex - 1 + totalGalleryItems) % totalGalleryItems;
+        updateGalleryCarousel();
+    }
+
+    function goToGallery(index) {
+        currentGalleryIndex = index;
+        updateGalleryCarousel();
+    }
+
+    // Initialize carousel on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateGalleryCarousel();
+        
+        // Optional: Auto-advance carousel every 5 seconds
+        // setInterval(nextGallery, 5000);
+    });
+
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowLeft') {
+            previousGallery();
+        } else if (e.key === 'ArrowRight') {
+            nextGallery();
+        }
+    });
+  </script>
+  
 </body>
 </html>

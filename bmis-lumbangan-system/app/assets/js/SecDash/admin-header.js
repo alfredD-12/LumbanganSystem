@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Create ripple effect
       const ripple = document.createElement("span");
-      ripple.style.position = "absolute";
+      ripple.style.position = "relative";
       ripple.style.width = "100px";
       ripple.style.height = "100px";
       ripple.style.borderRadius = "50%";
@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", function () {
       ripple.style.marginLeft = "-50px";
       ripple.style.marginTop = "-50px";
 
-      this.style.position = "absolute";
+      this.style.position = "fixed";
       this.appendChild(ripple);
 
       setTimeout(() => {

@@ -1,14 +1,17 @@
 <?php
 
-class DocumentRequest {
+class DocumentRequest
+{
     private $conn;
 
-    public function __construct($db) {
+    public function __construct($db)
+    {
         $this->conn = $db;
     }
 
     // Fetch ongoing requests for a specific user
-    public function getOngoingRequestsByUser($userId) { 
+    public function getOngoingRequestsByUser($userId)
+    {
         $sql = "SELECT 
                     dr.request_id, 
                     dr.document_type_id, 
@@ -31,7 +34,8 @@ class DocumentRequest {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function create($data) {
+    public function create($data)
+    {
         $sql = "INSERT INTO document_requests
                 (user_id, document_type_id, purpose, proof_upload, requested_for, relation_to_requestee)
                 VALUES (:user_id, :document_type_id, :purpose, :proof_upload, :requested_for, :relation)";
@@ -47,14 +51,16 @@ class DocumentRequest {
         return $stmt->execute();
     }
 
-    public function delete($requestId) {
+    public function delete($requestId)
+    {
         $sql = "DELETE FROM document_requests WHERE request_id = :id";
         $stmt = $this->conn->prepare($sql);
         $stmt->bindParam(':id', $requestId, PDO::PARAM_INT);
         return $stmt->execute();
     }
 
-    public function getById($requestId) {
+    public function getById($requestId)
+    {
         $sql = "SELECT * FROM document_requests WHERE request_id = :id";
         $stmt = $this->conn->prepare($sql);
         $stmt->bindParam(':id', $requestId, PDO::PARAM_INT);
@@ -63,7 +69,8 @@ class DocumentRequest {
     }
 
     //Fetch users whose request are approved
-    public function getApprovedRequestsByUser($userId) {
+    public function getApprovedRequestsByUser($userId)
+    {
         $sqlQuery = "SELECT 
                         dr.request_id, 
                         dr.document_type_id, 
@@ -87,7 +94,8 @@ class DocumentRequest {
     }
 
     //Fetch users whose request are rejected or released
-    public function getHistoryRequestsByUser($userId) {
+    public function getHistoryRequestsByUser($userId)
+    {
         $sqlQuery = "SELECT 
                         dr.request_id, 
                         dr.document_type_id, 
@@ -115,36 +123,41 @@ class DocumentRequest {
     the admin side are placed. */
 
     //Fetch all document requests with documents names joined
-    public function getAllRequests() {
+    public function getAllRequests()
+    {
         $sql = "SELECT
-                    dr.request_id, 
-                    dr.user_id,
-                    dr.document_type_id, 
-                    dr.request_date, 
-                    dr.status, 
-                    dr.requested_for, 
-                    dr.relation_to_requestee,
-                    dr.purpose,
-                    dr.proof_upload,
-                    dr.approval_date,
-                    dr.release_date,
-                    dr.remarks,
-                    u.fullname AS requester_name,
-                    dt.document_name,
-                    dt.requirements
-                FROM document_requests dr
-                INNER JOIN document_types dt 
-                    ON dr.document_type_id = dt.document_type_id
-                INNER JOIN users u
-                    ON dr.user_id = u.user_id
-                ORDER BY dr.request_date DESC";
+                dr.request_id, 
+                dr.user_id,
+                dr.document_type_id, 
+                dr.request_date, 
+                dr.status, 
+                dr.requested_for, 
+                dr.relation_to_requestee,
+                dr.purpose,
+                dr.proof_upload,
+                dr.approval_date,
+                dr.release_date,
+                dr.remarks,
+                CONCAT(p.last_name, ', ', p.first_name, ' ', p.middle_name) AS requester_name,
+                dt.document_name,
+                dt.requirements
+            FROM document_requests dr
+            INNER JOIN document_types dt 
+                ON dr.document_type_id = dt.document_type_id
+            INNER JOIN users u
+                ON dr.user_id = u.id
+            INNER JOIN persons p
+                ON u.person_id = p.id
+            ORDER BY dr.request_date DESC";
 
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    private function getApprovalDate($id){
+
+    private function getApprovalDate($id)
+    {
         $stmt = $this->conn->prepare("SELECT approval_date FROM document_requests WHERE request_id = :id");
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         $stmt->execute();
@@ -189,7 +202,8 @@ class DocumentRequest {
 
 
 
-    public function getStatusSummary(){
+    public function getStatusSummary()
+    {
         $sql = "SELECT status, COUNT(*) AS total FROM document_requests GROUP BY status";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
@@ -203,6 +217,4 @@ class DocumentRequest {
         }
         return $summary;
     }
-
-
 }

@@ -11,8 +11,15 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
     <!-- Combined Admin Header CSS -->
     <link rel="stylesheet" href="<?php echo BASE_URL . 'assets/css/SecDash/admin-header.css'; ?>">
+    <!-- Document Request CSS -->
+    <link rel="stylesheet" href="<?php echo BASE_URL . 'assets/css/admins/document_admin.css'; ?>">
 
     <!-- Additional links if needed can be added below -->
+    <!-- DataTables CSS -->
+    <link href="https://cdn.datatables.net/2.3.4/css/dataTables.bootstrap5.min.css" rel="stylesheet" integrity="sha384-zmMNeKbOwzvUmxN8Z/VoYM+i+cwyC14+U9lq4+ZL0Ro7p1GMoh8uq8/HvIBgnh9+" crossorigin="anonymous">
+    <link href="https://cdn.datatables.net/buttons/3.2.5/css/buttons.bootstrap5.min.css" rel="stylesheet" integrity="sha384-HI7qMf1hznIZrIds5RatHHAOCn/7uGgsYQCanIyCeJDebKwCnoWnm4cB9SH+Z/ab" crossorigin="anonymous">
+    <link href="https://cdn.datatables.net/v/bs5/dt-2.3.4/b-3.2.5/b-colvis-3.2.5/datatables.min.css" rel="stylesheet" integrity="sha384-b7CCWUkHYYyObRWK8dDxH6PCbeH3SHTbH+TzwIoEUU/Ol75XipyzcYbfdNWmNWFF" crossorigin="anonymous">
+    <link href="https://cdn.datatables.net/v/bs5/dt-2.3.4/cr-2.1.2/datatables.min.css" rel="stylesheet" integrity="sha384-Kmlp1CBAWUtz5k1YIckZJpfqfz679/v2c11h9L26srNf/fL27CqaljUGsp7P2SN9" crossorigin="anonymous">
 </head>
 
 <body>
@@ -140,7 +147,7 @@
                 </a>
             </li>
             <li>
-                <a href="?page=admin_documents" class="<?php echo ($currentPage === 'admin_documents') ? 'active' : ''; ?>" data-tooltip="Documents">
+                <a href="<?php echo BASE_PUBLIC . 'index.php?page=admin_document_requests' ?>" class="<?php echo ($currentPage === 'admin_documents') ? 'active' : ''; ?>" data-tooltip="Documents">
                     <i class="fas fa-file-alt"></i>
                     <span>Documents</span>
                 </a>

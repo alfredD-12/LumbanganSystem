@@ -12,10 +12,14 @@
     <script src="https://cdn.datatables.net/buttons/3.2.5/js/dataTables.buttons.min.js" integrity="sha384-nShWTydNlLNjbeTudrIIbT/2GtisYB0Hdmc1BMuBNdWRkXb5+pqyKRuZzrwmmDpa" crossorigin="anonymous"></script>
     <script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.bootstrap5.min.js" integrity="sha384-gUHKtNwDWTZzNL3AtaUES875ooIVf1iMuwWhklVW7Cdv9gAVUijYefPr+HPH7wjT" crossorigin="anonymous"></script>
     <script src="https://cdn.datatables.net/buttons/3.2.5/js/buttons.colVis.min.js" integrity="sha384-v0wzF6NECWiQyIain/Wacl6wEYr6NDJRus6qpckumPIngNI9Zo0sDMon5lBh9Np1" crossorigin="anonymous"></script>
+    <!-- Documents Request JS -->
     <script src="<?php echo BASE_URL . 'assets/js/document_admin.js' ?>"></script>
     <script src="<?php echo BASE_URL . 'assets/js/document_request.js'; ?>"></script>
+    <script src="<?php echo BASE_URL . 'assets/js/document_template.js'; ?>"></script>
+
     <script>
       const BASE_URL = "<?php echo BASE_URL; ?>";
+      const BASE_PUBLIC = "<?php echo BASE_PUBLIC; ?>";
     </script>
     </body>
 

@@ -20,6 +20,9 @@
     <link href="https://cdn.datatables.net/buttons/3.2.5/css/buttons.bootstrap5.min.css" rel="stylesheet" integrity="sha384-HI7qMf1hznIZrIds5RatHHAOCn/7uGgsYQCanIyCeJDebKwCnoWnm4cB9SH+Z/ab" crossorigin="anonymous">
     <link href="https://cdn.datatables.net/v/bs5/dt-2.3.4/b-3.2.5/b-colvis-3.2.5/datatables.min.css" rel="stylesheet" integrity="sha384-b7CCWUkHYYyObRWK8dDxH6PCbeH3SHTbH+TzwIoEUU/Ol75XipyzcYbfdNWmNWFF" crossorigin="anonymous">
     <link href="https://cdn.datatables.net/v/bs5/dt-2.3.4/cr-2.1.2/datatables.min.css" rel="stylesheet" integrity="sha384-Kmlp1CBAWUtz5k1YIckZJpfqfz679/v2c11h9L26srNf/fL27CqaljUGsp7P2SN9" crossorigin="anonymous">
+    <!-- Tiny MCE Links -->
+    <script src="https://cdn.tiny.cloud/1/hunfvs9zjm4i9ph6m4ls99rumaquw91oqwz981hcx0er0xsp/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
+    <script src="<?php echo BASE_URL . 'assets/js/tinymce.js'; ?>"> </script>
 </head>
 
 <body>

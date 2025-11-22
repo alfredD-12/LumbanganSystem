@@ -2,10 +2,16 @@
 require_once dirname(__DIR__, 2) . '/helpers/session_helper.php';
 require_once dirname(__DIR__, 2) . '/config/Database.php';
 require_once dirname(__DIR__, 2) . '/models/Gallery.php';
+require_once dirname(__DIR__, 2) . '/models/Announcement.php';
 
 // Fetch gallery items
 $galleryModel = new Gallery();
 $galleryItems = $galleryModel->getAll(true);
+
+// Fetch latest 3 public announcements for the landing page
+$announcementModel = new Announcement();
+$publicAnnouncements = $announcementModel->getPublicAnnouncements('residents');
+$landingAnnouncements = array_slice($publicAnnouncements, 0, 3);
 
 if (isLoggedIn()) {
     if (isUser()) {
@@ -239,9 +245,46 @@ if (isLoggedIn()) {
         <p class="section-subtitle">Stay informed with the latest news, events, and advisories</p>
       </div>
       <div class="row">
-        <div class="col-lg-4 col-md-6"><div class="announcement-card"><div class="announcement-header"><i class="fas fa-bullhorn announcement-icon"></i><div><h5 style="margin: 0; font-size: 1rem;">Community Event</h5><div class="announcement-date">October 30, 2025</div></div></div><div class="announcement-body"><h5 class="announcement-title">Barangay Cleanup Drive</h5><p style="color: #718096; font-size: 0.95rem;">Join us for a community-wide cleanup drive. Let's work together to keep our barangay clean and beautiful. Bring your own cleaning materials.</p></div></div></div>
-        <div class="col-lg-4 col-md-6"><div class="announcement-card"><div class="announcement-header"><i class="fas fa-exclamation-triangle announcement-icon"></i><div><h5 style="margin: 0; font-size: 1rem;">Advisory</h5><div class="announcement-date">October 28, 2025</div></div></div><div class="announcement-body"><h5 class="announcement-title">Scheduled Power Interruption</h5><p style="color: #718096; font-size: 0.95rem;">Please be advised of a scheduled power interruption on November 2, 2025 from 9:00 AM to 3:00 PM for maintenance work.</p></div></div></div>
-        <div class="col-lg-4 col-md-6"><div class="announcement-card"><div class="announcement-header"><i class="fas fa-medkit announcement-icon"></i><div><h5 style="margin: 0; font-size: 1rem;">Health Program</h5><div class="announcement-date">October 25, 2025</div></div></div><div class="announcement-body"><h5 class="announcement-title">Free Medical Mission</h5><p style="color: #718096; font-size: 0.95rem;">Free medical consultation and medicines will be available for all residents. Bring your valid ID and barangay clearance.</p></div></div></div>
+        <?php if (!empty($landingAnnouncements)): ?>
+          <?php foreach ($landingAnnouncements as $a): ?>
+            <?php
+              $id = htmlspecialchars($a['id']);
+              $title = htmlspecialchars($a['title']);
+              $message = htmlspecialchars($a['message']);
+              $excerpt = htmlspecialchars(strlen($a['message']) > 120 ? substr($a['message'], 0, 120) . '...' : $a['message']);
+              $date = htmlspecialchars(date('F j, Y', strtotime($a['created_at'])));
+              $icon = !empty($a['image']) ? 'fas fa-image' : 'fas fa-bullhorn';
+            ?>
+            <div class="col-lg-4 col-md-6">
+              <div class="announcement-card">
+                <div class="announcement-header">
+                  <i class="<?php echo $icon; ?> announcement-icon"></i>
+                  <div>
+                    <h5 style="margin: 0; font-size: 1rem;"><?php echo $title; ?></h5>
+                    <div class="announcement-date"><?php echo $date; ?></div>
+                  </div>
+                </div>
+                <div class="announcement-body">
+                  <h5 class="announcement-title"><?php echo $title; ?></h5>
+                  <p style="color: #718096; font-size: 0.95rem;"><?php echo $excerpt; ?></p>
+                  <div style="display:flex; justify-content: flex-end;">
+                    <button class="btn btn-custom btn-outline-custom" onclick="landingReadMore(this)"
+                            data-id="<?php echo $id; ?>"
+                            data-title="<?php echo $title; ?>"
+                            data-message="<?php echo $message; ?>"
+                            data-image="<?php echo htmlspecialchars($a['image']); ?>">
+                      Read More
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <div class="col-12">
+            <p style="color: #718096;">No announcements available at the moment.</p>
+          </div>
+        <?php endif; ?>
       </div>
     </div>
   </section>
@@ -560,7 +603,68 @@ if (isLoggedIn()) {
   <script src="<?php echo BASE_URL; ?>/assets/js/Landing/Landing.js?v=2"></script>
   <script src="<?php echo BASE_URL; ?>/assets/js/Landing/login.js?v=2"></script>
   
+  <!-- Announcement Modal for Landing -->
+  <div class="modal fade" id="landingAnnouncementModal" tabindex="-1" aria-labelledby="landingAnnouncementModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="landingAnnouncementModalLabel"><i class="fas fa-bullhorn me-2"></i>Announcement Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <h4 id="landingModalTitle" class="mb-3"></h4>
+          <p class="text-muted small mb-3" id="landingModalMeta"></p>
+          <div id="landingModalImageWrap" style="margin-bottom:1.5rem; display:none; text-align:center;">
+            <img id="landingModalImage" src="" alt="" class="img-fluid rounded" style="width:100%; height:auto; max-height:60vh; object-fit:contain; display:block; margin:0 auto;">
+          </div>
+          <div id="landingModalMessageContainer">
+            <div id="landingModalMessage" class="modal-message-content"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times me-2"></i>Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
   <script>
+    // Is user logged in? (set server-side)
+    const isLoggedIn = <?php echo isLoggedIn() ? 'true' : 'false'; ?>;
+
+    // Called by Read More buttons on landing announcements
+    function landingReadMore(btn) {
+      const id = btn.getAttribute('data-id');
+      const title = btn.getAttribute('data-title') || '';
+      const message = btn.getAttribute('data-message') || '';
+      const image = btn.getAttribute('data-image') || '';
+
+      if (!isLoggedIn) {
+        // Trigger existing login modal (navbar login link has id 'openLoginModal')
+        const openLogin = document.getElementById('openLoginModal');
+        if (openLogin) openLogin.click();
+        else {
+          // Fallback: show the overlay directly
+          const overlay = document.getElementById('loginModal');
+          if (overlay) overlay.style.display = 'flex';
+        }
+        return;
+      }
+
+      // Populate modal and show (Bootstrap)
+      document.getElementById('landingModalTitle').textContent = title;
+      document.getElementById('landingModalMessage').textContent = message;
+      if (image) {
+        document.getElementById('landingModalImage').src = image;
+        document.getElementById('landingModalImageWrap').style.display = 'block';
+      } else {
+        document.getElementById('landingModalImageWrap').style.display = 'none';
+      }
+
+      const modalEl = document.getElementById('landingAnnouncementModal');
+      const modal = new bootstrap.Modal(modalEl);
+      modal.show();
+    }
     function openImageLightbox(imgSrc) {
       document.getElementById('imageLightbox').style.display = 'flex';
       document.getElementById('lightboxImg').src = imgSrc;

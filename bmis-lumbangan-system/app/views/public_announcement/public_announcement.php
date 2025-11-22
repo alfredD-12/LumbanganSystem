@@ -98,8 +98,8 @@ include __DIR__ . '/../../components/resident_components/header-resident.php';
                 $displayToday = array_slice($todaysAnnouncements, 0, $displayLimit);
                 foreach ($displayToday as $index => $a): 
                     $data_title = htmlspecialchars($a['title'], ENT_QUOTES);
-                    $data_message = htmlspecialchars($a['message'], ENT_QUOTES);
-                    $data_image = $a['image'] ? htmlspecialchars($a['image'], ENT_QUOTES) : '';
+                        $data_message = htmlspecialchars($a['message'], ENT_QUOTES);
+                        $data_image = $a['image'] ? htmlspecialchars(announcement_image_url($a['image']), ENT_QUOTES) : '';
                     $data_author = htmlspecialchars($a['author'], ENT_QUOTES);
                     $data_audience = htmlspecialchars($a['audience'], ENT_QUOTES);
                     $data_created = htmlspecialchars(date('M d, Y h:i A', strtotime($a['created_at'])), ENT_QUOTES);
@@ -201,8 +201,8 @@ include __DIR__ . '/../../components/resident_components/header-resident.php';
                         <?php 
                         foreach ($announcements as $index => $a): 
                             $data_title = htmlspecialchars($a['title'], ENT_QUOTES);
-                            $data_message = htmlspecialchars($a['message'], ENT_QUOTES);
-                            $data_image = $a['image'] ? htmlspecialchars($a['image'], ENT_QUOTES) : '';
+                                $data_message = htmlspecialchars($a['message'], ENT_QUOTES);
+                                $data_image = $a['image'] ? htmlspecialchars(announcement_image_url($a['image']), ENT_QUOTES) : '';
                             $data_author = htmlspecialchars($a['author'], ENT_QUOTES);
                             $data_audience = htmlspecialchars($a['audience'], ENT_QUOTES);
                             $data_created = htmlspecialchars(date('M d, Y h:i A', strtotime($a['created_at'])), ENT_QUOTES);

@@ -1,7 +1,8 @@
 <?php
 session_start();
 
-// Include database and models
+// Include config, database and models
+@require_once dirname(__DIR__) . '/config/config.php';
 require_once dirname(__DIR__) . '/config/Database.php';
 require_once dirname(__DIR__) . '/models/User.php';
 require_once dirname(__DIR__) . '/models/Official.php';
@@ -85,11 +86,12 @@ class AuthController {
                 // Update last login
                 $this->userModel->updateLastLogin($user['id']);
 
+                $redirectUrl = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=dashboard_resident';
                 echo json_encode([
                     'success' => true,
                     'message' => 'Login successful',
                     'user_type' => 'user',
-                    'redirect' => '../../views/Dashboard/dashboard.php'
+                    'redirect' => $redirectUrl
                 ]);
                 return;
             }
@@ -112,11 +114,12 @@ class AuthController {
                 // Update last login
                 $this->officialModel->updateLastLogin($official['id']);
 
+                $redirectUrl = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=admin_announcements';
                 echo json_encode([
                     'success' => true,
                     'message' => 'Login successful',
                     'user_type' => 'official',
-                    'redirect' => '../../views/Admin/admin_dashboard.php' // Create this later
+                    'redirect' => $redirectUrl
                 ]);
                 return;
             }
@@ -247,10 +250,11 @@ class AuthController {
                     // Update last login
                     $this->userModel->updateLastLogin($user['id']);
 
+                    $redirectUrl = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=dashboard_resident';
                     echo json_encode([
                         'success' => true,
                         'message' => 'Registration successful! Redirecting to dashboard...',
-                        'redirect' => '../../views/Dashboard/dashboard.php'
+                        'redirect' => $redirectUrl
                     ]);
                 } else {
                     error_log("ERROR: User created but not found in database");
@@ -271,9 +275,37 @@ class AuthController {
      * Handle logout request
      */
     public function logout() {
+        // Start session if not already started
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+
+        // Clear session variables and destroy session data
+        $_SESSION = [];
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            // Remove the session cookie on client
+            setcookie(session_name(), '', time() - 42000,
+                $params["path"], $params["domain"],
+                $params["secure"], $params["httponly"]
+            );
+        }
         session_unset();
         session_destroy();
-        header('Location: ../views/landing/landing.php');
+
+        // If request is AJAX/XHR, return JSON success so client fetch() can act on it
+        $isXhr = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+                 strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+
+        if ($isXhr) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => true, 'message' => 'Logged out']);
+            return;
+        }
+
+        // Otherwise, redirect the browser to the landing page via index router
+        $redirect = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=landing';
+        header('Location: ' . $redirect);
         exit();
     }
 

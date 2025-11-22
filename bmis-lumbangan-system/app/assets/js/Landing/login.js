@@ -31,9 +31,12 @@ document.getElementById('signinForm')?.addEventListener('submit', async function
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
     
     try {
-        const response = await fetch('../../controllers/AuthController.php?action=login', {
+        const metaAuth = document.querySelector('meta[name="app-auth-endpoint"]');
+        const authUrlBase = metaAuth ? metaAuth.content : '../../controllers/AuthController.php';
+        const response = await fetch(authUrlBase + '?action=login', {
             method: 'POST',
-            body: formData
+            body: formData,
+            credentials: 'same-origin'
         });
         
         const result = await response.json();
@@ -42,7 +45,6 @@ document.getElementById('signinForm')?.addEventListener('submit', async function
             // Hide any error messages
             hideLoginError();
             // Redirect to appropriate dashboard
-            console.log('Login successful, redirecting...');
             window.location.href = result.redirect;
         } else {
             // Show error message
@@ -67,19 +69,9 @@ const usernameLoading = document.getElementById('usernameLoading');
 const usernameAvailable = document.getElementById('usernameAvailable');
 const usernameTaken = document.getElementById('usernameTaken');
 
-console.log('Username checker elements:', {
-    usernameInput,
-    usernameCheckContainer,
-    usernameLoading,
-    usernameAvailable,
-    usernameTaken
-});
-
 if (usernameInput) {
-    console.log('Username input found, attaching event listener');
     usernameInput.addEventListener('input', function() {
         const username = this.value.trim();
-        console.log('Username input changed:', username);
         
         // Clear previous timeout
         clearTimeout(usernameCheckTimeout);
@@ -92,29 +84,28 @@ if (usernameInput) {
         
         // Don't check if username is too short
         if (username.length < 3) {
-            console.log('Username too short, skipping check');
             return;
         }
         
         // Show loading indicator
         usernameCheckContainer.style.display = 'block';
         usernameLoading.style.display = 'inline-block';
-        console.log('Showing loading indicator');
         
         // Debounce - wait 500ms after user stops typing
         usernameCheckTimeout = setTimeout(async () => {
-            console.log('Checking username availability:', username);
             try {
                 const formData = new FormData();
                 formData.append('username', username);
                 
-                const response = await fetch('../../controllers/AuthController.php?action=checkUsername', {
+                const metaAuth = document.querySelector('meta[name="app-auth-endpoint"]');
+                const authUrlBase = metaAuth ? metaAuth.content : '../../controllers/AuthController.php';
+                const response = await fetch(authUrlBase + '?action=checkUsername', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    credentials: 'same-origin'
                 });
                 
                 const result = await response.json();
-                console.log('Username check result:', result);
                 
                 // Hide loading
                 usernameLoading.style.display = 'none';
@@ -123,11 +114,9 @@ if (usernameInput) {
                 if (result.available) {
                     usernameAvailable.style.display = 'inline-block';
                     usernameInput.style.borderColor = '#28a745';
-                    console.log('Username is available');
                 } else {
                     usernameTaken.style.display = 'inline-block';
                     usernameInput.style.borderColor = '#dc3545';
-                    console.log('Username is taken');
                 }
             } catch (error) {
                 console.error('Username check error:', error);
@@ -149,15 +138,9 @@ if (usernameInput) {
 // Handle Sign Up Form Submission
 document.getElementById('signupForm')?.addEventListener('submit', async function(e) {
     e.preventDefault();
-    console.log('Registration form submitted');
     
     const formData = new FormData(this);
-    
-    // Log form data for debugging
-    console.log('Form data:');
-    for (let [key, value] of formData.entries()) {
-        console.log(`${key}: ${value}`);
-    }
+
     
     const submitBtn = this.querySelector('button[type="submit"]');
     const originalText = submitBtn.innerHTML;
@@ -167,15 +150,15 @@ document.getElementById('signupForm')?.addEventListener('submit', async function
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registering...';
     
     try {
-        const response = await fetch('../../controllers/AuthController.php?action=register', {
+                const metaAuth = document.querySelector('meta[name="app-auth-endpoint"]');
+                const authUrlBase = metaAuth ? metaAuth.content : '../../controllers/AuthController.php';
+                const response = await fetch(authUrlBase + '?action=register', {
             method: 'POST',
-            body: formData
+            body: formData,
+            credentials: 'same-origin'
         });
         
-        console.log('Response status:', response.status);
-        console.log('Response headers:', response.headers);
         const responseText = await response.text();
-        console.log('Raw response text:', responseText);
         
         // Check if response is empty
         if (!responseText || responseText.trim() === '') {
@@ -188,10 +171,7 @@ document.getElementById('signupForm')?.addEventListener('submit', async function
         let result;
         try {
             result = JSON.parse(responseText);
-            console.log('Parsed result:', result);
         } catch (parseError) {
-            console.error('JSON parse error:', parseError);
-            console.error('Could not parse response:', responseText);
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;
             return;
@@ -200,13 +180,10 @@ document.getElementById('signupForm')?.addEventListener('submit', async function
         if (result.success) {
             // Registration successful - redirect silently
             hideRegisterError();
-            console.log('Registration successful!');
-            console.log('Redirecting to:', result.redirect);
             window.location.href = result.redirect;
         } else {
             // Show error message
             showRegisterError(result.message || 'Registration failed. Please try again.');
-            console.log('Registration failed:', result.message);
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;
         }

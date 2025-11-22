@@ -1,3 +1,7 @@
+<?php
+// Footer partial (example). Replace the existing footer block content with this file.
+// NOTE: This file uses the BASE_URL PHP constant already present in your app.
+?>
     <footer class="dashboard-footer footer mt-5 pt-5 pb-3 position-relative">
         <!-- Floating Shapes Background -->
         <div class="floating-shapes">
@@ -23,7 +27,7 @@
             <div class="col-lg-4 mb-4">
                 <h5 class="footer-title">Quick Links</h5>
                 <ul class="footer-links">
-                <li><a href="#dashboard">Dashboard</a></li>
+                <li><a href="<?php echo h(BASE_PUBLIC . 'index.php?page=dashboard_resident'); ?>">Dashboard</a></li>
                 <li><a href="#services">Services</a></li>
                 <li><a href="#announcements">Announcements</a></li>
                 <li><a href="#profile">My Profile</a></li>
@@ -58,30 +62,52 @@
             </svg>
         </div>
     </footer>
-    
-    <!-- JS FOR UI (NEW HEADER AND FOOTER) -->
-    <script src="<?php echo BASE_URL . 'assets/js/resident/document_resident.js'?>"></script>
-    <!-- JS FOR BOOTSTRAP CDN -->
+
+    <!-- Expose runtime base URL for static JS files and provide small shims -->
+    <script>
+      // Make sure all static JS can build absolute URLs
+      window.BASE_URL = '<?php echo rtrim(BASE_URL, "/"); ?>';
+
+      // Provide a no-op shim for addManualDropdownListeners if not defined elsewhere.
+      // This avoids ReferenceError in document_resident.js when the real implementation isn't loaded early enough.
+      if (typeof window.addManualDropdownListeners !== 'function') {
+        window.addManualDropdownListeners = function() { /* no-op fallback */ };
+      }
+
+      // Optional: expose a small helper path for Survey controller endpoints
+      window.SURVEY_API = window.BASE_URL + '/controllers/SurveyController.php';
+    </script>
+
+    <!-- 1) Core dependencies -->
+    <!-- Load Bootstrap first so scripts that use bootstrap.Modal etc can run safely -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- JS FOR DOCUMENT REQUEST -->
-    <script src="<?php echo BASE_URL . 'assets/js/document_request.js'; ?>"></script>
-    <!-- PAKILAGAY NALANG DIN SA BABA NG DEPENDENCIES OR CDNS -->
-    
-    <!-- Page JS -->
-    <script src="../../assets/js/Survey/wizard_angina.js"></script>
-    <script src="../../assets/js/Survey/wizard_diabetes.js"></script>
-    <script src="../../assets/js/Survey/wizard_family_history.js"></script>
-    <script src="../../assets/js/Survey/wizard_family.js"></script>
-    <script src="../../assets/js/Survey/wizard_family.js"></script>
-    <script src="../../assets/js/Survey/wizard_lifestyle.js"></script>
-    <script src="../../assets/js/Survey/wizard_lifestyle.js"></script>
-    <script src="../../assets/js/Survey/wizard_vitals.js"></script>
 
-    <script src="../../assets/js/Survey/survey-persistence.js"></script>
-    <script src="../../assets/js/Survey/save-survey.js"></script>
-    <script src="../../assets/js/Survey/tree-enhance.js"></script>
-    <script src="../../assets/js/Survey/bhw-float-control.js"></script>
+    <!-- Resident-specific JS -->
+    <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/resident/document_resident.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/resident/document_resident.js'); ?>"></script>
 
-    <script src="<?php echo BASE_URL; ?>assets/js/announcement/public_announcements.js?v=<?php echo time(); ?>"></script>
+    <!-- Document request logic -->
+    <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/document_request.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/document_request.js'); ?>"></script>
+
+    <!-- 2) Survey scripts (use BASE_URL absolute paths; load only once each) -->
+    <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/Survey/wizard_angina.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/Survey/wizard_angina.js'); ?>"></script>
+    <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/Survey/wizard_diabetes.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/Survey/wizard_diabetes.js'); ?>"></script>
+    <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/Survey/wizard_family_history.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/Survey/wizard_family_history.js'); ?>"></script>
+    <!-- ensure wizard_family uses the corrected static JS (no PHP embedded) and included once -->
+    <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/Survey/wizard_household.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/Survey/wizard_household.js'); ?>"></script>
+    <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/Survey/wizard_family.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/Survey/wizard_family.js'); ?>"></script>
+    <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/Survey/wizard_lifestyle.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/Survey/wizard_lifestyle.js'); ?>"></script>
+    <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/Survey/wizard_personal.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/Survey/wizard_personal.js'); ?>"></script>
+    <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/Survey/wizard_vitals.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/Survey/wizard_vitals.js'); ?>"></script>
+
+    <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/Survey/survey-persistence.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/Survey/survey-persistence.js'); ?>"></script>
+    <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/Survey/save-survey.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/Survey/save-survey.js'); ?>"></script>
+    <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/Survey/tree-enhance.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/Survey/tree-enhance.js'); ?>"></script>
+    <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/Survey/bhw-float-control.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/Survey/bhw-float-control.js'); ?>"></script>
+
+    <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/Dashboard/header-resident.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/Dashboard/header-resident.js'); ?>"></script>
+
+
+    <!-- Announcements / other page-specific scripts -->
+    <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/announcement/public_announcements.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>

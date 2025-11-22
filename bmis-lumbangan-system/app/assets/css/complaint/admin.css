@@ -1,0 +1,1020 @@
+/* ============================================
+   ADMIN COMPLAINT PAGE STYLES
+   For: app/views/complaint/admin.php
+   ============================================ */
+
+/* Clean Single Color Cards */
+.gradient-card-blue {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+.gradient-card-blue:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    background: #2563eb;
+}
+.gradient-card-yellow {
+    background: #f59e0b;
+    color: white;
+    border: none;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+.gradient-card-yellow:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    background: #d97706;
+}
+.gradient-card-purple {
+    background: #8b5cf6;
+    color: white;
+    border: none;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.2);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+.gradient-card-purple:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    background: #7c3aed;
+}
+.gradient-card-green {
+    background: #10b981;
+    color: white;
+    border: none;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+.gradient-card-green:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    background: #059669;
+}
+
+/* Clean Status Badges */
+.status-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    margin: 0.25rem;
+    transition: all 0.2s ease;
+    letter-spacing: 0.3px;
+}
+
+.status-badge:hover {
+    opacity: 0.9;
+}
+
+.status-badge .resolution-time {
+    font-size: 0.8em;
+    opacity: 0.9;
+    font-weight: normal;
+}
+
+.status-resolved {
+    display: inline-flex;
+    align-items: center;
+    background: #10b981 !important;
+    border: none !important;
+    color: white !important;
+    padding: 0.5rem 1rem !important;
+}
+
+.status-resolved i {
+    font-size: 1em;
+    margin-right: 0.5rem;
+}
+
+.status-pending {
+    background: #ef4444;
+    color: white;
+    border: none;
+}
+
+.status-investigating {
+    background: #3b82f6;
+    color: white;
+    border: none;
+}
+
+.case-criminal {
+    background: #dc2626;
+    color: white;
+    border: none;
+}
+
+.case-civil {
+    background: #3b82f6;
+    color: white;
+    border: none;
+}
+
+.case-others {
+    background: #6b7280;
+    color: white;
+    border: none;
+}
+
+/* Clean Incident Cards */
+.incident-card {
+    transition: all 0.2s ease;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    position: relative;
+}
+.incident-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: #3b82f6;
+    border-radius: 8px 0 0 8px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+.incident-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: #3b82f6;
+}
+.incident-card:hover::before {
+    opacity: 1;
+}
+
+.icon-large {
+    font-size: 1.75rem;
+    opacity: 0.9;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+/* Professional Layout and spacing improvements */
+body {
+    background: #f3f4f6;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+}
+
+/* Main content container - adjust with sidebar */
+.main-content {
+    transition: padding-left 0.35s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.container-xxl.px-4.py-4 {
+    max-width: 100%;
+    margin: 0 auto;
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+/* Clean Buttons */
+.btn {
+    border-radius: 6px;
+    font-weight: 600;
+    padding: 0.625rem 1.25rem;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.btn-outline-primary {
+    border: 2px solid #3b82f6;
+    color: #3b82f6;
+    background: white;
+}
+
+.btn-outline-primary:hover {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
+.btn-warning {
+    background: #f59e0b;
+    color: white;
+}
+
+.btn-warning:hover {
+    background: #d97706;
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #4b5563;
+    transform: translateY(-1px);
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+/* Stats cards professional styling - Compact Size */
+.gradient-card-blue .card-body,
+.gradient-card-yellow .card-body,
+.gradient-card-purple .card-body,
+.gradient-card-green .card-body {
+    padding: 1rem 1.25rem;
+    position: relative;
+}
+
+.gradient-card-blue .card-body h2,
+.gradient-card-yellow .card-body h2,
+.gradient-card-purple .card-body h2,
+.gradient-card-green .card-body h2 {
+    font-size: 1.75rem;
+    margin-top: 0.25rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    line-height: 1;
+}
+
+.gradient-card-blue .card-body p,
+.gradient-card-yellow .card-body p,
+.gradient-card-purple .card-body p,
+.gradient-card-green .card-body p {
+    font-size: 0.75rem;
+    opacity: 0.95;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 0;
+}
+
+/* Stats Card Icons */
+.gradient-card-blue .icon-large,
+.gradient-card-yellow .icon-large,
+.gradient-card-purple .icon-large,
+.gradient-card-green .icon-large {
+    transition: all 0.3s ease;
+}
+
+.gradient-card-blue:hover .icon-large,
+.gradient-card-yellow:hover .icon-large,
+.gradient-card-purple:hover .icon-large,
+.gradient-card-green:hover .icon-large {
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* Professional Incident card improvements */
+.incident-card {
+    margin-bottom: 1.5rem;
+}
+
+.incident-card .card-body {
+    padding: 1.75rem;
+}
+
+.incident-card .card-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    word-break: break-word;
+    color: #1f2937;
+    margin-bottom: 1rem;
+    line-height: 1.4;
+}
+
+.incident-card .text-muted {
+    color: #6b7280 !important;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.incident-card .row.g-3 {
+    margin-top: 0.5rem;
+}
+
+.incident-card .col-md-6,
+.incident-card .col-12 {
+    padding: 0.5rem;
+}
+
+.incident-card strong {
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+/* Align badges to the top-right of the card header area */
+.incident-card .card-body > .row > .col > .d-flex {
+    position: relative;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+/* Enhanced Form Labels */
+.form-label {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    letter-spacing: 0.3px;
+}
+
+/* Professional Search Input with Icon */
+.input-group {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.input-group:focus-within {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Filter Dropdowns Enhancement */
+.form-select {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%233b82f6' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+}
+
+.form-select:hover {
+    border-color: #3b82f6;
+}
+
+/* Clean Modal Styling */
+.modal {
+    z-index: 10500 !important;
+}
+
+.modal-backdrop {
+    z-index: 10400 !important;
+}
+
+.modal-content {
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    background: #3b82f6;
+    color: white;
+    border-radius: 8px 8px 0 0;
+    padding: 1.25rem 1.5rem;
+    border-bottom: none;
+}
+
+.modal-header .btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+}
+
+.modal-header .btn-close:hover {
+    opacity: 1;
+}
+
+.modal-title {
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    border-top: 1px solid #e5e7eb;
+    padding: 1.25rem 1.5rem;
+    background: #f9fafb;
+    border-radius: 0 0 8px 8px;
+}
+
+.modal .form-label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #374151;
+}
+
+.modal .form-control,
+.modal .form-select {
+    border-radius: 8px;
+    border: 2px solid #e5e7eb;
+    padding: 0.625rem 0.875rem;
+    transition: all 0.3s ease;
+}
+
+.modal .form-control:focus,
+.modal .form-select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.modal .card.bg-light {
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb !important;
+}
+
+.modal-body p {
+    margin-bottom: 1rem;
+    word-break: break-word;
+    line-height: 1.6;
+}
+
+/* Form Control Enhancements */
+.form-control,
+.form-select {
+    border-radius: 8px;
+    border: 2px solid #e5e7eb;
+    padding: 0.625rem 0.875rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+/* Input Group Enhancements */
+.input-group-text {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 8px 0 0 8px;
+}
+
+.input-group .form-control {
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+}
+
+/* Card Enhancements */
+.card {
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Alert Enhancements */
+.alert {
+    border-radius: 6px;
+    border: none;
+    animation: slideIn 0.4s ease;
+}
+
+.alert-success {
+    background: #10b981;
+    color: white;
+    border-left: 4px solid #059669;
+}
+
+.alert-danger {
+    background: #ef4444;
+    color: white;
+    border-left: 4px solid #dc2626;
+}
+
+.alert-info {
+    background: #3b82f6;
+    color: white;
+    border-left: 4px solid #2563eb;
+}
+
+/* Details Modal Section Styling */
+#detailsModal .modal-body .card {
+    border-left: 4px solid #3b82f6;
+    transition: all 0.3s ease;
+}
+
+#detailsModal .modal-body .card:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+#detailsModal .modal-body .card h6 i {
+    font-size: 1.25rem;
+}
+
+#detailsModal .modal-body .card:nth-child(2) {
+    border-left-color: #3b82f6;
+}
+
+#detailsModal .modal-body .card:nth-child(3) {
+    border-left-color: #ef4444;
+}
+
+#detailsModal .modal-body .card:nth-child(4) {
+    border-left-color: #f59e0b;
+}
+
+#detailsModal .modal-body .card h6 {
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+}
+
+#detailsModal .modal-body small.text-muted {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    color: #6b7280 !important;
+}
+
+#detailsModal .modal-body strong {
+    font-size: 0.95rem;
+    color: #1f2937;
+    display: block;
+    margin-top: 0.25rem;
+}
+
+#detailsModal .modal-body .row.g-2 > div {
+    padding: 0.5rem;
+}
+
+#detailsModal .modal-header {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    border-bottom: none;
+}
+
+#detailsModal .modal-title {
+    font-weight: 700;
+    font-size: 1.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Section Icons Color */
+#detailsModal .text-primary i {
+    color: #3b82f6;
+}
+
+#detailsModal .text-danger i {
+    color: #ef4444;
+}
+
+#detailsModal .text-warning i {
+    color: #f59e0b;
+}
+
+/* Complainant Section Accent */
+#detailsModal .modal-body > div:nth-child(2) .card {
+    background: linear-gradient(to right, rgba(59, 130, 246, 0.02) 0%, transparent 100%);
+}
+
+/* Offender Section Accent */
+#detailsModal .modal-body > div:nth-child(3) .card {
+    background: linear-gradient(to right, rgba(239, 68, 68, 0.02) 0%, transparent 100%);
+}
+
+/* Incident Section Accent */
+#detailsModal .modal-body > div:nth-child(4) .card {
+    background: linear-gradient(to right, rgba(245, 158, 11, 0.02) 0%, transparent 100%);
+}
+
+/* Status Badges in Details Header */
+#detailsModal .modal-body > div:first-child {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+#detailsModal .modal-body > div:first-child h5 {
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+/* Responsive design improvements */
+@media (max-width: 991px) {
+    .container-xxl.px-4.py-4 {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+@media (max-width: 767px) {
+    .container-xxl.px-4.py-4 {
+        padding: 1rem 0.75rem;
+    }
+    
+    .gradient-card-blue .card-body,
+    .gradient-card-yellow .card-body,
+    .gradient-card-purple .card-body,
+    .gradient-card-green .card-body {
+        padding: 1rem;
+    }
+    
+    .gradient-card-blue .card-body h2,
+    .gradient-card-yellow .card-body h2,
+    .gradient-card-purple .card-body h2,
+    .gradient-card-green .card-body h2 {
+        font-size: 1.5rem;
+    }
+    
+    .icon-large {
+        font-size: 1.25rem;
+    }
+    
+    .incident-card {
+        margin: 0 0 0.75rem 0;
+        border-radius: 0.5rem;
+    }
+    
+    .incident-card .card-body {
+        padding: 1rem;
+    }
+    
+    .incident-card .card-title {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .status-badge {
+        padding: 0.2rem 0.5rem;
+        font-size: 0.8rem;
+        margin: 0.15rem;
+    }
+}
+
+/* Professional Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.incident-card {
+    animation: fadeIn 0.5s ease;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #3b82f6;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #2563eb;
+}
+
+/* Selection Styling */
+::selection {
+    background: #3b82f6;
+    color: white;
+}
+
+::-moz-selection {
+    background: #3b82f6;
+    color: white;
+}
+
+/* Focus Visible for Accessibility */
+*:focus-visible {
+    outline: 3px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+/* ============================================
+   DARK MODE STYLES FOR ADMIN COMPLAINT PAGE
+   ============================================ */
+
+body.dark-mode {
+    background: #0f172a;
+    color: #e2e8f0;
+}
+
+body.dark-mode .main-content {
+    background: #0f172a;
+}
+
+/* Statistics Cards - Dark Mode */
+body.dark-mode .gradient-card-blue {
+    background: #1e40af;
+    box-shadow: 0 2px 8px rgba(30, 64, 175, 0.3);
+}
+
+body.dark-mode .gradient-card-blue:hover {
+    background: #1e3a8a;
+    box-shadow: 0 4px 12px rgba(30, 64, 175, 0.4);
+}
+
+body.dark-mode .gradient-card-yellow {
+    background: #b45309;
+    box-shadow: 0 2px 8px rgba(180, 83, 9, 0.3);
+}
+
+body.dark-mode .gradient-card-yellow:hover {
+    background: #92400e;
+    box-shadow: 0 4px 12px rgba(180, 83, 9, 0.4);
+}
+
+body.dark-mode .gradient-card-purple {
+    background: #6d28d9;
+    box-shadow: 0 2px 8px rgba(109, 40, 217, 0.3);
+}
+
+body.dark-mode .gradient-card-purple:hover {
+    background: #5b21b6;
+    box-shadow: 0 4px 12px rgba(109, 40, 217, 0.4);
+}
+
+body.dark-mode .gradient-card-green {
+    background: #047857;
+    box-shadow: 0 2px 8px rgba(4, 120, 87, 0.3);
+}
+
+body.dark-mode .gradient-card-green:hover {
+    background: #065f46;
+    box-shadow: 0 4px 12px rgba(4, 120, 87, 0.4);
+}
+
+/* Incident Cards - Dark Mode */
+body.dark-mode .incident-card {
+    background: #1e293b;
+    border-color: #334155;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .incident-card .card-body {
+    background: #1e293b;
+    color: #e2e8f0;
+}
+
+body.dark-mode .incident-card::before {
+    background: #3b82f6;
+}
+
+body.dark-mode .incident-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    border-color: #3b82f6;
+}
+
+body.dark-mode .incident-card .card-title {
+    color: #f1f5f9;
+}
+
+body.dark-mode .incident-card .text-muted {
+    color: #94a3b8 !important;
+}
+
+body.dark-mode .incident-card strong {
+    color: #e2e8f0;
+}
+
+/* Forms - Dark Mode */
+body.dark-mode .form-label {
+    color: #cbd5e1;
+}
+
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+    background: #0f172a;
+    border-color: #334155;
+    color: #e2e8f0;
+}
+
+body.dark-mode .form-control:focus,
+body.dark-mode .form-select:focus {
+    background: #1e293b;
+    border-color: #3b82f6;
+    color: #e2e8f0;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+body.dark-mode .form-control::placeholder {
+    color: #64748b;
+}
+
+body.dark-mode .input-group-text {
+    background: #1e40af;
+    color: white;
+    border-color: #334155;
+}
+
+/* Buttons - Dark Mode */
+body.dark-mode .btn-primary {
+    background: #2563eb;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);
+}
+
+body.dark-mode .btn-primary:hover {
+    background: #1d4ed8;
+}
+
+body.dark-mode .btn-outline-primary {
+    border-color: #3b82f6;
+    color: #60a5fa;
+    background: transparent;
+}
+
+body.dark-mode .btn-outline-primary:hover {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
+body.dark-mode .btn-warning {
+    background: #d97706;
+}
+
+body.dark-mode .btn-warning:hover {
+    background: #b45309;
+}
+
+body.dark-mode .btn-danger {
+    background: #dc2626;
+}
+
+body.dark-mode .btn-danger:hover {
+    background: #b91c1c;
+}
+
+/* Modals - Dark Mode */
+body.dark-mode .modal-content {
+    background: #1e293b;
+    border-color: #334155;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .modal-header {
+    background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+    border-bottom-color: #334155;
+}
+
+body.dark-mode .modal-body {
+    background: #1e293b;
+    color: #e2e8f0;
+}
+
+body.dark-mode .modal-footer {
+    background: #0f172a;
+    border-top-color: #334155;
+}
+
+body.dark-mode .modal .card.bg-light {
+    background: #0f172a !important;
+    border-color: #334155;
+}
+
+body.dark-mode .modal .card {
+    background: #0f172a;
+    border-color: #334155;
+}
+
+body.dark-mode #detailsModal .modal-body .card {
+    background: linear-gradient(to right, rgba(59, 130, 246, 0.05) 0%, transparent 100%);
+}
+
+body.dark-mode #detailsModal .modal-body h6 {
+    color: #f1f5f9;
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode #detailsModal .modal-body small.text-muted {
+    color: #94a3b8 !important;
+}
+
+body.dark-mode #detailsModal .modal-body strong {
+    color: #e2e8f0;
+}
+
+/* Alert Cards - Dark Mode */
+body.dark-mode .alert-success {
+    background: #065f46;
+    border-left-color: #047857;
+}
+
+body.dark-mode .alert-danger {
+    background: #991b1b;
+    border-left-color: #b91c1c;
+}
+
+body.dark-mode .alert-info {
+    background: #1e40af;
+    border-left-color: #2563eb;
+}
+
+/* Card Backgrounds - Dark Mode */
+body.dark-mode .card {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+body.dark-mode .card-body {
+    background: #1e293b;
+    color: #e2e8f0;
+}
+
+body.dark-mode .card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Scrollbar - Dark Mode */
+body.dark-mode ::-webkit-scrollbar-track {
+    background: #1e293b;
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb {
+    background: #475569;
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+}
+
+/* Selection - Dark Mode */
+body.dark-mode ::selection {
+    background: #2563eb;
+    color: white;
+}
+
+body.dark-mode ::-moz-selection {
+    background: #2563eb;
+    color: white;
+}
+
+/* Transition for smooth dark mode toggle */
+body,
+.card,
+.modal-content,
+.form-control,
+.form-select,
+.btn,
+.incident-card,
+.gradient-card-blue,
+.gradient-card-yellow,
+.gradient-card-purple,
+.gradient-card-green {
+    transition: background-color 0.3s ease, 
+                color 0.3s ease, 
+                border-color 0.3s ease,
+                box-shadow 0.3s ease;
+}

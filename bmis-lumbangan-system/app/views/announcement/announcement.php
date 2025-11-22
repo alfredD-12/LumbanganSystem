@@ -1,21 +1,12 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Admin Announcements</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Google Font: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <!-- Modern announcements styles -->
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/announcement/announcements_modern.css?v=<?php echo time(); ?>">
-    <script>
-        // Expose BASE_URL to client-side scripts
-        window.BASE_URL = '<?php echo rtrim(BASE_URL, "/"); ?>' + '/';
-    </script>
-</head>
-<body>
+<!-- Google Font: Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<!-- Modern announcements styles -->
+<link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/announcement/announcements_modern.css?v=<?php echo time(); ?>">
+<?php
+$pageTitle = 'Barangay Lumbangan - Announcement';
+include_once __DIR__ . '/../../components/admin_components/header-admin.php'  
+?>
 <div class="announcements-page">
     <!-- Modern Hero Header -->
     <header class="hero-header">
@@ -27,7 +18,7 @@
             <h1 class="hero-title">Barangay Announcement Manager</h1>
             <p class="hero-subtitle">Create, curate, and schedule updates that feed the public announcements board.</p>
             <div class="hero-actions">
-                <a href="index.php?page=public_announcement/index" class="btn-hero btn-hero-secondary" target="_blank" rel="noopener">
+                <a href="index.php?page=public_announcement" class="btn-hero btn-hero-secondary" target="_blank" rel="noopener">
                     <i class="bi bi-arrow-up-right-square me-2"></i>Preview Public Board
                 </a>
                 <a href="#announcementForm" class="btn-hero btn-hero-primary">
@@ -339,7 +330,6 @@
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="<?php echo BASE_URL; ?>assets/js/announcement/announcements.js"></script>
 
 <!-- Announcement view modal -->
@@ -375,5 +365,6 @@
         </div>
     </div>
 </div>
-</body>
-</html>
+
+
+<?php include_once __DIR__ . '/../../components/admin_components/footer-admin.php'?>

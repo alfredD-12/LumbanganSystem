@@ -8,6 +8,8 @@ require_once __DIR__ . '/../app/controllers/admins/AdminDocumentController.php';
 
 // Add SurveyController so AJAX survey actions can be routed here
 require_once __DIR__ . '/../app/controllers/SurveyController.php';
+// Load announcement helpers (provides base_url/assets_url/uploads_url/announcement_image_url)
+require_once __DIR__ . '/../app/helpers/announcement_helper.php';
 
 //  Handle AJAX/API actions
 $action = $_GET['action'] ?? null;

@@ -4,6 +4,17 @@ require_once dirname(__DIR__, 2) . '/helpers/session_helper.php';
 require_once dirname(__DIR__, 2) . '/helpers/dashboard_helper.php';
 requireUser(); // Only allow logged-in users to access this page
 
+// Load Announcement model and fetch latest 3 announcements
+require_once dirname(__DIR__, 2) . '/models/Announcement.php';
+require_once dirname(__DIR__, 2) . '/helpers/announcement_helper.php';
+
+$announcementModel = new Announcement();
+// Get user role (residents for regular users)
+$userRole = isOfficial() ? 'officials' : 'residents';
+// Fetch latest 3 published announcements for the user's role
+$recentAnnouncements = $announcementModel->getPublicAnnouncements($userRole, []);
+$recentAnnouncements = array_slice($recentAnnouncements, 0, 3); // Limit to 3
+
 $fullName = getFullName();
 $username = getUsername();
 $firstName = getFirstName();
@@ -741,57 +752,77 @@ $officials = getActiveOfficials();
             </div>
 
             <div class="row g-4">
-                <!-- Card 1 -->
-                <div class="col-lg-4 col-md-6">
-                    <div style="background: white; border-radius: 16px; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 4px 20px rgba(0,0,0,0.05);" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 40px rgba(0,0,0,0.12)'; this.style.borderColor='rgba(30, 58, 95, 0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px rgba(0,0,0,0.05)'; this.style.borderColor='rgba(0,0,0,0.05)';">
-                        <div style="height: 160px; background: linear-gradient(135deg, rgba(30, 58, 95, 0.1) 0%, rgba(44, 82, 130, 0.08) 100%); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
-                            <div style="position: absolute; top: -30%; right: -30%; width: 200px; height: 200px; background: rgba(30, 58, 95, 0.1); border-radius: 50%; filter: blur(30px);"></div>
-                            <i class="fas fa-broom" style="font-size: 3.5rem; color: var(--primary-blue); position: relative; z-index: 1;"></i>
-                        </div>
-                        <div style="padding: 2rem;">
-                            <div style="font-size: 0.75rem; color: var(--primary-blue); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 0.75rem;">📅 November 5, 2025</div>
-                            <h4 style="font-size: 1.15rem; color: var(--primary-blue); font-weight: 700; margin-bottom: 0.75rem;">Barangay Cleanup Drive</h4>
-                            <p style="font-size: 0.9rem; color: #666; line-height: 1.6; margin-bottom: 1.25rem;">Join us for a community-wide cleanup drive. All residents are welcomed to participate.</p>
-                            <a href="#" style="color: var(--primary-blue); text-decoration: none; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.4rem; transition: gap 0.3s;">Discover More <i class="fas fa-chevron-right" style="font-size: 0.8rem;"></i></a>
+                <?php if (empty($recentAnnouncements)): ?>
+                    <!-- No Announcements -->
+                    <div class="col-12">
+                        <div style="text-align: center; padding: 3rem; background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+                            <i class="fas fa-bullhorn" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+                            <h4 style="color: #666; font-weight: 600;">No Announcements Available</h4>
+                            <p style="color: #999;">Check back later for updates</p>
                         </div>
                     </div>
-                </div>
-
-                <!-- Card 2 -->
-                <div class="col-lg-4 col-md-6">
-                    <div style="background: white; border-radius: 16px; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 4px 20px rgba(0,0,0,0.05);" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 40px rgba(0,0,0,0.12)'; this.style.borderColor='rgba(44, 82, 130, 0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px rgba(0,0,0,0.05)'; this.style.borderColor='rgba(0,0,0,0.05)';">
-                        <div style="height: 160px; background: linear-gradient(135deg, rgba(44, 82, 130, 0.1) 0%, rgba(30, 58, 95, 0.08) 100%); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
-                            <div style="position: absolute; top: -30%; left: -30%; width: 200px; height: 200px; background: rgba(44, 82, 130, 0.1); border-radius: 50%; filter: blur(30px);"></div>
-                            <i class="fas fa-medkit" style="font-size: 3.5rem; color: var(--secondary-blue); position: relative; z-index: 1;"></i>
-                        </div>
-                        <div style="padding: 2rem;">
-                            <div style="font-size: 0.75rem; color: var(--secondary-blue); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 0.75rem;">📅 November 3, 2025</div>
-                            <h4 style="font-size: 1.15rem; color: var(--primary-blue); font-weight: 700; margin-bottom: 0.75rem;">Free Medical Mission</h4>
-                            <p style="font-size: 0.9rem; color: #666; line-height: 1.6; margin-bottom: 1.25rem;">Free medical consultation and medicines available for all residents on November 10th.</p>
-                            <a href="#" style="color: var(--secondary-blue); text-decoration: none; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.4rem; transition: gap 0.3s;">Discover More <i class="fas fa-chevron-right" style="font-size: 0.8rem;"></i></a>
+                <?php else: ?>
+                    <?php 
+                    $iconMap = [
+                        'residents' => 'fa-users',
+                        'officials' => 'fa-user-tie',
+                        'all' => 'fa-bullhorn'
+                    ];
+                    $colorMap = [
+                        'residents' => 'var(--primary-blue)',
+                        'officials' => 'var(--secondary-blue)',
+                        'all' => 'var(--accent-red)'
+                    ];
+                    
+                    foreach ($recentAnnouncements as $index => $announcement): 
+                        $audience = $announcement['audience'] ?? 'all';
+                        $icon = $iconMap[$audience] ?? 'fa-bullhorn';
+                        $color = $colorMap[$audience] ?? 'var(--primary-blue)';
+                        $title = htmlspecialchars($announcement['title']);
+                        $message = htmlspecialchars($announcement['message']);
+                        $excerpt = strlen($message) > 120 ? substr($message, 0, 120) . '...' : $message;
+                        $date = date('F j, Y', strtotime($announcement['created_at']));
+                        $author = htmlspecialchars($announcement['author'] ?? 'Admin');
+                        $image = $announcement['image'] ?? null;
+                    ?>
+                    <div class="col-lg-4 col-md-6">
+                        <div style="background: white; border-radius: 16px; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 4px 20px rgba(0,0,0,0.05); height: 100%;" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 40px rgba(0,0,0,0.12)'; this.style.borderColor='rgba(30, 58, 95, 0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px rgba(0,0,0,0.05)'; this.style.borderColor='rgba(0,0,0,0.05)';">
+                            <?php if ($image): ?>
+                                <div style="height: 160px; background: url('<?php echo htmlspecialchars(announcement_image_url($image)); ?>') center/cover; position: relative;">
+                                    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(30, 58, 95, 0.3) 0%, rgba(44, 82, 130, 0.2) 100%);"></div>
+                                </div>
+                            <?php else: ?>
+                                <div style="height: 160px; background: linear-gradient(135deg, rgba(30, 58, 95, 0.1) 0%, rgba(44, 82, 130, 0.08) 100%); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+                                    <div style="position: absolute; top: -30%; right: -30%; width: 200px; height: 200px; background: rgba(30, 58, 95, 0.1); border-radius: 50%; filter: blur(30px);"></div>
+                                    <i class="fas <?php echo $icon; ?>" style="font-size: 3.5rem; color: <?php echo $color; ?>; position: relative; z-index: 1;"></i>
+                                </div>
+                            <?php endif; ?>
+                            <div style="padding: 2rem;">
+                                <div style="font-size: 0.75rem; color: <?php echo $color; ?>; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 0.75rem;">
+                                    📅 <?php echo $date; ?>
+                                    <?php if ($audience !== 'all'): ?>
+                                        <span style="margin-left: 0.5rem; background: rgba(30, 58, 95, 0.1); padding: 0.2rem 0.6rem; border-radius: 10px; font-size: 0.7rem;">
+                                            <?php echo ucfirst($audience); ?>
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                                <h4 style="font-size: 1.15rem; color: var(--primary-blue); font-weight: 700; margin-bottom: 0.75rem;"><?php echo $title; ?></h4>
+                                <p style="font-size: 0.9rem; color: #666; line-height: 1.6; margin-bottom: 1.25rem;"><?php echo $excerpt; ?></p>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <small style="color: #999; font-size: 0.8rem;">
+                                        <i class="fas fa-user-circle"></i> <?php echo $author; ?>
+                                    </small>
+                                    <a href="<?php echo htmlspecialchars((defined('BASE_PUBLIC') ? BASE_PUBLIC : '') . 'index.php?page=public_announcement', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" style="color: <?php echo $color; ?>; text-decoration: none; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.4rem; transition: gap 0.3s;">Read More <i class="fas fa-chevron-right" style="font-size: 0.8rem;"></i></a>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- Card 3 -->
-                <div class="col-lg-4 col-md-6">
-                    <div style="background: white; border-radius: 16px; overflow: hidden; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 4px 20px rgba(0,0,0,0.05);" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 40px rgba(0,0,0,0.12)'; this.style.borderColor='rgba(197, 48, 48, 0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px rgba(0,0,0,0.05)'; this.style.borderColor='rgba(0,0,0,0.05)';">
-                        <div style="height: 160px; background: linear-gradient(135deg, rgba(197, 48, 48, 0.1) 0%, rgba(197, 48, 48, 0.05) 100%); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
-                            <div style="position: absolute; bottom: -30%; right: -30%; width: 200px; height: 200px; background: rgba(197, 48, 48, 0.1); border-radius: 50%; filter: blur(30px);"></div>
-                            <i class="fas fa-bolt" style="font-size: 3.5rem; color: var(--accent-red); position: relative; z-index: 1;"></i>
-                        </div>
-                        <div style="padding: 2rem;">
-                            <div style="font-size: 0.75rem; color: var(--accent-red); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 0.75rem;">📅 November 1, 2025</div>
-                            <h4 style="font-size: 1.15rem; color: var(--primary-blue); font-weight: 700; margin-bottom: 0.75rem;">Scheduled Power Interruption</h4>
-                            <p style="font-size: 0.9rem; color: #666; line-height: 1.6; margin-bottom: 1.25rem;">Scheduled power interruption on November 7th from 9:00 AM to 3:00 PM for maintenance.</p>
-                            <a href="#" style="color: var(--accent-red); text-decoration: none; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.4rem; transition: gap 0.3s;">Discover More <i class="fas fa-chevron-right" style="font-size: 0.8rem;"></i></a>
-                        </div>
-                    </div>
-                </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
 
             <div style="text-align: center; margin-top: 3rem;">
-                <a href="#all-announcements" style="display: inline-block; padding: 0.9rem 2.5rem; background: var(--primary-blue); color: white; border-radius: 10px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 8px 20px rgba(30, 58, 95, 0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 12px 30px rgba(30, 58, 95, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 20px rgba(30, 58, 95, 0.3)';">
+                <a href="<?php echo htmlspecialchars((defined('BASE_PUBLIC') ? BASE_PUBLIC : '') . 'index.php?page=public_announcement', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" style="display: inline-block; padding: 0.9rem 2.5rem; background: var(--primary-blue); color: white; border-radius: 10px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 8px 20px rgba(30, 58, 95, 0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 12px 30px rgba(30, 58, 95, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 20px rgba(30, 58, 95, 0.3)';">
                     View All Announcements →
                 </a>
             </div>

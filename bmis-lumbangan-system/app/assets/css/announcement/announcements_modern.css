@@ -20,9 +20,9 @@
     --white: #ffffff;
     
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, #1e3a5f 0%, #c53030 100%);
-    --gradient-accent: linear-gradient(135deg, #2c5282 0%, #c53030 100%);
-    --gradient-hero: linear-gradient(135deg, #1e3a5f 0%, #c53030 100%);
+    --gradient-primary: linear-gradient(135deg, #1e3a5f 0%, #162881 100%);
+    --gradient-accent: linear-gradient(135deg, #1e3a5f 0%, #162881 100%);
+    --gradient-hero: linear-gradient(135deg, #1e3a5f 0%, #162881 100%);
     
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -941,6 +941,14 @@ body {
 
 .btn-close:hover {
     opacity: 1;
+}
+
+.modal {
+    z-index: 10000 !important;
+}
+
+.modal-backdrop {
+    z-index: 9999 !important;
 }
 
 .modal-body {

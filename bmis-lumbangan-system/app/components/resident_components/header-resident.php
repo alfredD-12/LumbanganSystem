@@ -65,7 +65,7 @@ $hdr_mobile = $_SESSION['mobile'] ?? '';
     <div class="collapse navbar-collapse" id="userNavbar">
       <ul class="navbar-nav ms-auto me-3">
         <li class="nav-item"><a class="nav-link" href="<?php echo h(BASE_PUBLIC . 'index.php?page=dashboard_resident'); ?>" id="dashboardLink"><i class="fas fa-home"></i> Dashboard</a></li>
-        <li class="nav-item"><a class="nav-link" href="#announcements"><i class="fas fa-bullhorn"></i> Announcements</a></li>
+        <li class="nav-item"><a class="nav-link" href="<?php echo h(BASE_PUBLIC . 'index.php?page=public_announcement'); ?>"><i class="fas fa-bullhorn"></i> Announcements</a></li>
 
         <!-- Services -->
         <li class="nav-item dropdown">

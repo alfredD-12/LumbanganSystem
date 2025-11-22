@@ -1,8 +1,4 @@
 <?php
-// Single-file Landing page that includes its own header and footer markup.
-// Assets are referenced relative to app/views/landing/
-
-// Check if user is already logged in - redirect to appropriate dashboard
 require_once dirname(__DIR__, 2) . '/helpers/session_helper.php';
 require_once dirname(__DIR__, 2) . '/config/Database.php';
 require_once dirname(__DIR__, 2) . '/models/Gallery.php';
@@ -13,7 +9,8 @@ $galleryItems = $galleryModel->getAll(true);
 
 if (isLoggedIn()) {
     if (isUser()) {
-        header('Location: ../Dashboard/dashboard.php');
+          $redirect = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=dashboard_resident';
+          header('Location: ' . $redirect);
         exit();
     } elseif (isOfficial()) {
         header('Location: ../Admin/admin_dashboard.php'); // Create this later
@@ -21,6 +18,7 @@ if (isLoggedIn()) {
     }
 }
 ?>
+<?php include_once dirname(__DIR__, 2) . '/config/config.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,17 +26,19 @@ if (isLoggedIn()) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Barangay Lumbangan | Nasugbu, Batangas</title>
 
+  <meta name="app-auth-endpoint" content="<?php echo rtrim(BASE_URL, '/'); ?>/controllers/AuthController.php">
+
   <!-- Vendor -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Landing page styles -->
-  <link rel="stylesheet" href="../../assets/css/Landing/landing.css?v=2">
-  <link rel="stylesheet" href="../../assets/css/Landing/news-styles.css?v=2">
+  <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/Landing/landing.css?v=2">
+  <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/Landing/news-styles.css?v=2">
 
   <!-- Optional news fetcher -->
-  <script src="../../assets/js/Landing/batangas-news.js?v=2" defer></script>
+  <script src="<?php echo BASE_URL; ?>/assets/js/Landing/batangas-news.js?v=2" defer></script>
 </head>
 <body>
   <!-- Floating Background Shapes -->
@@ -557,8 +557,8 @@ if (isLoggedIn()) {
 
   <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-  <script src="../../assets/js/Landing/Landing.js?v=2"></script>
-  <script src="../../assets/js/Landing/login.js?v=2"></script>
+  <script src="<?php echo BASE_URL; ?>/assets/js/Landing/Landing.js?v=2"></script>
+  <script src="<?php echo BASE_URL; ?>/assets/js/Landing/login.js?v=2"></script>
   
   <script>
     function openImageLightbox(imgSrc) {

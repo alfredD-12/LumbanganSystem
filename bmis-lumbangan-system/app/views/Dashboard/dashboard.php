@@ -14,6 +14,13 @@ $dashboardStats = getUserDashboardStats($userId);
 $pendingRequests = $dashboardStats['pending_requests'];
 $completedRequests = $dashboardStats['completed_requests'];
 $memberSinceYear = $dashboardStats['member_since'];
+$verificationStatus = $dashboardStats['verification_status'];
+$userAddress = $dashboardStats['address'];
+$residentId = $dashboardStats['resident_id'];
+$hasMonthlySurvey = $dashboardStats['has_monthly_survey'];
+
+// Get officials data
+$officials = getActiveOfficials();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -25,7 +32,7 @@ $memberSinceYear = $dashboardStats['member_since'];
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="../../assets/css/Dashboard/dashboard.css?v=<?php echo time(); ?>" rel="stylesheet">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/Dashboard/dashboard.css?v=2">
 </head>
 <body>
     <!-- Floating Background Shapes -->
@@ -79,13 +86,13 @@ $memberSinceYear = $dashboardStats['member_since'];
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="#document-status">
+                                <a class="dropdown-item" href="<?php echo htmlspecialchars((defined('BASE_PUBLIC') ? BASE_PUBLIC : '') . 'index.php?page=document_request', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                     <i class="fas fa-file-alt"></i>
                                     Document Request Status
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="../Survey/wizard_personal.php" data-navigate="true">
+                                <a class="dropdown-item" href="<?php echo htmlspecialchars((defined('BASE_PUBLIC') ? BASE_PUBLIC : '') . 'index.php?page=survey_wizard_personal', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" data-navigate="true">
                                     <i class="fas fa-poll"></i>
                                     Survey Status
                                 </a>
@@ -140,13 +147,17 @@ $memberSinceYear = $dashboardStats['member_since'];
                             <span class="d-none d-sm-inline"><?php echo htmlspecialchars($username); ?></span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <div class="dropdown-item-text" style="border-bottom: 1px solid #e9ecef; padding-bottom: 10px; margin-bottom: 5px;">
-                                    <strong><?php echo htmlspecialchars($username); ?></strong>
+                            <li class="px-3 py-2 border-bottom">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="user-avatar" style="width:40px;height:40px;border-radius:50%;background:#1e3a5f;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;"><i class="fas fa-user"></i></div>
+                                    <div class="flex-grow-1" style="min-width:0">
+                                        <div class="fw-bold text-truncate"><?php echo htmlspecialchars($fullName); ?></div>
+                                        <div class="text-muted text-truncate" style="font-size:0.8rem;">@<?php echo htmlspecialchars($username); ?></div>
+                                    </div>
                                 </div>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#userProfileModal">
+                                <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#userProfileModal" id="btn-open-profile">
                                     <i class="fas fa-user"></i>
                                     My Profile
                                 </a>
@@ -286,7 +297,7 @@ $memberSinceYear = $dashboardStats['member_since'];
                             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
                                 <div>
                                     <div style="color: rgba(255,255,255,0.75); font-size: 0.75rem; margin-bottom: 0.3rem; font-weight: 500; letter-spacing: 0.5px;">Resident Portal</div>
-                                    <div style="color: white; font-size: 1.15rem; font-weight: 700; letter-spacing: 0.5px;">RES-2025-001</div>
+                                    <div style="color: white; font-size: 1.15rem; font-weight: 700; letter-spacing: 0.5px;"><?php echo htmlspecialchars($residentId); ?></div>
                                 </div>
                                 <div style="width: 48px; height: 48px; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
                                     <i class="fas fa-id-card" style="font-size: 1.3rem; color: white;"></i>
@@ -299,14 +310,21 @@ $memberSinceYear = $dashboardStats['member_since'];
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <div>
                                     <div style="color: rgba(255,255,255,0.75); font-size: 0.7rem; margin-bottom: 0.3rem; font-weight: 500;">Status</div>
-                                    <div style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.85rem; background: rgba(16,185,129,0.25); border-radius: 18px; backdrop-filter: blur(10px);">
-                                        <div style="width: 6px; height: 6px; background: #10b981; border-radius: 50%; box-shadow: 0 0 6px #10b981;"></div>
-                                        <span style="color: #10b981; font-size: 0.75rem; font-weight: 700;">Verified</span>
-                                    </div>
+                                    <?php if ($verificationStatus === 'Verified'): ?>
+                                        <div style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.85rem; background: rgba(16,185,129,0.25); border-radius: 18px; backdrop-filter: blur(10px);">
+                                            <div style="width: 6px; height: 6px; background: #10b981; border-radius: 50%; box-shadow: 0 0 6px #10b981;"></div>
+                                            <span style="color: #10b981; font-size: 0.75rem; font-weight: 700;"><?php echo htmlspecialchars($verificationStatus); ?></span>
+                                        </div>
+                                    <?php else: ?>
+                                        <div style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.85rem; background: rgba(245, 158, 11, 0.25); border-radius: 18px; backdrop-filter: blur(10px);">
+                                            <div style="width: 6px; height: 6px; background: #f59e0b; border-radius: 50%; box-shadow: 0 0 6px #f59e0b;"></div>
+                                            <span style="color: #f59e0b; font-size: 0.75rem; font-weight: 700;"><?php echo htmlspecialchars($verificationStatus); ?></span>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
                                 <div style="color: rgba(255,255,255,0.7); font-size: 0.78rem; font-weight: 500;">
                                     <i class="fas fa-map-marker-alt" style="margin-right: 0.3rem;"></i>
-                                    Purok 1, Lumbangan
+                                    <?php echo htmlspecialchars($userAddress); ?>
                                 </div>
                             </div>
                         </div>
@@ -530,36 +548,50 @@ $memberSinceYear = $dashboardStats['member_since'];
                 </div>
             </div>
 
-            <!-- Survey card: shows last survey and next survey with Open/Upcoming status -->
-            <div class="stat-card" id="survey-card"
-                 data-last-title="Barangay Facilities Survey"
-                 data-last-date="2025-10-15"
-                 data-next-title="Resident Satisfaction Survey"
-                 data-next-date="2025-12-01">
+              <!-- Survey card: shows last survey and next survey with Open/Upcoming status -->
+              <?php
+                 // Prepare survey display values from helper-provided $dashboardStats
+                 $lastRaw = $dashboardStats['last_survey_date'] ?? null; // raw datetime or null
+                 $lastDisplay = $lastRaw ? date('F d, Y', strtotime($lastRaw)) : 'No survey taken yet';
+                 $lastIso = $lastRaw ? date('Y-m-d', strtotime($lastRaw)) : '';
+
+                 // Next survey is first day of next month
+                 $nextRaw = date('Y-m-01', strtotime('first day of next month'));
+                 $nextDisplay = date('F d, Y', strtotime($nextRaw));
+
+                 // Number flag: 1 if no survey exists for current month, 0 if one exists
+                 $surveyNumber = isset($dashboardStats['survey_number']) ? (int)$dashboardStats['survey_number'] : (empty($dashboardStats['has_monthly_survey']) ? 1 : 0);
+                 $hasMonthly = !empty($dashboardStats['has_monthly_survey']);
+              ?>
+              <div class="stat-card" id="survey-card"
+                  data-last-title="CVD NCD Risk Assessment"
+                  data-last-date="<?php echo $lastIso; ?>"
+                  data-next-title="CVD NCD Risk Assessment"
+                  data-next-date="<?php echo date('Y-m-d', strtotime($nextRaw)); ?>">
                 <div class="stat-main">
                     <div class="stat-icon">
                         <i class="fas fa-poll"></i>
                     </div>
-                    <div class="stat-number" id="survey-number">0</div>
-                    <div class="stat-label">Surveys</div>
+                    <div class="stat-number" id="survey-number"><?php echo $surveyNumber ? '1' : '0'; ?></div>
+                    <div class="stat-label">Assessment Survey</div>
                 </div>
-                <div class="stat-foot">
+                    <div class="stat-foot">
                     <!-- short status badge visible by default -->
-                    <span id="survey-next-status-short" class="survey-badge upcoming">Upcoming</span>
+                    <span id="survey-next-status-short" class="survey-badge <?php echo $hasMonthly ? 'completed' : 'upcoming'; ?>"><?php echo $hasMonthly ? 'Completed' : 'Upcoming'; ?></span>
                     <div class="stat-extra">
                         <div class="survey-details mt-3">
                         <div class="survey-last">
                             <small class="text-muted">Last survey</small>
-                            <div class="fw-bold" id="survey-last-title">Barangay Facilities Survey</div>
-                            <small id="survey-last-date" class="text-muted">Oct 15, 2025</small>
+                            <div class="fw-bold" id="survey-last-title">CVD NCD Risk Assessment</div>
+                            <small id="survey-last-date" class="text-muted"><?php echo htmlspecialchars($lastDisplay, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></small>
                         </div>
 
                         <div class="survey-next mt-3">
                             <small class="text-muted">Next survey</small>
                             <div class="d-flex align-items-center gap-2">
                                 <div>
-                                    <div class="fw-bold" id="survey-next-title">Resident Satisfaction Survey</div>
-                                    <small id="survey-next-date" class="text-muted">Dec 01, 2025</small>
+                                    <div class="fw-bold" id="survey-next-title">CVD NCD Risk Assessment</div>
+                                    <small id="survey-next-date" class="text-muted"><?php echo htmlspecialchars($nextDisplay, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></small>
                                 </div>
                             </div>
                         </div>
@@ -833,17 +865,25 @@ $memberSinceYear = $dashboardStats['member_since'];
                     <div class="activity-card" data-index="2" style="position: absolute; width: 450px; background: white; padding: 2.5rem; border-radius: 24px; border-left: 5px solid #1976d2; transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 10px 30px rgba(25, 118, 210, 0.15); transform: translateX(-500px) scale(0.85); z-index: 2; opacity: 0.5; filter: blur(2px);">
                         <div style="display: flex; gap: 1.5rem;">
                             <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #1976d2, #2196f3); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.8rem; flex-shrink: 0; box-shadow: 0 8px 20px rgba(25, 118, 210, 0.3);">
-                                <i class="fas fa-clipboard-check"></i>
+                                <i class="fas fa-poll-h"></i>
                             </div>
                             <div style="flex: 1;">
-                                <div style="font-size: 0.75rem; color: #999; text-transform: uppercase; font-weight: 600; margin-bottom: 0.5rem; letter-spacing: 0.5px;">October 20, 2025</div>
-                                <h4 style="font-size: 1.25rem; color: var(--primary-blue); font-weight: 700; margin-bottom: 0.75rem;">Survey Completed</h4>
-                                <p style="font-size: 0.95rem; color: #666; line-height: 1.6;">Thank you for completing the Barangay Facilities Survey. Your feedback helps us improve.</p>
+                                <div style="font-size: 0.75rem; color: #999; text-transform: uppercase; font-weight: 600; margin-bottom: 0.5rem; letter-spacing: 0.5px;"><?php echo date('F 01, Y'); ?></div>
+                                <h4 style="font-size: 1.25rem; color: var(--primary-blue); font-weight: 700; margin-bottom: 0.75rem;">Assessment Survey</h4>
+                                <?php if ($hasMonthlySurvey): ?>
+                                    <p style="font-size: 0.95rem; color: #666; line-height: 1.6;">Thank you for completing the Assessment Survey.</p>
+                                <?php else: ?>
+                                    <p style="font-size: 0.95rem; color: #666; line-height: 1.6;">Please complete the monthly survey to help us better serve the community.</p>
+                                <?php endif; ?>
                             </div>
                         </div>
                         <div style="margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-                            <span style="background: linear-gradient(135deg, #1976d2, #2196f3); color: white; padding: 0.6rem 1.2rem; border-radius: 12px; font-size: 0.8rem; font-weight: 700; box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);">✓ Completed</span>
-                            <button style="background: transparent; border: 2px solid #1976d2; color: #1976d2; padding: 0.6rem 1.2rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">View Details</button>
+                            <?php if ($hasMonthlySurvey): ?>
+                                <span style="background: linear-gradient(135deg, #1976d2, #2196f3); color: white; padding: 0.6rem 1.2rem; border-radius: 12px; font-size: 0.8rem; font-weight: 700; box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);">✓ Completed</span>
+                            <?php else: ?>
+                                <a href="<?php echo BASE_PUBLIC . 'index.php?page=survey_wizard_personal'; ?>" style="background: linear-gradient(135deg, #1976d2, #2196f3); color: white; padding: 0.6rem 1.2rem; border-radius: 12px; font-size: 0.8rem; font-weight: 700; box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3); text-decoration: none;">Answer Survey</a>
+                            <?php endif; ?>
+                            <button style="background: transparent; border: 2px solid #1976d2; color: #1976d2; padding: 0.6rem 1.2rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" data-bs-toggle="modal" data-bs-target="#surveyDetailsModal">View Details</button>
                         </div>
                     </div>
 
@@ -1275,7 +1315,7 @@ $memberSinceYear = $dashboardStats['member_since'];
                 <div style="display: inline-block; background: rgba(30, 58, 95, 0.1); padding: 0.5rem 1.2rem; border-radius: 20px; margin-bottom: 1rem;">
                     <span style="color: var(--primary-blue); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Community Leaders</span>
                 </div>
-                <h2 style="font-size: 2.2rem; font-weight: 700; color: var(--primary-blue); margin-bottom: 0.75rem;">Resident Directory</h2>
+                <h2 style="font-size: 2.2rem; font-weight: 700; color: var(--primary-blue); margin-bottom: 0.75rem;">Officials Directory</h2>
                 <p style="color: #666; font-size: 1rem; max-width: 500px; margin: 0 auto;">Hover over cards to see contact information</p>
             </div>
 
@@ -1332,92 +1372,101 @@ $memberSinceYear = $dashboardStats['member_since'];
                 <!-- Carousel Container -->
                 <div style="position: relative; height: 550px; padding: 2rem 0; perspective: 2000px;">
                     <div class="directory-grid" style="position: relative; display: flex; justify-content: center; align-items: center; height: 100%;">
-                <!-- Director 1 -->
-                <div style="background: white; padding: 2rem; border-radius: 14px; text-align: center; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(0,0,0,0.05); position: relative; overflow: hidden;" onmouseover="this.style.transform='translateY(-12px)'; this.style.boxShadow='0 24px 48px rgba(0,0,0,0.12)'; this.style.borderColor='rgba(30, 58, 95, 0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.06)'; this.style.borderColor='rgba(0,0,0,0.05)';" style="box-shadow: 0 4px 16px rgba(0,0,0,0.06);">
-                    <div style="position: absolute; top: -50%; right: -50%; width: 150px; height: 150px; background: rgba(30, 58, 95, 0.08); border-radius: 50%; filter: blur(30px);"></div>
-                    <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); display: flex; align-items: center; justify-content: center; color: #1976d2; font-weight: 700; font-size: 2rem; margin: 0 auto 1.5rem; position: relative; z-index: 1; box-shadow: 0 8px 20px rgba(25, 118, 210, 0.25);">J</div>
-                    <h4 style="font-size: 1.05rem; color: var(--primary-blue); font-weight: 700; margin-bottom: 0.4rem;">Hon. Juan Dela Cruz</h4>
-                    <p style="font-size: 0.85rem; color: #999; margin-bottom: 1rem; font-weight: 600;">Punong Barangay</p>
-                    <p style="font-size: 0.9rem; color: #666; margin-bottom: 1.5rem;">(043) 415-XXXX</p>
-                    <div style="padding-top: 1rem; border-top: 1px solid #f0f0f0;">
-                        <a href="#" style="color: var(--primary-blue); text-decoration: none; font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem; transition: gap 0.3s;" onmouseover="this.style.gap='0.7rem';" onmouseout="this.style.gap='0.4rem';">Contact <i class="fas fa-arrow-right" style="font-size: 0.8rem;"></i></a>
-                    </div>
-                </div>
+                        <?php if (!empty($officials)): ?>
+                            <?php 
+                                $colors = [
+                                    ['bg' => 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)', 'text' => '#1976d2', 'shadow' => 'rgba(25, 118, 210, 0.25)'],
+                                    ['bg' => 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)', 'text' => '#059669', 'shadow' => 'rgba(5, 150, 105, 0.25)'],
+                                    ['bg' => 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)', 'text' => '#d97706', 'shadow' => 'rgba(217, 119, 6, 0.25)'],
+                                    ['bg' => 'linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%)', 'text' => '#ec4899', 'shadow' => 'rgba(236, 72, 153, 0.25)'],
+                                    ['bg' => 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)', 'text' => '#6366f1', 'shadow' => 'rgba(99, 102, 241, 0.25)'],
+                                    ['bg' => 'linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%)', 'text' => '#a855f7', 'shadow' => 'rgba(168, 85, 247, 0.25)'],
+                                ];
+                            ?>
+                            <?php foreach ($officials as $index => $official): ?>
+                                <?php
+                                    $color = $colors[$index % count($colors)];
+                                    $name = htmlspecialchars($official['full_name']);
+                                    $role = htmlspecialchars($official['role']);
+                                    $contact_no = htmlspecialchars($official['contact_no'] ?? 'Not Available');
+                                    $email = htmlspecialchars($official['email'] ?? 'Not Available');
+                                    $initial = strtoupper(substr($name, 0, 1));
+                                ?>
+                                <div 
+                                    class="director-card-placeholder"
+                                    data-name="<?php echo $name; ?>"
+                                    data-role="<?php echo $role; ?>"
+                                    data-contact="<?php echo $contact_no; ?>"
+                                    data-email="<?php echo $email; ?>"
+                                    data-photo="<?php echo htmlspecialchars($official['photo_url'] ?? ''); ?>"
+                                    data-initial="<?php echo $initial; ?>"
+                                    data-color-bg="<?php echo $color['bg']; ?>"
+                                    data-color-text="<?php echo $color['text']; ?>"
+                                    data-color-shadow="<?php echo $color['shadow']; ?>"
+                                >
+                                    <!-- This content will be replaced by JS, but we can keep it for non-JS users -->
+                                    <div style="position: absolute; top: -50%; right: -50%; width: 150px; height: 150px; background: rgba(30, 58, 95, 0.08); border-radius: 50%; filter: blur(30px);"></div>
+                                    
+                                    <?php if (!empty($official['photo_url'])): ?>
+                                        <img src="<?php echo htmlspecialchars($official['photo_url']); ?>" alt="<?php echo $name; ?>" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin: 0 auto 1.5rem; position: relative; z-index: 1; box-shadow: 0 8px 20px <?php echo $color['shadow']; ?>;">
+                                    <?php else: ?>
+                                        <div style="width: 80px; height: 80px; border-radius: 50%; background: <?php echo $color['bg']; ?>; display: flex; align-items: center; justify-content: center; color: <?php echo $color['text']; ?>; font-weight: 700; font-size: 2rem; margin: 0 auto 1.5rem; position: relative; z-index: 1; box-shadow: 0 8px 20px <?php echo $color['shadow']; ?>;"><?php echo $initial; ?></div>
+                                    <?php endif; ?>
 
-                <!-- Director 2 -->
-                <div style="background: white; padding: 2rem; border-radius: 14px; text-align: center; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(0,0,0,0.05); position: relative; overflow: hidden;" onmouseover="this.style.transform='translateY(-12px)'; this.style.boxShadow='0 24px 48px rgba(0,0,0,0.12)'; this.style.borderColor='rgba(44, 82, 130, 0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.06)'; this.style.borderColor='rgba(0,0,0,0.05)';" style="box-shadow: 0 4px 16px rgba(0,0,0,0.06);">
-                    <div style="position: absolute; top: -50%; right: -50%; width: 150px; height: 150px; background: rgba(44, 82, 130, 0.08); border-radius: 50%; filter: blur(30px);"></div>
-                    <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); display: flex; align-items: center; justify-content: center; color: #ec4899; font-weight: 700; font-size: 2rem; margin: 0 auto 1.5rem; position: relative; z-index: 1; box-shadow: 0 8px 20px rgba(236, 72, 153, 0.25);">M</div>
-                    <h4 style="font-size: 1.05rem; color: var(--primary-blue); font-weight: 700; margin-bottom: 0.4rem;">Maria Santos</h4>
-                    <p style="font-size: 0.85rem; color: #999; margin-bottom: 1rem; font-weight: 600;">Health Officer</p>
-                    <p style="font-size: 0.9rem; color: #666; margin-bottom: 1.5rem;">(043) 415-XXXX</p>
-                    <div style="padding-top: 1rem; border-top: 1px solid #f0f0f0;">
-                        <a href="#" style="color: var(--secondary-blue); text-decoration: none; font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem; transition: gap 0.3s;" onmouseover="this.style.gap='0.7rem';" onmouseout="this.style.gap='0.4rem';">Contact <i class="fas fa-arrow-right" style="font-size: 0.8rem;"></i></a>
-                    </div>
-                </div>
-
-                <!-- Director 3 -->
-                <div style="background: white; padding: 2rem; border-radius: 14px; text-align: center; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(0,0,0,0.05); position: relative; overflow: hidden;" onmouseover="this.style.transform='translateY(-12px)'; this.style.boxShadow='0 24px 48px rgba(0,0,0,0.12)'; this.style.borderColor='rgba(34, 134, 58, 0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.06)'; this.style.borderColor='rgba(0,0,0,0.05)';" style="box-shadow: 0 4px 16px rgba(0,0,0,0.06);">
-                    <div style="position: absolute; top: -50%; right: -50%; width: 150px; height: 150px; background: rgba(34, 134, 58, 0.08); border-radius: 50%; filter: blur(30px);"></div>
-                    <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); display: flex; align-items: center; justify-content: center; color: #059669; font-weight: 700; font-size: 2rem; margin: 0 auto 1.5rem; position: relative; z-index: 1; box-shadow: 0 8px 20px rgba(5, 150, 105, 0.25);">P</div>
-                    <h4 style="font-size: 1.05rem; color: var(--primary-blue); font-weight: 700; margin-bottom: 0.4rem;">Pedro Reyes</h4>
-                    <p style="font-size: 0.85rem; color: #999; margin-bottom: 1rem; font-weight: 600;">Kagawad (Purok 2)</p>
-                    <p style="font-size: 0.9rem; color: #666; margin-bottom: 1.5rem;">Purok 2</p>
-                    <div style="padding-top: 1rem; border-top: 1px solid #f0f0f0;">
-                        <a href="#" style="color: #059669; text-decoration: none; font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem; transition: gap 0.3s;" onmouseover="this.style.gap='0.7rem';" onmouseout="this.style.gap='0.4rem';">Contact <i class="fas fa-arrow-right" style="font-size: 0.8rem;"></i></a>
-                    </div>
-                </div>
-
-                <!-- Director 4 -->
-                <div style="background: white; padding: 2rem; border-radius: 14px; text-align: center; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(0,0,0,0.05); position: relative; overflow: hidden;" onmouseover="this.style.transform='translateY(-12px)'; this.style.boxShadow='0 24px 48px rgba(0,0,0,0.12)'; this.style.borderColor='rgba(197, 48, 48, 0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.06)'; this.style.borderColor='rgba(0,0,0,0.05)';" style="box-shadow: 0 4px 16px rgba(0,0,0,0.06);">
-                    <div style="position: absolute; top: -50%; right: -50%; width: 150px; height: 150px; background: rgba(197, 48, 48, 0.08); border-radius: 50%; filter: blur(30px);"></div>
-                    <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); display: flex; align-items: center; justify-content: center; color: #d97706; font-weight: 700; font-size: 2rem; margin: 0 auto 1.5rem; position: relative; z-index: 1; box-shadow: 0 8px 20px rgba(217, 119, 6, 0.25);">A</div>
-                    <h4 style="font-size: 1.05rem; color: var(--primary-blue); font-weight: 700; margin-bottom: 0.4rem;">Ana Mercado</h4>
-                    <p style="font-size: 0.85rem; color: #999; margin-bottom: 1rem; font-weight: 600;">Kagawad (Purok 3)</p>
-                    <p style="font-size: 0.9rem; color: #666; margin-bottom: 1.5rem;">Purok 3</p>
-                    <div style="padding-top: 1rem; border-top: 1px solid #f0f0f0;">
-                        <a href="#" style="color: #d97706; text-decoration: none; font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem; transition: gap 0.3s;" onmouseover="this.style.gap='0.7rem';" onmouseout="this.style.gap='0.4rem';">Contact <i class="fas fa-arrow-right" style="font-size: 0.8rem;"></i></a>
-                    </div>
-                </div>
-
-                <!-- Director 5 -->
-                <div style="background: white; padding: 2rem; border-radius: 14px; text-align: center; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(0,0,0,0.05); position: relative; overflow: hidden;" onmouseover="this.style.transform='translateY(-12px)'; this.style.boxShadow='0 24px 48px rgba(0,0,0,0.12)'; this.style.borderColor='rgba(99, 102, 241, 0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.06)'; this.style.borderColor='rgba(0,0,0,0.05)';" style="box-shadow: 0 4px 16px rgba(0,0,0,0.06);">
-                    <div style="position: absolute; top: -50%; right: -50%; width: 150px; height: 150px; background: rgba(99, 102, 241, 0.08); border-radius: 50%; filter: blur(30px);"></div>
-                    <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); display: flex; align-items: center; justify-content: center; color: #6366f1; font-weight: 700; font-size: 2rem; margin: 0 auto 1.5rem; position: relative; z-index: 1; box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);">J</div>
-                    <h4 style="font-size: 1.05rem; color: var(--primary-blue); font-weight: 700; margin-bottom: 0.4rem;">Jose Garcia</h4>
-                    <p style="font-size: 0.85rem; color: #999; margin-bottom: 1rem; font-weight: 600;">SK Chairman</p>
-                    <p style="font-size: 0.9rem; color: #666; margin-bottom: 1.5rem;">(043) 415-XXXX</p>
-                    <div style="padding-top: 1rem; border-top: 1px solid #f0f0f0;">
-                        <a href="#" style="color: #6366f1; text-decoration: none; font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem; transition: gap 0.3s;" onmouseover="this.style.gap='0.7rem';" onmouseout="this.style.gap='0.4rem';">Contact <i class="fas fa-arrow-right" style="font-size: 0.8rem;"></i></a>
-                    </div>
-                </div>
-
-                <!-- Director 6 -->
-                <div style="background: white; padding: 2rem; border-radius: 14px; text-align: center; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(0,0,0,0.05); position: relative; overflow: hidden;" onmouseover="this.style.transform='translateY(-12px)'; this.style.boxShadow='0 24px 48px rgba(0,0,0,0.12)'; this.style.borderColor='rgba(168, 85, 247, 0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.06)'; this.style.borderColor='rgba(0,0,0,0.05)';" style="box-shadow: 0 4px 16px rgba(0,0,0,0.06);">
-                    <div style="position: absolute; top: -50%; right: -50%; width: 150px; height: 150px; background: rgba(168, 85, 247, 0.08); border-radius: 50%; filter: blur(30px);"></div>
-                    <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); display: flex; align-items: center; justify-content: center; color: #a855f7; font-weight: 700; font-size: 2rem; margin: 0 auto 1.5rem; position: relative; z-index: 1; box-shadow: 0 8px 20px rgba(168, 85, 247, 0.25);">G</div>
-                    <h4 style="font-size: 1.05rem; color: var(--primary-blue); font-weight: 700; margin-bottom: 0.4rem;">Grace Flores</h4>
-                    <p style="font-size: 0.85rem; color: #999; margin-bottom: 1rem; font-weight: 600;">Barangay Secretary</p>
-                    <p style="font-size: 0.9rem; color: #666; margin-bottom: 1.5rem;">(043) 415-XXXX</p>
-                    <div style="padding-top: 1rem; border-top: 1px solid #f0f0f0;">
-                        <a href="#" style="color: #a855f7; text-decoration: none; font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem; transition: gap 0.3s;" onmouseover="this.style.gap='0.7rem';" onmouseout="this.style.gap='0.4rem';">Contact <i class="fas fa-arrow-right" style="font-size: 0.8rem;"></i></a>
-                    </div>
-                </div>
+                                    <h4 style="font-size: 1.05rem; color: var(--primary-blue); font-weight: 700; margin-bottom: 0.4rem;"><?php echo $name; ?></h4>
+                                    <p style="font-size: 0.85rem; color: #999; margin-bottom: 1rem; font-weight: 600;"><?php echo $role; ?></p>
+                                    <p style="font-size: 0.9rem; color: #666; margin-bottom: 1.5rem;"><?php echo $contact_no; ?></p>
+                                    <div style="padding-top: 1rem; border-top: 1px solid #f0f0f0;">
+                                        <a href="mailto:<?php echo $email; ?>" style="color: <?php echo $color['text']; ?>; text-decoration: none; font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem; transition: gap 0.3s;" onmouseover="this.style.gap='0.7rem';" onmouseout="this.style.gap='0.4rem';">Contact <i class="fas fa-arrow-right" style="font-size: 0.8rem;"></i></a>
+                                    </div>
+                                </div> 
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <p>No officials found.</p>
+                        <?php endif; ?>
                     </div>
                 </div>
                 
                 <!-- Carousel Indicators -->
                 <div style="display: flex; justify-content: center; gap: 0.6rem; margin-top: 1rem;">
-                    <div class="dir-indicator active" onclick="goToDirectorSlide(0)" style="width: 10px; height: 10px; border-radius: 50%; background: #1e3a5f; cursor: pointer; transition: all 0.3s;"></div>
-                    <div class="dir-indicator" onclick="goToDirectorSlide(1)" style="width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1; cursor: pointer; transition: all 0.3s;"></div>
-                    <div class="dir-indicator" onclick="goToDirectorSlide(2)" style="width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1; cursor: pointer; transition: all 0.3s;"></div>
-                    <div class="dir-indicator" onclick="goToDirectorSlide(3)" style="width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1; cursor: pointer; transition: all 0.3s;"></div>
-                    <div class="dir-indicator" onclick="goToDirectorSlide(4)" style="width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1; cursor: pointer; transition: all 0.3s;"></div>
-                    <div class="dir-indicator" onclick="goToDirectorSlide(5)" style="width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1; cursor: pointer; transition: all 0.3s;"></div>
+                    <?php if (!empty($officials)): ?>
+                        <?php foreach ($officials as $index => $official): ?>
+                            <div class="dir-indicator <?php echo $index === 0 ? 'active' : ''; ?>" onclick="goToDirectorSlide(<?php echo $index; ?>)" style="width: 10px; height: 10px; border-radius: 50%; background: <?php echo $index === 0 ? '#1e3a5f' : '#cbd5e1'; ?>; cursor: pointer; transition: all 0.3s;"></div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
     </section>
+
+    <!-- Survey Details Modal -->
+    <div class="modal fade" id="surveyDetailsModal" tabindex="-1" aria-labelledby="surveyDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 12px; border: none;">
+                <div class="modal-header" style="background: linear-gradient(135deg, #1e3a5f, #2c5282); color: white; border-bottom: none;">
+                    <h5 class="modal-title" id="surveyDetailsModalLabel" style="font-weight: 600;"><i class="fas fa-poll-h" style="margin-right: 0.5rem;"></i>About the Monthly Assessment Survey</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="padding: 1.5rem 2rem;">
+                    <p style="font-size: 1rem; color: #333; line-height: 1.6;">
+                        The monthly assessment survey is a vital tool for our barangay. Your participation helps us gather essential data to monitor the well-being of our community, identify emerging needs, and make informed decisions for future projects and services.
+                    </p>
+                    <hr style="margin: 1.5rem 0;">
+                    <div style="background: #f8fafc; padding: 1rem; border-radius: 8px;">
+                        <p style="font-size: 1rem; color: #333; line-height: 1.6; font-style: italic;">
+                            Ang buwanang assessment survey ay isang mahalagang kasangkapan para sa ating barangay. Ang iyong pakikilahok ay tumutulong sa amin na makakalap ng mahahalagang datos upang masubaybayan ang kapakanan ng ating komunidad, matukoy ang mga pangangailangan, at makagawa ng mga desisyon para sa mga proyekto at serbisyo sa hinaharap.
+                        </p>
+                    </div>
+                    <p class="mt-4" style="font-size: 0.9rem; color: #666;">
+                        Thank you for your cooperation!
+                    </p>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #e9ecef;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Notifications Modal -->
     <div class="modal fade" id="notificationsModal" tabindex="-1">
@@ -1812,13 +1861,11 @@ $memberSinceYear = $dashboardStats['member_since'];
         }, true); // Use capture phase to run before dashboard.js
     </script>
     
-    <script src="../../assets/js/Dashboard/dashboard.js"></script>
-    <script src="../../assets/js/Dashboard/scroll-animations.js"></script>
+    <script src="<?php echo BASE_URL; ?>/assets/js/Dashboard/dashboard.js"></script>
+    <script src="<?php echo BASE_URL; ?>/assets/js/Dashboard/scroll-animations.js"></script>
 
     <script>
-        // Ensure a fallback handleLogout exists on this page in case the global header script
-        // (which defines window.handleLogout) isn't loaded. This mirrors the clearing logic
-        // used elsewhere so survey_ localStorage keys are always removed on logout.
+
         if (typeof window.handleLogout !== 'function') {
             window.handleLogout = function(event) {
                 if (event && event.preventDefault) event.preventDefault();
@@ -1842,8 +1889,9 @@ $memberSinceYear = $dashboardStats['member_since'];
                     // ignore
                 }
 
-                // Redirect to server logout handler
-                window.location.href = '../../controllers/AuthController.php?action=logout';
+                // Redirect to the centralized logout route handled by the front controller
+                var logoutUrl = '<?php echo (defined("BASE_PUBLIC") ? rtrim(BASE_PUBLIC, "/") : rtrim(dirname(__DIR__, 2) . "/public", "/")); ?>/index.php?page=logout';
+                window.location.href = logoutUrl;
             };
         }
     </script>
@@ -1924,7 +1972,7 @@ $memberSinceYear = $dashboardStats['member_since'];
         // ============ RESIDENT DIRECTORY STACKED CARDS CAROUSEL ============
         
         let currentDirectorIndex = 0;
-        const totalDirectors = 6;
+        const totalDirectors = <?php echo count($officials); ?>;
         
         // Carousel Navigation
         function nextDirectorSlide() {
@@ -2025,34 +2073,49 @@ $memberSinceYear = $dashboardStats['member_since'];
         // Add flip functionality to existing director cards
         document.addEventListener('DOMContentLoaded', function() {
             const directorGrid = document.querySelector('.directory-grid');
-            const directorCards = directorGrid.querySelectorAll('div[style*="background: white"]');
+            const directorCards = directorGrid.querySelectorAll('.director-card-placeholder');
             
             directorCards.forEach((card, index) => {
                 // Add class and data attributes
                 card.classList.add('director-card');
                 const categories = ['executive', 'executive', 'kagawad', 'kagawad', 'kagawad', 'staff'];
                 card.dataset.category = categories[index] || 'staff';
-                
-                // Get original content
-                const originalContent = card.innerHTML;
-                
-                // Get the name and position from the card
-                const nameElement = card.querySelector('h4');
-                const positionElement = card.querySelector('p[style*="font-size: 0.85rem"]');
-                const name = nameElement ? nameElement.textContent : 'Official';
-                const position = positionElement ? positionElement.textContent : 'Staff';
-                
                 // Set fixed dimensions for stacked carousel
                 card.style.position = 'absolute';
                 card.style.left = '50%';
                 card.style.top = '50%';
-                card.style.marginLeft = '-175px'; // Half of card width (350px)
-                card.style.marginTop = '-230px'; // Half of card height (460px)
-                card.style.width = '350px';
-                card.style.height = '460px';
+                card.style.marginLeft = '-160px'; // Half of card width (320px)
+                card.style.marginTop = '-210px'; // Half of card height (420px)
+                card.style.width = '320px';
+                card.style.height = '420px';
                 card.style.perspective = '1000px';
                 card.style.cursor = 'pointer';
-                card.style.transformStyle = 'preserve-3d';
+                card.style.transformStyle = 'preserve-3d'; // This should be on the parent
+
+                const name = card.dataset.name;
+                const role = card.dataset.role;
+                const contact = card.dataset.contact;
+                const email = card.dataset.email;
+                const photo = card.dataset.photo;
+                const initial = card.dataset.initial;
+                const colorBg = card.dataset.colorBg;
+                const colorText = card.dataset.colorText;
+                const colorShadow = card.dataset.colorShadow;
+
+                const photoContent = photo
+                    ? `<img src="${photo}" alt="${name}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin: 0 auto 1.5rem; position: relative; z-index: 1; box-shadow: 0 8px 20px ${colorShadow};">`
+                    : `<div style="width: 80px; height: 80px; border-radius: 50%; background: ${colorBg}; display: flex; align-items: center; justify-content: center; color: ${colorText}; font-weight: 700; font-size: 2rem; margin: 0 auto 1.5rem; position: relative; z-index: 1; box-shadow: 0 8px 20px ${colorShadow};">${initial}</div>`;
+
+                const originalContent = `
+                    <div style="position: absolute; top: -50%; right: -50%; width: 150px; height: 150px; background: rgba(30, 58, 95, 0.08); border-radius: 50%; filter: blur(30px);"></div>
+                    ${photoContent}
+                    <h4 style="font-size: 1.05rem; color: var(--primary-blue); font-weight: 700; margin-bottom: 0.4rem;">${name}</h4>
+                    <p style="font-size: 0.85rem; color: #999; margin-bottom: 1rem; font-weight: 600;">${role}</p>
+                    <p style="font-size: 0.9rem; color: #666; margin-bottom: 1.5rem;">${contact}</p>
+                    <div style="padding-top: 1rem; border-top: 1px solid #f0f0f0;">
+                        <a href="mailto:${email}" style="color: ${colorText}; text-decoration: none; font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem; transition: gap 0.3s;" onmouseover="this.style.gap='0.7rem';" onmouseout="this.style.gap='0.4rem';">Contact <i class="fas fa-arrow-right" style="font-size: 0.8rem;"></i></a>
+                    </div>
+                `;
                 
                 // Create flip card structure
                 card.innerHTML = `
@@ -2069,8 +2132,9 @@ $memberSinceYear = $dashboardStats['member_since'];
                             height: 100%;
                             backface-visibility: hidden;
                             -webkit-backface-visibility: hidden;
-                            border-radius: 14px;
+                            border-radius: 20px;
                             overflow: hidden;
+                            background: white; padding: 2rem; text-align: center; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 4px 16px rgba(0,0,0,0.06);
                         ">
                             ${originalContent}
                         </div>
@@ -2080,9 +2144,9 @@ $memberSinceYear = $dashboardStats['member_since'];
                             height: 100%;
                             backface-visibility: hidden;
                             -webkit-backface-visibility: hidden;
-                            transform: rotateY(180deg);
+                            transform: rotateY(180deg) translateZ(1px); /* Added translateZ for iOS */
                             background: white;
-                            border-radius: 14px;
+                            border-radius: 20px;
                             padding: 2rem 1.5rem 1.75rem 1.5rem;
                             display: flex;
                             flex-direction: column;
@@ -2094,22 +2158,22 @@ $memberSinceYear = $dashboardStats['member_since'];
                                 <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #e0f2fe, #bfdbfe); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem; border: 2px solid #dbeafe;">
                                     <i class="fas fa-user" style="font-size: 1.5rem; color: #1e3a5f;"></i>
                                 </div>
-                                <h4 style="font-size: 0.95rem; margin-bottom: 0.25rem; font-weight: 700; color: #1e3a5f; line-height: 1.2;">${name}</h4>
-                                <p style="font-size: 0.75rem; color: #64748b; font-weight: 500; line-height: 1.2; margin-bottom: 0;">${position}</p>
+                                <h4 style="font-size: 0.95rem; margin-bottom: 0.25rem; font-weight: 700; color: #1e3a5f; line-height: 1.2;">${name || 'Official'}</h4>
+                                <p style="font-size: 0.75rem; color: #64748b; font-weight: 500; line-height: 1.2; margin-bottom: 0;">${role || 'Staff'}</p>
                             </div>
                             
                             <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 1rem 0;">
                                 <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.7rem; padding: 0.65rem 0.8rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
                                     <i class="fas fa-envelope" style="font-size: 0.85rem; color: #1e3a5f; flex-shrink: 0; width: 18px; text-align: center;"></i>
-                                    <span style="color: #475569; font-size: 0.72rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; line-height: 1.2;">${name.toLowerCase().replace(/[^a-z]/g, '')}@lumbangan.gov.ph</span>
+                                    <span style="color: #475569; font-size: 0.72rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; line-height: 1.2;">${email || 'Not Available'}</span>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.7rem; padding: 0.65rem 0.8rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
                                     <i class="fas fa-phone" style="font-size: 0.85rem; color: #1e3a5f; flex-shrink: 0; width: 18px; text-align: center;"></i>
-                                    <span style="color: #475569; font-size: 0.72rem; line-height: 1.2;">+63 915 ${String(1234567 + index).slice(-7)}</span>
+                                    <span style="color: #475569; font-size: 0.72rem; line-height: 1.2;">${contact || 'Not Available'}</span>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 0.6rem; padding: 0.65rem 0.8rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
                                     <i class="fas fa-map-marker-alt" style="font-size: 0.85rem; color: #1e3a5f; flex-shrink: 0; width: 18px; text-align: center;"></i>
-                                    <span style="color: #475569; font-size: 0.72rem; line-height: 1.3;">Barangay Hall, Lumbangan</span>
+                                    <span style="color: #475569; font-size: 0.72rem; line-height: 1.3;">Brgy. Lumbangan, Nasugbu, Batangas</span>
                                 </div>
                             </div>
                             
@@ -2139,16 +2203,23 @@ $memberSinceYear = $dashboardStats['member_since'];
                 
                 // Add flip on hover - only for center card
                 const inner = card.querySelector('.flip-card-inner');
+                const front = card.querySelector('.flip-card-front');
                 
                 card.addEventListener('mouseenter', function() {
                     // Only flip if this is the center card
                     if (card.dataset.index == currentDirectorIndex) {
                         inner.style.transform = 'rotateY(180deg)';
+                        front.style.transform = 'translateY(-12px)';
+                        front.style.boxShadow = '0 24px 48px rgba(0,0,0,0.12)';
+                        front.style.borderColor = 'rgba(30, 58, 95, 0.15)';
                     }
                 });
                 
                 card.addEventListener('mouseleave', function() {
                     inner.style.transform = 'rotateY(0deg)';
+                    front.style.transform = 'translateY(0)';
+                    front.style.boxShadow = '0 4px 16px rgba(0,0,0,0.06)';
+                    front.style.borderColor = 'rgba(0,0,0,0.05)';
                 });
                 
                 // Store card index for checking

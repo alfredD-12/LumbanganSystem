@@ -7,6 +7,365 @@
 if (document.getElementById('complaintForm')) {
     const baseUrl = '/Lumbangan_BMIS/bmis-lumbangan-system/public';
     
+    // Helper: safely parse JSON responses (throws if content-type isn't JSON)
+    function parseJsonResponse(res) {
+        const ct = res.headers.get('content-type') || '';
+        if (!res.ok) throw new Error('Network response was not ok');
+        if (!ct.includes('application/json')) {
+            return res.text().then(t => { throw new Error('Expected JSON, got: ' + ct + '\n' + t); });
+        }
+        return res.json();
+    }
+
+    // Helper: render a complaint card HTML (matches server-side markup)
+    function renderComplaintCard(c) {
+        const searchData = (c.incident_title || '') + ' ' + (c.complainant_name || '') + ' ' + (c.offender_name || '') + ' ' + (c.location || '') + ' ' + (c.narrative || '');
+        const statusClass = (c.status_label || '').toLowerCase();
+        const caseClass = (c.case_type || '').toLowerCase();
+
+        return `
+        <div class="card incident-card mb-3" data-search="${(searchData||'').toLowerCase()}" data-status="${(c.status_label||'').toLowerCase()}" data-case="${(c.case_type||'').toLowerCase()}">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h5 class="card-title mb-0">${c.incident_title || 'Untitled Complaint'}</h5>
+                    <div>
+                        <span class="status-badge status-${statusClass} me-2">${c.status_label || ''}</span>
+                        <span class="status-badge case-${caseClass}">${c.case_type || ''}</span>
+                    </div>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <strong class="text-muted">Complainant:</strong>
+                        ${c.complainant_name || 'N/A'}
+                    </div>
+                    <div class="col-md-6">
+                        <strong class="text-muted">Offender:</strong>
+                        ${c.offender_name || 'Unknown'}
+                    </div>
+                    <div class="col-md-6">
+                        <strong class="text-muted">Date:</strong>
+                        ${c.date_of_incident ? new Date(c.date_of_incident).toLocaleDateString() : ''}
+                    </div>
+                    <div class="col-md-6">
+                        <strong class="text-muted">Location:</strong>
+                        ${c.location || 'N/A'}
+                    </div>
+                    <div class="col-md-6">
+                        <strong class="text-muted">Blotter Type:</strong>
+                        ${c.blotter_type || 'N/A'}
+                    </div>
+                    <div class="col-md-6">
+                        <strong class="text-muted">Offender Type:</strong>
+                        ${c.offender_type || 'N/A'}
+                    </div>
+                    <div class="col-12">
+                        <strong class="text-muted">Description:</strong>
+                        <p class="mb-0">${(c.narrative||'').substring(0,150)}...</p>
+                    </div>
+                    <div class="col-12 mt-3">
+                        <div class="d-flex justify-content-end gap-2">
+                            <button class="btn btn-primary btn-sm view-details-btn" data-id="${c.id}">
+                                <i class="fas fa-eye"></i> View Details
+                            </button>
+                            <button class="btn btn-warning btn-sm edit-btn" data-id="${c.id}">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-danger btn-sm delete-btn" data-id="${c.id}">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    }
+
+    function prependComplaintCard(c) {
+        const container = document.querySelector('.complaints-list');
+        if (!container) return;
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = renderComplaintCard(c);
+        container.prepend(wrapper.firstElementChild);
+        // Re-bind event handlers for newly added buttons
+        bindCardButtons();
+    }
+
+    function replaceComplaintCard(c) {
+        const existing = document.querySelector(`.incident-card[data-search*="${(c.incident_title||'').toLowerCase()}"]`) || document.querySelector(`.incident-card .edit-btn[data-id="${c.id}"]`)?.closest('.incident-card');
+        const container = document.querySelector('.complaints-list');
+        if (!container) return;
+        // Try to find by data-id using edit-btn selector
+        let el = document.querySelector(`.edit-btn[data-id="${c.id}"]`);
+        if (el) {
+            const card = el.closest('.incident-card');
+            if (card) {
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = renderComplaintCard(c);
+                card.replaceWith(wrapper.firstElementChild);
+                bindCardButtons();
+                return;
+            }
+        }
+        // Fallback: prepend if not found
+        prependComplaintCard(c);
+    }
+
+    function removeComplaintCardById(id) {
+        const btn = document.querySelector(`.delete-btn[data-id="${id}"]`);
+        const card = btn ? btn.closest('.incident-card') : document.querySelector(`.incident-card .edit-btn[data-id="${id}"]`)?.closest('.incident-card');
+        if (card && card.parentNode) card.parentNode.removeChild(card);
+    }
+
+    function bindCardButtons() {
+        // Bind view details
+        document.querySelectorAll('.view-details-btn').forEach(btn => {
+            if (!btn._bound) {
+                btn.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    const statusesData = document.getElementById('statusesData')?.textContent;
+                    const statuses = statusesData ? JSON.parse(statusesData) : [];
+                    fetch(`${baseUrl}/index.php?action=getComplaint&id=${id}`).then(parseJsonResponse).then(data => {
+                        // reuse existing details rendering
+                        // trigger the existing handler by simulating click? we'll call existing code fragment instead
+                        const isResolved = data.status_id == 3;
+                        // build details HTML (same as earlier code)
+                        // ... (the existing view-details code below handles rendering)
+                        // For simplicity, call the same logic by triggering a custom event
+                        document.dispatchEvent(new CustomEvent('complaint:detailsLoaded', { detail: data }));
+                    }).catch(err => alert('Error loading details: ' + (err.message || err)));
+                });
+                btn._bound = true;
+            }
+        });
+
+        // Bind edit buttons
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            if (!btn._bound) {
+                btn.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    fetch(`${baseUrl}/index.php?action=getComplaint&id=${id}`)
+                        .then(parseJsonResponse)
+                        .then(data => {
+                            document.getElementById('complaintId').value = data.id;
+                            document.querySelector('[name="incident_title"]').value = data.incident_title;
+                            document.querySelector('[name="blotter_type"]').value = data.blotter_type;
+                            document.querySelector('[name="complainant_type"]').value = data.complainant_type || '';
+                            document.querySelector('[name="complainant_name"]').value = data.complainant_name;
+                            document.querySelector('[name="complainant_contact"]').value = data.complainant_contact || '';
+                            document.querySelector('[name="complainant_gender"]').value = data.complainant_gender?.toLowerCase() || '';
+                            document.querySelector('[name="complainant_birthday"]').value = data.complainant_birthday?.split(' ')[0] || '';
+                            document.querySelector('[name="complainant_address"]').value = data.complainant_address || '';
+                            document.querySelector('[name="offender_type"]').value = data.offender_type?.toLowerCase() || '';
+                            document.querySelector('[name="offender_gender"]').value = data.offender_gender?.toLowerCase() || '';
+                            document.querySelector('[name="offender_name"]').value = data.offender_name || '';
+                            document.querySelector('[name="offender_address"]').value = data.offender_address || '';
+                            document.querySelector('[name="offender_description"]').value = data.offender_description || '';
+                            document.querySelector('[name="date_of_incident"]').value = data.date_of_incident?.split(' ')[0] || '';
+                            document.querySelector('[name="time_of_incident"]').value = data.time_of_incident?.substring(0, 5) || '';
+                            document.querySelector('[name="location"]').value = data.location;
+                            document.querySelector('[name="narrative"]').value = data.narrative;
+                            if (data.case_type_id) {
+                                const el = document.querySelector(`[name="case_type_id"][value="${data.case_type_id}"]`);
+                                if (el) el.checked = true;
+                            }
+                            document.getElementById('modalTitle').textContent = 'Edit Complaint';
+                            document.getElementById('submitBtn').textContent = 'Save Changes';
+                            new bootstrap.Modal(document.getElementById('newIncidentModal')).show();
+                        })
+                        .catch(err => {
+                            console.error('Error loading complaint details:', err);
+                            alert('Error loading complaint details: ' + (err.message || err));
+                        });
+                });
+                btn._bound = true;
+            }
+        });
+
+        // Bind delete buttons
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            if (!btn._bound) {
+                btn.addEventListener('click', function() {
+                    if (!confirm('Are you sure you want to delete this complaint?')) return;
+                    const id = this.dataset.id;
+                    const delForm = new FormData();
+                    delForm.append('id', id);
+                    fetch(`${baseUrl}/index.php?action=deleteComplaint`, { method: 'POST', body: delForm })
+                        .then(parseJsonResponse)
+                        .then(data => {
+                            if (data.success) {
+                                removeComplaintCardById(id);
+                                // decrement total
+                                const totalEl = document.querySelector('.gradient-card-blue h2');
+                                if (totalEl) totalEl.textContent = Math.max(0, parseInt(totalEl.textContent || '0') - 1);
+                                alert(data.message || 'Deleted');
+                            } else {
+                                alert('Error deleting complaint: ' + (data.message || 'Unknown'));
+                            }
+                        })
+                        .catch(err => { console.error('Delete error', err); alert('Error deleting complaint: ' + (err.message || err)); });
+                });
+                btn._bound = true;
+            }
+        });
+    }
+
+    // Initialize bindings for elements already present
+    bindCardButtons();
+
+    // Listen for programmatic details load events (used by bindCardButtons)
+    document.addEventListener('complaint:detailsLoaded', function(e) {
+        const data = e.detail;
+        const statusesData = document.getElementById('statusesData')?.textContent;
+        const statuses = statusesData ? JSON.parse(statusesData) : [];
+        const isResolved = data.status_id == 3;
+
+        let statusUpdateHtml = '';
+        if (!isResolved) {
+            statusUpdateHtml = `
+                <div class="card border-info mb-3">
+                    <div class="card-body">
+                        <h6 class="text-info mb-3 d-flex align-items-center">
+                            <i class="fas fa-sync-alt me-2"></i>
+                            Update Status
+                        </h6>
+                        <div class="row g-2">
+                            <div class="col-md-8">
+                                <label class="form-label">Change Status</label>
+                                <select class="form-select" id="statusSelect">
+                                    ${statuses.map(s => `
+                                        <option value="${s.id}" ${s.id == data.status_id ? 'selected' : ''}>
+                                            ${s.label}
+                                        </option>
+                                    `).join('')}
+                                </select>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button class="btn btn-info w-100" onclick="updateComplaintStatus(${data.id})">
+                                    <i class="fas fa-save"></i> Update
+                                </button>
+                            </div>
+                        </div>
+                        <small class="text-muted d-block mt-2">
+                            <i class="fas fa-info-circle"></i> Note: Once marked as "Resolved", the status cannot be changed.
+                        </small>
+                    </div>
+                </div>
+            `;
+        } else {
+            statusUpdateHtml = `
+                <div class="alert alert-success mb-3">
+                    <i class="fas fa-lock"></i> This complaint has been marked as <strong>Resolved</strong>
+                    ${data.resolved_at ? 'on ' + new Date(data.resolved_at).toLocaleString() : ''}
+                    and can no longer be updated.
+                </div>
+            `;
+        }
+
+        const html = `
+            <div class="mb-4 pb-3 border-bottom">
+                <div class="d-flex gap-2 mb-3">
+                    <span class="status-badge status-${data.status_label.toLowerCase()}">${data.status_label}</span>
+                    <span class="status-badge case-${data.case_type.toLowerCase()}">${data.case_type}</span>
+                </div>
+                <h5 class="text-primary mb-0">${data.incident_title || 'Complaint Details'}</h5>
+            </div>
+            ${statusUpdateHtml}
+            <div class="card bg-light border-0 mb-3">
+                <div class="card-body">
+                    <h6 class="text-primary mb-3 d-flex align-items-center">
+                        <i class="fas fa-user-circle me-2"></i>
+                        Complaint Information
+                    </h6>
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Name</small>
+                            <strong>${data.complainant_name}</strong>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Type</small>
+                            <strong>${data.complainant_type || 'N/A'}</strong>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Gender</small>
+                            <strong>${data.complainant_gender || 'N/A'}</strong>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Contact</small>
+                            <strong>${data.complainant_contact || 'N/A'}</strong>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Birthday</small>
+                            <strong>${data.complainant_birthday || 'N/A'}</strong>
+                        </div>
+                        <div class="col-12">
+                            <small class="text-muted d-block">Address</small>
+                            <strong>${data.complainant_address || 'N/A'}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card bg-light border-0 mb-3">
+                <div class="card-body">
+                    <h6 class="text-danger mb-3 d-flex align-items-center">
+                        <i class="fas fa-user-secret me-2"></i>
+                        Offender Information
+                    </h6>
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Type</small>
+                            <strong>${data.offender_type || 'N/A'}</strong>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Name</small>
+                            <strong>${data.offender_name || 'N/A'}</strong>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Gender</small>
+                            <strong>${data.offender_gender || 'N/A'}</strong>
+                        </div>
+                        <div class="col-12">
+                            <small class="text-muted d-block">Address</small>
+                            <strong>${data.offender_address || 'N/A'}</strong>
+                        </div>
+                        <div class="col-12">
+                            <small class="text-muted d-block">Description</small>
+                            <strong>${data.offender_description || 'N/A'}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card bg-light border-0 mb-3">
+                <div class="card-body">
+                    <h6 class="text-warning mb-3 d-flex align-items-center">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Incident Details
+                    </h6>
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Date</small>
+                            <strong>${data.date_of_incident}</strong>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">Time</small>
+                            <strong>${formatTime(data.time_of_incident)}</strong>
+                        </div>
+                        <div class="col-12">
+                            <small class="text-muted d-block">Location</small>
+                            <strong>${data.location}</strong>
+                        </div>
+                        <div class="col-12">
+                            <small class="text-muted d-block">Narrative</small>
+                            <p class="mb-0 mt-1">${data.narrative}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('detailsContent').innerHTML = html;
+        new bootstrap.Modal(document.getElementById('detailsModal')).show();
+    });
+
     // Format time to 12-hour format with AM/PM
     function formatTime(timeString) {
         if (!timeString) return 'N/A';
@@ -28,71 +387,54 @@ if (document.getElementById('complaintForm')) {
         const formData = new FormData(this);
         const complaintId = document.getElementById('complaintId').value;
         
-        let url = `${baseUrl}/index.php?route=api/complaint/save`;
+        // Use front-controller action endpoints that return JSON
+        let url = `${baseUrl}/index.php?action=createComplaint`;
         if (complaintId) {
-            url = `${baseUrl}/index.php?route=api/complaint/save&action=edit&id=${complaintId}`;
+            url = `${baseUrl}/index.php?action=updateComplaint&id=${complaintId}`;
         }
         
         fetch(url, {
             method: 'POST',
             body: formData
         })
-        .then(res => res.json())
+        .then(parseJsonResponse)
         .then(data => {
             if (data.success) {
-                alert(data.message);
-                location.reload();
+                alert(data.message || 'Saved');
+                // If server returned the record data, update the DOM accordingly
+                if (data.data) {
+                    if (complaintId) {
+                        // Updated
+                        replaceComplaintCard(data.data);
+                    } else {
+                        // Created
+                        prependComplaintCard(data.data);
+                        // increment total and pending counters if present
+                        const totalEl = document.querySelector('.gradient-card-blue h2');
+                        if (totalEl) totalEl.textContent = (parseInt(totalEl.textContent || '0') + 1).toString();
+                        const pendingEl = document.querySelector('.gradient-card-yellow h2');
+                        if (pendingEl) pendingEl.textContent = (parseInt(pendingEl.textContent || '0') + 1).toString();
+                    }
+                }
+                // Close and reset modal
+                const modalEl = document.getElementById('newIncidentModal');
+                const modalInst = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                modalInst.hide();
+                document.getElementById('complaintForm').reset();
+                document.getElementById('complaintId').value = '';
+                document.getElementById('modalTitle').textContent = 'Add New Complaint';
+                document.getElementById('submitBtn').textContent = 'Submit';
             } else {
                 alert('Error: ' + (data.message || 'Failed to save complaint'));
             }
         })
         .catch(err => {
-            console.error('Error:', err);
-            alert('Error saving complaint');
+            console.error('Error saving complaint:', err);
+            alert('Error saving complaint: ' + (err.message || err));
         });
     });
     
-    // Edit complaint
-    document.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const id = this.dataset.id;
-            
-            fetch(`${baseUrl}/index.php?route=api/complaint/details&id=${id}`)
-                .then(res => res.json())
-                .then(data => {
-                    document.getElementById('complaintId').value = data.id;
-                    document.querySelector('[name="incident_title"]').value = data.incident_title;
-                    document.querySelector('[name="blotter_type"]').value = data.blotter_type;
-                    document.querySelector('[name="complainant_type"]').value = data.complainant_type || '';
-                    document.querySelector('[name="complainant_name"]').value = data.complainant_name;
-                    document.querySelector('[name="complainant_contact"]').value = data.complainant_contact || '';
-                    document.querySelector('[name="complainant_gender"]').value = data.complainant_gender?.toLowerCase() || '';
-                    document.querySelector('[name="complainant_birthday"]').value = data.complainant_birthday?.split(' ')[0] || '';
-                    document.querySelector('[name="complainant_address"]').value = data.complainant_address || '';
-                    document.querySelector('[name="offender_type"]').value = data.offender_type?.toLowerCase() || '';
-                    document.querySelector('[name="offender_gender"]').value = data.offender_gender?.toLowerCase() || '';
-                    document.querySelector('[name="offender_name"]').value = data.offender_name || '';
-                    document.querySelector('[name="offender_address"]').value = data.offender_address || '';
-                    document.querySelector('[name="offender_description"]').value = data.offender_description || '';
-                    document.querySelector('[name="date_of_incident"]').value = data.date_of_incident?.split(' ')[0] || '';
-                    document.querySelector('[name="time_of_incident"]').value = data.time_of_incident?.substring(0, 5) || '';
-                    document.querySelector('[name="location"]').value = data.location;
-                    document.querySelector('[name="narrative"]').value = data.narrative;
-                    
-                    if (data.case_type_id) {
-                        document.querySelector(`[name="case_type_id"][value="${data.case_type_id}"]`).checked = true;
-                    }
-                    
-                    document.getElementById('modalTitle').textContent = 'Edit Complaint';
-                    document.getElementById('submitBtn').textContent = 'Save Changes';
-                    new bootstrap.Modal(document.getElementById('newIncidentModal')).show();
-                })
-                .catch(err => {
-                    console.error('Error:', err);
-                    alert('Error loading complaint details');
-                });
-        });
-    });
+    
     
     // Reset form when modal is closed
     document.getElementById('newIncidentModal').addEventListener('hidden.bs.modal', function() {
@@ -102,221 +444,62 @@ if (document.getElementById('complaintForm')) {
         document.getElementById('submitBtn').textContent = 'Submit';
     });
     
-    // View details
-    document.querySelectorAll('.view-details-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const id = this.dataset.id;
-            const statusesData = document.getElementById('statusesData')?.textContent;
-            const statuses = statusesData ? JSON.parse(statusesData) : [];
-            
-            fetch(`${baseUrl}/index.php?route=api/complaint/details&id=${id}`)
-                .then(res => res.json())
-                .then(data => {
-                    const isResolved = data.status_id == 3;
-                    
-                    let statusUpdateHtml = '';
-                    if (!isResolved) {
-                        statusUpdateHtml = `
-                            <div class="card border-info mb-3">
-                                <div class="card-body">
-                                    <h6 class="text-info mb-3 d-flex align-items-center">
-                                        <i class="fas fa-sync-alt me-2"></i>
-                                        Update Status
-                                    </h6>
-                                    <div class="row g-2">
-                                        <div class="col-md-8">
-                                            <label class="form-label">Change Status</label>
-                                            <select class="form-select" id="statusSelect">
-                                                ${statuses.map(s => `
-                                                    <option value="${s.id}" ${s.id == data.status_id ? 'selected' : ''}>
-                                                        ${s.label}
-                                                    </option>
-                                                `).join('')}
-                                            </select>
-                                        </div>
-                                        <div class="col-md-4 d-flex align-items-end">
-                                            <button class="btn btn-info w-100" onclick="updateComplaintStatus(${data.id})">
-                                                <i class="fas fa-save"></i> Update
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <small class="text-muted d-block mt-2">
-                                        <i class="fas fa-info-circle"></i> Note: Once marked as "Resolved", the status cannot be changed.
-                                    </small>
-                                </div>
-                            </div>
-                        `;
-                    } else {
-                        statusUpdateHtml = `
-                            <div class="alert alert-success mb-3">
-                                <i class="fas fa-lock"></i> This complaint has been marked as <strong>Resolved</strong> 
-                                ${data.resolved_at ? 'on ' + new Date(data.resolved_at).toLocaleString() : ''} 
-                                and can no longer be updated.
-                            </div>
-                        `;
-                    }
-                    
-                    const html = `
-                        <div class="mb-4 pb-3 border-bottom">
-                            <div class="d-flex gap-2 mb-3">
-                                <span class="status-badge status-${data.status_label.toLowerCase()}">${data.status_label}</span>
-                                <span class="status-badge case-${data.case_type.toLowerCase()}">${data.case_type}</span>
-                            </div>
-                            <h5 class="text-primary mb-0">${data.incident_title || 'Complaint Details'}</h5>
-                        </div>
-                        
-                        ${statusUpdateHtml}
-                        
-                        <div class="card bg-light border-0 mb-3">
-                            <div class="card-body">
-                                <h6 class="text-primary mb-3 d-flex align-items-center">
-                                    <i class="fas fa-user-circle me-2"></i>
-                                    Complainant Information
-                                </h6>
-                                <div class="row g-2">
-                                    <div class="col-md-6">
-                                        <small class="text-muted d-block">Name</small>
-                                        <strong>${data.complainant_name}</strong>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <small class="text-muted d-block">Type</small>
-                                        <strong>${data.complainant_type || 'N/A'}</strong>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <small class="text-muted d-block">Gender</small>
-                                        <strong>${data.complainant_gender || 'N/A'}</strong>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <small class="text-muted d-block">Contact</small>
-                                        <strong>${data.complainant_contact || 'N/A'}</strong>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <small class="text-muted d-block">Birthday</small>
-                                        <strong>${data.complainant_birthday || 'N/A'}</strong>
-                                    </div>
-                                    <div class="col-12">
-                                        <small class="text-muted d-block">Address</small>
-                                        <strong>${data.complainant_address || 'N/A'}</strong>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="card bg-light border-0 mb-3">
-                            <div class="card-body">
-                                <h6 class="text-danger mb-3 d-flex align-items-center">
-                                    <i class="fas fa-user-secret me-2"></i>
-                                    Offender Information
-                                </h6>
-                                <div class="row g-2">
-                                    <div class="col-md-6">
-                                        <small class="text-muted d-block">Type</small>
-                                        <strong>${data.offender_type || 'N/A'}</strong>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <small class="text-muted d-block">Name</small>
-                                        <strong>${data.offender_name || 'N/A'}</strong>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <small class="text-muted d-block">Gender</small>
-                                        <strong>${data.offender_gender || 'N/A'}</strong>
-                                    </div>
-                                    <div class="col-12">
-                                        <small class="text-muted d-block">Address</small>
-                                        <strong>${data.offender_address || 'N/A'}</strong>
-                                    </div>
-                                    <div class="col-12">
-                                        <small class="text-muted d-block">Description</small>
-                                        <strong>${data.offender_description || 'N/A'}</strong>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="card bg-light border-0 mb-3">
-                            <div class="card-body">
-                                <h6 class="text-warning mb-3 d-flex align-items-center">
-                                    <i class="fas fa-exclamation-triangle me-2"></i>
-                                    Incident Details
-                                </h6>
-                                <div class="row g-2">
-                                    <div class="col-md-6">
-                                        <small class="text-muted d-block">Date</small>
-                                        <strong>${data.date_of_incident}</strong>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <small class="text-muted d-block">Time</small>
-                                        <strong>${formatTime(data.time_of_incident)}</strong>
-                                    </div>
-                                    <div class="col-12">
-                                        <small class="text-muted d-block">Location</small>
-                                        <strong>${data.location}</strong>
-                                    </div>
-                                    <div class="col-12">
-                                        <small class="text-muted d-block">Narrative</small>
-                                        <p class="mb-0 mt-1">${data.narrative}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    document.getElementById('detailsContent').innerHTML = html;
-                    new bootstrap.Modal(document.getElementById('detailsModal')).show();
-                })
-                .catch(err => alert('Error loading details'));
-        });
-    });
+    
 
-    // Delete complaint
-    document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            if (!confirm('Are you sure you want to delete this complaint?')) return;
-            
-            const id = this.dataset.id;
-            fetch(`${baseUrl}/index.php?route=api/complaint/delete&id=${id}`, { method: 'DELETE' })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        location.reload();
-                    } else {
-                        alert('Error deleting complaint');
-                    }
-                });
-        });
-    });
+    // (Delete handlers are bound via bindCardButtons for dynamic content)
     
     // Update complaint status function
     window.updateComplaintStatus = function(complaintId) {
         const statusSelect = document.getElementById('statusSelect');
         const statusId = statusSelect.value;
         const statusLabel = statusSelect.options[statusSelect.selectedIndex].text;
-        
+
         if (statusId == 3) {
             if (!confirm('Are you sure you want to mark this complaint as RESOLVED? This action cannot be undone and the status will be locked.')) {
                 return;
             }
         }
-        
+
         const formData = new FormData();
-        formData.append('incident_id', complaintId);
+        // AdminController expects 'id' and 'status_id'
+        formData.append('id', complaintId);
         formData.append('status_id', statusId);
-        
-        fetch(`${baseUrl}/index.php?route=api/complaint/update-status`, {
+
+        fetch(`${baseUrl}/index.php?action=updateComplaintStatus`, {
             method: 'POST',
             body: formData
         })
-        .then(res => res.json())
+        .then(parseJsonResponse)
         .then(data => {
             if (data.success) {
                 alert('Status updated successfully to: ' + statusLabel);
-                location.reload();
+                // Update counts if stats returned
+                if (data.stats) {
+                    const totalEl = document.querySelector('.gradient-card-blue h2');
+                    const pendingEl = document.querySelector('.gradient-card-yellow h2');
+                    const investigatingEl = document.querySelector('.gradient-card-purple h2');
+                    const resolvedEl = document.querySelector('.gradient-card-green h2');
+                    if (totalEl && typeof data.stats.total !== 'undefined') totalEl.textContent = data.stats.total;
+                    if (pendingEl && typeof data.stats.pending !== 'undefined') pendingEl.textContent = data.stats.pending;
+                    if (investigatingEl && typeof data.stats.investigating !== 'undefined') investigatingEl.textContent = data.stats.investigating;
+                    if (resolvedEl && typeof data.stats.resolved !== 'undefined') resolvedEl.textContent = data.stats.resolved;
+                }
+
+                // Update status badge on the card if present
+                const editBtn = document.querySelector(`.edit-btn[data-id="${complaintId}"]`);
+                if (editBtn) {
+                    const card = editBtn.closest('.incident-card');
+                    const badge = card ? card.querySelector('.status-badge') : null;
+                    if (badge) badge.textContent = statusLabel;
+                    if (badge) badge.className = 'status-badge status-' + statusLabel.toLowerCase();
+                }
             } else {
-                alert('Error: ' + (data.message || 'Failed to update status'));
+                alert('Error: ' + (data.error || data.message || 'Failed to update status'));
             }
         })
         .catch(err => {
-            console.error('Error:', err);
-            alert('Error updating status');
+            console.error('Error updating status:', err);
+            alert('Error updating status: ' + (err.message || err));
         });
     };
     

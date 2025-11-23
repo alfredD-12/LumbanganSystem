@@ -36,8 +36,10 @@ document.addEventListener('DOMContentLoaded', function(){
                 const modalImageWrap = document.getElementById('modalImageWrap');
 
                 modalTitle.textContent = title;
+                const type = card.dataset.type || '';
+                const typeLabel = type ? type.charAt(0).toUpperCase() + type.slice(1) : '';
                 const audienceLabel = audience ? audience.charAt(0).toUpperCase() + audience.slice(1) : '';
-                modalMeta.textContent = `${audienceLabel} • ${author} • ${created}`;
+                modalMeta.textContent = `${typeLabel ? (typeLabel + ' • ') : ''}${audienceLabel} • ${author} • ${created}`;
                 modalMessage.innerHTML = (message || '').replace(/\n/g, '<br>');
 
                 if (image) {

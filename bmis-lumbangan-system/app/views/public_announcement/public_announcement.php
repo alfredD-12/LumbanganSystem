@@ -102,6 +102,7 @@ include __DIR__ . '/../../components/resident_components/header-resident.php';
                         $data_image = $a['image'] ? htmlspecialchars(announcement_image_url($a['image']), ENT_QUOTES) : '';
                     $data_author = htmlspecialchars($a['author'], ENT_QUOTES);
                     $data_audience = htmlspecialchars($a['audience'], ENT_QUOTES);
+                    $data_type = htmlspecialchars($a['type'] ?? 'general', ENT_QUOTES);
                     $data_created = htmlspecialchars(date('M d, Y h:i A', strtotime($a['created_at'])), ENT_QUOTES);
                 ?>
                 <article class="carousel-card-3d"
@@ -110,6 +111,7 @@ include __DIR__ . '/../../components/resident_components/header-resident.php';
                          data-title="<?php echo $data_title; ?>"
                          data-message="<?php echo $data_message; ?>"
                          data-image="<?php echo $data_image; ?>"
+                         data-type="<?php echo $data_type; ?>"
                          data-author="<?php echo $data_author; ?>"
                          data-audience="<?php echo $data_audience; ?>"
                          data-created="<?php echo $data_created; ?>">
@@ -131,6 +133,9 @@ include __DIR__ . '/../../components/resident_components/header-resident.php';
                                 <div class="card-meta">
                                     <span class="meta-audience audience-<?php echo $a['audience']; ?>">
                                         <i class="fas fa-users"></i> <?php echo ucfirst($a['audience']); ?>
+                                    </span>
+                                    <span class="meta-type type-<?php echo htmlspecialchars($a['type'] ?? 'general'); ?>">
+                                        <i class="fas fa-tag"></i> <?php echo htmlspecialchars(ucfirst($a['type'] ?? 'general')); ?>
                                     </span>
                                     <span class="meta-time">
                                         <i class="fas fa-clock"></i> <?php echo date('g:i A', strtotime($a['created_at'])); ?>
@@ -205,6 +210,7 @@ include __DIR__ . '/../../components/resident_components/header-resident.php';
                                 $data_image = $a['image'] ? htmlspecialchars(announcement_image_url($a['image']), ENT_QUOTES) : '';
                             $data_author = htmlspecialchars($a['author'], ENT_QUOTES);
                             $data_audience = htmlspecialchars($a['audience'], ENT_QUOTES);
+                            $data_type = htmlspecialchars($a['type'] ?? 'general', ENT_QUOTES);
                             $data_created = htmlspecialchars(date('M d, Y h:i A', strtotime($a['created_at'])), ENT_QUOTES);
                         ?>
                         <article class="carousel-card-3d earlier-card enhanced"
@@ -213,6 +219,7 @@ include __DIR__ . '/../../components/resident_components/header-resident.php';
                                  data-title="<?php echo $data_title; ?>"
                                  data-message="<?php echo $data_message; ?>"
                                  data-image="<?php echo $data_image; ?>"
+                                 data-type="<?php echo $data_type; ?>"
                                  data-author="<?php echo $data_author; ?>"
                                  data-audience="<?php echo $data_audience; ?>"
                                  data-created="<?php echo $data_created; ?>">
@@ -259,6 +266,10 @@ include __DIR__ . '/../../components/resident_components/header-resident.php';
                                             <span class="meta-badge-enhanced audience-<?php echo $a['audience']; ?>">
                                                 <i class="fas fa-users"></i>
                                                 <span><?php echo ucfirst($a['audience']); ?></span>
+                                            </span>
+                                            <span class="meta-badge-enhanced type-<?php echo htmlspecialchars($a['type'] ?? 'general'); ?>">
+                                                <i class="fas fa-tag"></i>
+                                                <span><?php echo htmlspecialchars(ucfirst($a['type'] ?? 'general')); ?></span>
                                             </span>
                                             <span class="meta-time-enhanced">
                                                 <i class="fas fa-calendar-alt"></i>

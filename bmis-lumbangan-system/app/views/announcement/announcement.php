@@ -128,6 +128,25 @@ include_once __DIR__ . '/../../components/admin_components/header-admin.php'
                                     </select>
                                 </div>
                                 <div class="mb-3">
+                                    <label class="form-label"><i class="bi bi-tags-fill me-2"></i>Type</label>
+                                    <?php
+                                    $typeOptions = ['general' => 'General', 'event' => 'Event', 'project' => 'Project', 'notice' => 'Notice', 'workshop' => 'Workshop', 'meeting' => 'Meeting', 'emergency' => 'Emergency', 'other' => 'Other'];
+                                    $typeSel = $editData ? ($editData['type'] ?? 'general') : 'general';
+                                    $isCustomType = !in_array($typeSel, array_keys($typeOptions));
+                                    $customTypeValue = $isCustomType ? $typeSel : '';
+                                    ?>
+                                    <select name="type" id="announcementTypeSelect" class="form-select">
+                                        <?php foreach ($typeOptions as $k => $v): ?>
+                                            <option value="<?php echo htmlspecialchars($k); ?>" <?php echo (!$isCustomType && $typeSel === $k) ? 'selected' : ''; ?>><?php echo htmlspecialchars($v); ?></option>
+                                        <?php endforeach; ?>
+                                        <?php if ($isCustomType): ?>
+                                            <option value="<?php echo htmlspecialchars($customTypeValue); ?>" selected><?php echo htmlspecialchars(ucfirst($customTypeValue)); ?></option>
+                                        <?php endif; ?>
+                                    </select>
+                                    <input type="text" id="announcementTypeCustom" class="form-control mt-2" placeholder="Specify other type" style="display:<?php echo $isCustomType ? 'block' : 'none'; ?>;" value="<?php echo htmlspecialchars($customTypeValue); ?>">
+                                    <small class="text-muted">Choose a type for this announcement or select "Other" to enter a custom type.</small>
+                                </div>
+                                <div class="mb-3">
                                     <label class="form-label"><i class="bi bi-file-earmark-check me-2"></i>Status</label>
                                     <select name="status" class="form-select">
                                         <?php $statusOpts = ['published' => 'Published', 'draft' => 'Draft', 'archived' => 'Archived'];
@@ -208,20 +227,22 @@ include_once __DIR__ . '/../../components/admin_components/header-admin.php'
                     <div class="row g-4 mb-4">
                         <?php foreach ($row_announcements as $a): ?>
                             <div class="col-md-4">
-                                <?php
-                                // prepare safe data attributes
-                                $data_title = htmlspecialchars($a['title'], ENT_QUOTES);
-                                $data_message = htmlspecialchars($a['message'], ENT_QUOTES);
-                                $data_image = $a['image'] ? htmlspecialchars($a['image'], ENT_QUOTES) : '';
-                                $data_author = htmlspecialchars($a['author'], ENT_QUOTES);
-                                $data_audience = htmlspecialchars($a['audience'], ENT_QUOTES);
-                                $data_created = htmlspecialchars($a['created_at'], ENT_QUOTES);
-                                ?>
+                                  <?php
+                                  // prepare safe data attributes
+                                  $data_title = htmlspecialchars($a['title'], ENT_QUOTES);
+                                  $data_message = htmlspecialchars($a['message'], ENT_QUOTES);
+                                  $data_image = $a['image'] ? htmlspecialchars($a['image'], ENT_QUOTES) : '';
+                                  $data_author = htmlspecialchars($a['author'], ENT_QUOTES);
+                                  $data_audience = htmlspecialchars($a['audience'], ENT_QUOTES);
+                                  $data_type = htmlspecialchars($a['type'] ?? 'general', ENT_QUOTES);
+                                  $data_created = htmlspecialchars($a['created_at'], ENT_QUOTES);
+                                  ?>
                                 <div class="announcement-card modern-card h-100" role="button"
                                      data-id="<?php echo $a['id']; ?>"
                                      data-title="<?php echo $data_title; ?>"
                                      data-message="<?php echo $data_message; ?>"
                                      data-image="<?php echo $data_image; ?>"
+                                      data-type="<?php echo $data_type; ?>"
                                      data-author="<?php echo $data_author; ?>"
                                      data-audience="<?php echo $data_audience; ?>"
                                      data-created="<?php echo $data_created; ?>">
@@ -238,6 +259,10 @@ include_once __DIR__ . '/../../components/admin_components/header-admin.php'
                                         <div class="card-badges">
                                             <span class="badge-modern badge-audience audience-<?php echo htmlspecialchars($a['audience']); ?>">
                                                 <?php echo htmlspecialchars(ucfirst($a['audience'])); ?>
+                                            </span>
+                                            <span class="badge-modern badge-type type-<?php echo htmlspecialchars($a['type'] ?? 'general'); ?>">
+                                                <i class="bi bi-tag-fill"></i>
+                                                <?php echo htmlspecialchars(ucfirst($a['type'] ?? 'general')); ?>
                                             </span>
                                             <?php 
                                             $statusColor = ['draft' => 'warning', 'published' => 'success', 'archived' => 'secondary'];
@@ -331,6 +356,49 @@ include_once __DIR__ . '/../../components/admin_components/header-admin.php'
 </div>
 
 <script src="<?php echo BASE_URL; ?>assets/js/announcement/announcements.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    const typeSelect = document.getElementById('announcementTypeSelect');
+    const typeCustom = document.getElementById('announcementTypeCustom');
+    const form = document.getElementById('announcementForm');
+
+    if (!typeSelect) return;
+
+    function toggleCustom(){
+        const val = typeSelect.value || '';
+        if (val === 'other') {
+            typeCustom.style.display = 'block';
+            typeCustom.focus();
+        } else if (typeCustom && typeCustom.value && !Array.from(typeSelect.options).some(o => o.value === typeCustom.value)) {
+            // if a custom option was previously added and selected, keep displaying the input
+            typeCustom.style.display = 'block';
+        } else {
+            typeCustom.style.display = 'none';
+        }
+    }
+
+    typeSelect.addEventListener('change', toggleCustom);
+    toggleCustom();
+
+    // Before submit: if custom field is visible and has text, ensure select contains that value and select it
+    if (form) {
+        form.addEventListener('submit', function(e){
+            const customVal = (typeCustom && typeCustom.value || '').trim();
+            if (customVal) {
+                // add option if not exists
+                if (!Array.from(typeSelect.options).some(o => o.value === customVal)) {
+                    const opt = document.createElement('option');
+                    opt.value = customVal;
+                    opt.text = customVal.charAt(0).toUpperCase() + customVal.slice(1);
+                    typeSelect.appendChild(opt);
+                }
+                typeSelect.value = customVal;
+            }
+        });
+    }
+});
+</script>
 
 <!-- Announcement view modal -->
 <div class="modal fade" id="announcementModal" tabindex="-1" aria-labelledby="announcementModalLabel" aria-hidden="true">

@@ -109,5 +109,8 @@
 
     <!-- Announcements / other page-specific scripts -->
     <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/announcement/public_announcements.js?v=<?php echo time(); ?>"></script>
+
+    <!-- Residents Complaint Page JS -->
+    <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/residents/residents.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>

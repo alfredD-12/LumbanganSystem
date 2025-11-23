@@ -7,17 +7,19 @@ require_once __DIR__ . '/../app/controllers/admins/AdminDocumentController.php';
 @require_once __DIR__ . '/../app/config/config.php';
 
 // Add SurveyController so AJAX survey actions can be routed here
-require_once __DIR__ . '/../app/controllers/SurveyController.php';
+//require_once __DIR__ . '/../app/controllers/SurveyController.php';//
 // Load announcement helpers (provides base_url/assets_url/uploads_url/announcement_image_url)
 require_once __DIR__ . '/../app/helpers/announcement_helper.php';
-
+require_once __DIR__ . '/../app/controllers/AdminController.php';
+// Note: Survey controller is handled above for legacy procedural implementation
+require_once __DIR__ . '/../app/controllers/ResidentController.php';
 //  Handle AJAX/API actions
 $action = $_GET['action'] ?? null;
 
 if ($action) {
     $controller = new DocumentRequestController();
     $adminController = new AdminDocumentController();
-    $surveyController = new SurveyController(); // instantiate survey controller for AJAX survey actions
+//    $surveyController = new SurveyController(); // instantiate survey controller for AJAX survey actions
 
     switch ($action) {
         case 'getRequirements':
@@ -55,7 +57,56 @@ if ($action) {
         case 'getStatusSummary':
             $adminController->getStatusSummary();
             break;
+        // Complaint API actions (mapped from legacy `route` values)
+        case 'complaint_getDetails':
+            $residentController = new ResidentController();
+            $residentController->getDetails();
+            break;
 
+        case 'complaint_save':
+            $residentController = new ResidentController();
+            $residentController->save();
+            break;
+
+        case 'complaint_updateStatus':
+            $residentController = new ResidentController();
+            $residentController->updateStatus();
+            break;
+
+        case 'complaint_delete':
+            $residentController = new ResidentController();
+            $residentController->delete();
+            break;
+        case 'filterComplaints':
+            // AJAX filter endpoint for complaints
+            $admin = new AdminController();
+            $admin->filterComplaints();
+            break;
+
+        case 'getComplaint':
+            $admin = new AdminController();
+            $admin->getComplaint();
+            break;
+
+        case 'createComplaint':
+            $admin = new AdminController();
+            $admin->createComplaint();
+            break;
+
+        case 'updateComplaint':
+            $admin = new AdminController();
+            $admin->updateComplaint();
+            break;
+
+        case 'deleteComplaint':
+            $admin = new AdminController();
+            $admin->deleteComplaint();
+            break;
+
+        case 'updateComplaintStatus':
+            $admin = new AdminController();
+            $admin->updateComplaintStatus();
+            break;
         /*
          * Survey AJAX actions routed through front controller to SurveyController
          * These names match the action=... values used by the client-side scripts.
@@ -228,7 +279,15 @@ switch ($page) {
         $surveyController = new SurveyController();
         $surveyController->wizard_household();
         break;
-
+    case 'resident_complaints':
+        require_once __DIR__ . '/../app/controllers/ResidentController.php';
+        $comController = new ResidentController();
+        $comController->index();
+        break;
+    case 'admin_complaints':
+        require_once __DIR__ . '/../app/controllers/AdminController.php';
+        $redController = new AdminController();
+        $redController->index();
     // Example for future pages
     // case 'resident_list':
     //     $controller = new ResidentController();

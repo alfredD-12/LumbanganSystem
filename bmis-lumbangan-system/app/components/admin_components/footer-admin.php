@@ -21,6 +21,8 @@
       const BASE_URL = "<?php echo BASE_URL; ?>";
       const BASE_PUBLIC = "<?php echo BASE_PUBLIC; ?>";
     </script>
+    <!-- Admin Complaint Page JavaScript -->
+    <script src="<?php echo BASE_URL . 'assets/js/complaint/admin.js'; ?>"></script>
     </body>
 
     </html>

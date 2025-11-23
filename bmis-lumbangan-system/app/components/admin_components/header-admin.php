@@ -23,6 +23,8 @@
     <!-- Tiny MCE Links -->
     <script src="https://cdn.tiny.cloud/1/hunfvs9zjm4i9ph6m4ls99rumaquw91oqwz981hcx0er0xsp/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
     <script src="<?php echo BASE_URL . 'assets/js/tinymce.js'; ?>"> </script>
+    <!-- Admin Complaint Page CSS -->
+    <link rel="stylesheet" href="<?php echo BASE_URL . 'assets/css/complaint/admin.css'; ?>">
 </head>
 
 <body>

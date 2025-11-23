@@ -25,6 +25,8 @@
     <script src="<?php echo BASE_URL . 'assets/js/tinymce.js'; ?>"> </script>
     <!-- Admin Complaint Page CSS -->
     <link rel="stylesheet" href="<?php echo BASE_URL . 'assets/css/complaint/admin.css'; ?>">
+    <!-- Admin Complaint Page CSS -->
+    <link rel="stylesheet" href="<?php echo BASE_URL . 'assets/css/complaint/admin.css'; ?>">
 </head>
 
 <body>

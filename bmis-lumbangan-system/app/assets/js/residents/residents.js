@@ -24,7 +24,8 @@ function formatTime(timeString) {
 document.querySelectorAll('.view-details-btn').forEach(btn => {
     btn.addEventListener('click', function() {
         const id = this.dataset.id;
-        const url = `${baseUrl}/index.php?route=api/complaint/details&id=${id}`;
+        // Use front-controller AJAX action that returns JSON for resident views
+        const url = `${baseUrl}/index.php?action=complaint_getDetails&id=${id}`;
         console.log('Fetching complaint details from:', url);
         
         fetch(url)

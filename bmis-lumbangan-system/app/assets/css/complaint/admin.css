@@ -375,13 +375,13 @@ body {
     border-color: #3b82f6;
 }
 
-/* Clean Modal Styling */
+/* Ensure modals appear above everything */
 .modal {
-    z-index: 10500 !important;
+    z-index: 10000 !important;
 }
 
 .modal-backdrop {
-    z-index: 10400 !important;
+    z-index: 9999 !important;
 }
 
 .modal-content {

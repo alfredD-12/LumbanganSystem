@@ -2,6 +2,7 @@
 // Require user authentication
 require_once dirname(__DIR__, 2) . '/helpers/session_helper.php';
 require_once dirname(__DIR__, 2) . '/helpers/dashboard_helper.php';
+require_once dirname(__DIR__, 2) . '/models/Complaint.php';
 requireUser(); // Only allow logged-in users to access this page
 
 // Load Announcement model and fetch latest 3 announcements
@@ -532,9 +533,7 @@ $officials = getActiveOfficials();
         <!-- Quick Stats -->
         <?php
             // Announcements this week count
-                require_once dirname(__DIR__, 2) . '/models/Announcement.php';
                 $announcementModel = new Announcement();
-
                 // Calculate start (Monday) and end (Sunday) of current week
                 $startOfWeek = date('Y-m-d', strtotime('monday this week'));
                 $endOfWeek = date('Y-m-d', strtotime('sunday this week'));
@@ -548,7 +547,6 @@ $officials = getActiveOfficials();
                 $thisWeekAnnouncementsCount = is_array($weekAnnouncements) ? count($weekAnnouncements) : 0;
 
                 // Pending complaints count
-                require_once dirname(__DIR__, 2) . '/models/Complaint.php';
                 $complaintModel = new Complaint();
                 $complaintStats = $complaintModel->getStatistics();
                 $pendingComplaints = isset($complaintStats['pending']) ? (int)$complaintStats['pending'] : 0;

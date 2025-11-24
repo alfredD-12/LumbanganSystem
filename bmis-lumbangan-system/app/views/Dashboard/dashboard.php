@@ -530,6 +530,23 @@ $officials = getActiveOfficials();
     <!-- Main Dashboard Content -->
     <div class="container" style="margin-top: 2rem;">
         <!-- Quick Stats -->
+        <?php
+            // Announcements this week count
+            require_once dirname(__DIR__, 2) . '/models/Announcement.php';
+            $announcementModel = new Announcement();
+
+            // Calculate start (Monday) and end (Sunday) of current week
+            $startOfWeek = date('Y-m-d', strtotime('monday this week'));
+            $endOfWeek = date('Y-m-d', strtotime('sunday this week'));
+
+            // Fetch published announcements within week (getAll supports start_date/end_date)
+            $weekAnnouncements = $announcementModel->getAll([
+                'status' => 'published',
+                'start_date' => $startOfWeek,
+                'end_date' => $endOfWeek
+            ]);
+            $thisWeekAnnouncementsCount = is_array($weekAnnouncements) ? count($weekAnnouncements) : 0;
+        ?>
         <div class="stats-grid">
             <div class="stat-card" tabindex="0">
                 <div class="stat-main">
@@ -618,7 +635,7 @@ $officials = getActiveOfficials();
                     <div class="stat-icon">
                         <i class="fas fa-bell"></i>
                     </div>
-                    <div class="stat-number">8</div>
+                    <div class="stat-number"><?php echo htmlspecialchars($thisWeekAnnouncementsCount, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></div>
                     <div class="stat-label">New Announcements</div>
                 </div>
                 <div class="stat-foot">

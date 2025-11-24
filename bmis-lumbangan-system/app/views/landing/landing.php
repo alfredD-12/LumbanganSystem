@@ -183,37 +183,60 @@ if (isLoggedIn()) {
         <h2 class="section-title">Community Development</h2>
         <p class="section-subtitle">Building a better tomorrow through strategic initiatives and programs</p>
       </div>
+      <?php
+        // Filter public announcements for those with type 'project'
+        $projectAnnouncementsAll = array_filter($publicAnnouncements, function($a) {
+            return isset($a['type']) && strtolower(trim($a['type'])) === 'project';
+        });
+        // Re-index and take up to 3
+        $projectAnnouncements = array_slice(array_values($projectAnnouncementsAll), 0, 3);
+      ?>
       <div class="row">
-        <div class="col-lg-4 col-md-6 d-flex">
-          <div class="project-card d-flex flex-column">
-            <div class="project-img"><i class="fas fa-road"></i></div>
-            <div class="project-body">
-              <span class="project-status status-ongoing">Ongoing</span>
-              <h5 class="project-title">Road Concreting Project</h5>
-              <p style="color: #718096;">Improving road infrastructure to provide better access for residents and emergency services.</p>
+        <?php if (!empty($projectAnnouncements)): ?>
+          <?php foreach ($projectAnnouncements as $a): ?>
+            <?php
+              $id = htmlspecialchars($a['id']);
+              $title = htmlspecialchars($a['title']);
+              $message = htmlspecialchars($a['message']);
+              $excerpt = htmlspecialchars(strlen($a['message']) > 120 ? substr($a['message'], 0, 120) . '...' : $a['message']);
+              $date = htmlspecialchars(date('F j, Y', strtotime($a['created_at'])));
+              $icon = !empty($a['image']) ? 'fas fa-image' : 'fas fa-bullhorn';
+            ?>
+            <div class="col-lg-4 col-md-6">
+              <div class="announcement-card">
+                <div class="announcement-header">
+                  <i class="<?php echo $icon; ?> announcement-icon"></i>
+                  <div>
+                    <h5 style="margin: 0; font-size: 1rem;"><?php echo $title; ?></h5>
+                    <div class="announcement-date"><?php echo $date; ?></div>
+                  </div>
+                </div>
+                <div class="announcement-body">
+                  <h5 class="announcement-title"><?php echo $title; ?></h5>
+                  <p style="color: #718096; font-size: 0.95rem;"><?php echo $excerpt; ?></p>
+                  <div style="display:flex; justify-content: flex-end;">
+                    <button class="btn btn-custom btn-outline-custom" onclick="landingReadMore(this)"
+                            data-id="<?php echo $id; ?>"
+                            data-title="<?php echo $title; ?>"
+                            data-message="<?php echo $message; ?>"
+                            data-image="<?php echo htmlspecialchars($a['image']); ?>">
+                      Read More
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <!-- No Projects -->
+          <div class="col-12">
+              <div style="text-align: center; padding: 3rem; background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+                  <i class="fas fa-project-diagram" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+                  <h4 style="color: #666; font-weight: 600;">No Projects Available</h4>
+                  <p style="color: #999;">Check back later for updates</p>
+              </div>
           </div>
-        </div>
-        <div class="col-lg-4 col-md-6">
-          <div class="project-card d-flex flex-column">
-            <div class="project-img"><i class="fas fa-basketball-ball"></i></div>
-            <div class="project-body">
-              <span class="project-status status-completed">Completed</span>
-              <h5 class="project-title">Barangay Multi-Purpose Hall</h5>
-              <p style="color: #718096;">A new community space for events, sports, and gatherings serving all residents.</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6">
-          <div class="project-card d-flex flex-column">
-            <div class="project-img"><i class="fas fa-lightbulb"></i></div>
-            <div class="project-body">
-              <span class="project-status status-ongoing">Ongoing</span>
-              <h5 class="project-title">Solar Street Lights</h5>
-              <p style="color: #718096;">Installing eco-friendly solar-powered lighting to enhance safety and security.</p>
-            </div>
-          </div>
-        </div>
+        <?php endif; ?>
       </div>
     </div>
   </section>
@@ -282,10 +305,15 @@ if (isLoggedIn()) {
             </div>
           <?php endforeach; ?>
         <?php else: ?>
-          <div class="col-12">
-            <p style="color: #718096;">No announcements available at the moment.</p>
-          </div>
-        <?php endif; ?>
+                    <!-- No Announcements -->
+                    <div class="col-12">
+                        <div style="text-align: center; padding: 3rem; background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+                            <i class="fas fa-bullhorn" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+                            <h4 style="color: #666; font-weight: 600;">No Announcements Available</h4>
+                            <p style="color: #999;">Check back later for updates</p>
+                        </div>
+                    </div>
+                <?php endif; ?>
       </div>
     </div>
   </section>

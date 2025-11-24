@@ -108,8 +108,9 @@ class Announcement {
     
     // Create new announcement
     public function create($data) {
-        $sql = "INSERT INTO {$this->table} (title, message, image, audience, status, expires_at, author) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)";
+        // include 'type' column when creating announcements
+        $sql = "INSERT INTO {$this->table} (title, message, image, audience, status, expires_at, author, `type`) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $this->conn->prepare($sql);
         return $stmt->execute([
             $data['title'],
@@ -118,14 +119,16 @@ class Announcement {
             $data['audience'] ?? 'all',
             $data['status'] ?? 'published',
             $data['expires_at'] ?? null,
-            $data['author']
+            $data['author'],
+            $data['type'] ?? 'general'
         ]);
     }
     
     // Update announcement
     public function update($id, $data) {
+        // include 'type' when updating announcements
         $sql = "UPDATE {$this->table} 
-                SET title = ?, message = ?, image = ?, audience = ?, status = ?, expires_at = ?, author = ? 
+                SET title = ?, message = ?, image = ?, audience = ?, status = ?, expires_at = ?, author = ?, `type` = ? 
                 WHERE id = ?";
         $stmt = $this->conn->prepare($sql);
         return $stmt->execute([
@@ -136,6 +139,7 @@ class Announcement {
             $data['status'] ?? 'published',
             $data['expires_at'] ?? null,
             $data['author'],
+            $data['type'] ?? 'general',
             $id
         ]);
     }

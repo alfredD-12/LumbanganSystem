@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../models/Announcement.php';
 require_once __DIR__ . '/../config/Database.php';
+require_once __DIR__ . '/../helpers/notification_helper.php';
 // Ensure config constants (BASE_URL, BASE_PUBLIC) are available
 if (!defined('BASE_URL')) {
     require_once __DIR__ . '/../config/config.php';
@@ -112,12 +113,18 @@ class AnnouncementController {
                 'message' => $_POST['message'] ?? '',
                 'audience' => $_POST['audience'] ?? 'all',
                 'status' => $_POST['status'] ?? 'published',
+                'type' => $_POST['type'] ?? 'general',
                 'author' => $_POST['author'] ?? 'Official',
                 'expires_at' => isset($_POST['expires_at']) && $_POST['expires_at'] !== '' ? $_POST['expires_at'] : null,
                 'image' => $this->handleImageUpload('image')
             ];
             
-            $this->model->create($data);
+            $announcementId = $this->model->create($data);
+            
+            // Send notification if announcement is published
+            if ($announcementId && $data['status'] === 'published') {
+                notifyNewAnnouncement($announcementId, $data['title'], $data['audience']);
+            }
             
             if (isset($_POST['ajax']) && $_POST['ajax'] == '1') {
                 header('Content-Type: application/json');
@@ -139,6 +146,7 @@ class AnnouncementController {
                 'audience' => $_POST['audience'] ?? 'all',
                 'status' => $_POST['status'] ?? 'published',
                 'author' => $_POST['author'] ?? 'Official',
+                'type' => $_POST['type'] ?? 'general',
                 'expires_at' => isset($_POST['expires_at']) && $_POST['expires_at'] !== '' ? $_POST['expires_at'] : null,
                 'image' => $this->handleImageUpload('image', $existing['image'] ?? null)
             ];

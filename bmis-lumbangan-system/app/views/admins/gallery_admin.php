@@ -8,6 +8,9 @@
     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#galleryModal" onclick="openAddModal()">
       <i class="fas fa-plus"></i> Add New Gallery Item
     </button>
+    <button class="btn btn-success" id="saveOrderBtn" style="display: none;" onclick="updateOrder()">
+        <i class="fas fa-save"></i> Save Display Order
+    </button>
   </div>
 
   <!-- Gallery Items Grid -->
@@ -38,12 +41,6 @@
               <div class="mb-2">
                 <label for="description" class="form-label mb-1 small">Description</label>
                 <textarea class="form-control form-control-sm" id="description" name="description" rows="2"></textarea>
-              </div>
-              
-              <div class="mb-2">
-                <label for="displayOrder" class="form-label mb-1 small">Display Order</label>
-                <input type="number" class="form-control form-control-sm" id="displayOrder" name="display_order" value="0" min="0">
-                <small class="text-muted" style="font-size: 0.75rem;">Lower numbers appear first</small>
               </div>
             </div>
             
@@ -129,6 +126,13 @@
 .gallery-card::before,
 .gallery-card::after {
     opacity: 1 !important;
+}
+
+.gallery-card.dragging {
+    opacity: 0.5;
+    border-style: dashed;
+    border-color: #0d6efd;
+    background: #eef5ff !important;
 }
 
 .gallery-card {
@@ -221,12 +225,21 @@
     text-align: left;
 }
 
+/* Ensure modals appear above everything */
+.modal {
+    z-index: 10000 !important;
+}
+
+.modal-backdrop {
+    z-index: 9999 !important;
+}
+
 /* Fix sidebar toggle button - prevent scroll issue */
 .sidebar-toggle {
     position: fixed !important;
     top: 50% !important;
     transform: translateY(-50%) !important;
-    z-index: 9999 !important;
+    z-index: 9000 !important;
 }
 
 .sidebar-toggle:hover {
@@ -283,6 +296,7 @@ function displayGallery(items) {
     
     items.forEach(item => {
         const col = document.createElement('div');
+        col.draggable = true;
         col.className = 'col-md-4 mb-4';
         col.innerHTML = `
             <div class="gallery-card" data-id="${item.id}">
@@ -320,30 +334,35 @@ function openAddModal() {
     document.getElementById('galleryId').value = '';
     document.getElementById('imageRequired').style.display = 'inline';
     document.getElementById('image').required = true;
+    document.getElementById('imagePreview').src = '';
     document.getElementById('imagePreviewContainer').style.display = 'none';
 }
 
 // Open edit modal
 function openEditModal(id) {
-    fetch(`../../controllers/GalleryController.php?action=fetch&active_only=false`)
+    fetch(`../../controllers/GalleryController.php?action=fetch_one&id=${id}`)
         .then(res => res.json())
         .then(data => {
-            const item = data.data.find(g => g.id == id);
-            if (item) {
+            if (data.success) {
+                const item = data.data;
                 document.getElementById('modalTitle').textContent = 'Edit Gallery Item';
                 document.getElementById('galleryId').value = item.id;
                 document.getElementById('title').value = item.title;
                 document.getElementById('description').value = item.description;
-                document.getElementById('displayOrder').value = item.display_order;
                 document.getElementById('imageRequired').style.display = 'none';
                 document.getElementById('image').required = false;
                 
                 if (item.image_path) {
                     document.getElementById('imagePreview').src = `../../uploads/gallery/${item.image_path}`;
                     document.getElementById('imagePreviewContainer').style.display = 'block';
+                } else {
+                    document.getElementById('imagePreview').src = '';
+                    document.getElementById('imagePreviewContainer').style.display = 'none';
                 }
                 
                 new bootstrap.Modal(document.getElementById('galleryModal')).show();
+            } else {
+                showError(data.message || 'Failed to fetch gallery item details.');
             }
         });
 }
@@ -449,6 +468,75 @@ function confirmDelete() {
         console.error('Error:', err);
         showError('Failed to delete gallery item');
     });
+}
+
+// --- Drag and Drop Reordering ---
+
+const grid = document.getElementById('galleryGrid');
+let draggedItem = null;
+
+grid.addEventListener('dragstart', (e) => {
+    // The target is the draggable column itself
+    if (e.target.classList.contains('col-md-4')) {
+        draggedItem = e.target;
+        // Use a timeout to avoid the element disappearing immediately
+        setTimeout(() => {
+            if (draggedItem) {
+                // Add a class to the inner card for styling
+                draggedItem.querySelector('.gallery-card').classList.add('dragging');
+            }
+        }, 0);
+    }
+});
+
+grid.addEventListener('dragend', () => {
+    if (draggedItem) {
+        draggedItem.querySelector('.gallery-card').classList.remove('dragging');
+        draggedItem = null;
+        // Show the save button only if a drag has occurred
+        document.getElementById('saveOrderBtn').style.display = 'inline-block';
+    }
+});
+
+grid.addEventListener('dragover', (e) => {
+    e.preventDefault(); // Necessary to allow dropping
+    const target = e.target.closest('.col-md-4');
+    if (target && target !== draggedItem) {
+        const rect = target.getBoundingClientRect();
+        // Determine if dragging over the left or right half of the target
+        const next = (e.clientX - rect.left) > (rect.width / 2);
+        if (next) {
+            grid.insertBefore(draggedItem, target.nextSibling);
+        } else {
+            grid.insertBefore(draggedItem, target);
+        }
+    }
+});
+
+// Function to send the new order to the server
+function updateOrder() {
+    const orderedIds = Array.from(document.querySelectorAll('#galleryGrid .gallery-card'))
+                            .map(card => card.dataset.id);
+
+    const formData = new FormData();
+    formData.append('action', 'update_order');
+    formData.append('ordered_ids', JSON.stringify(orderedIds));
+
+    fetch('../../controllers/GalleryController.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            showSuccess('Display order saved successfully!');
+            document.getElementById('saveOrderBtn').style.display = 'none';
+            loadGallery(); // Reload to confirm order from server
+        } else {
+            showError(data.message || 'Failed to save the new order.');
+        }
+    })
+    .catch(err => showError('An error occurred while saving the order.'));
 }
 
 // Load gallery on page load

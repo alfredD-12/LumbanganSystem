@@ -86,7 +86,7 @@ $officials = getActiveOfficials();
 
                     <!-- Services Dropdown -->
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-concierge-bell"></i> Services
                         </a>
                         <ul class="dropdown-menu">
@@ -153,17 +153,17 @@ $officials = getActiveOfficials();
 
                     <!-- User Profile Dropdown - Responsive margins -->
                     <div class="dropdown" style="margin-left: 0.5rem; border-left: 1px solid rgba(0,0,0,0.1); padding-left: 0.5rem;">
-                        <button class="user-profile-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-label="User menu">
+                        <button class="user-profile-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
                             <div class="user-avatar"><i class="fas fa-user"></i></div>
                             <span class="d-none d-sm-inline"><?php echo htmlspecialchars($username); ?></span>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
+                        <ul class="dropdown-menu dropdown-menu-end" style="max-width: 280px; width: max-content;">
                             <li class="px-3 py-2 border-bottom">
                                 <div class="d-flex align-items-center gap-2">
-                                    <div class="user-avatar" style="width:40px;height:40px;border-radius:50%;background:#1e3a5f;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;"><i class="fas fa-user"></i></div>
-                                    <div class="flex-grow-1" style="min-width:0">
-                                        <div class="fw-bold text-truncate"><?php echo htmlspecialchars($fullName); ?></div>
-                                        <div class="text-muted text-truncate" style="font-size:0.8rem;">@<?php echo htmlspecialchars($username); ?></div>
+                                    <div class="user-avatar" style="width:40px;height:40px;border-radius:50%;background:#1e3a5f;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;"><i class="fas fa-user"></i></div>
+                                    <div class="flex-grow-1" style="min-width:0;max-width:180px;">
+                                        <div class="fw-bold text-truncate" style="max-width:100%;"><?php echo htmlspecialchars($fullName); ?></div>
+                                        <div class="text-muted text-truncate" style="font-size:0.8rem;max-width:100%;">@<?php echo htmlspecialchars($username); ?></div>
                                     </div>
                                 </div>
                             </li>
@@ -2915,5 +2915,10 @@ $officials = getActiveOfficials();
             window.addEventListener('resize', animateOnScroll);
         });
     </script>
+
+  <?php include dirname(__DIR__, 2) . '/components/ai_chatbot.php'; ?>
+
+  <script src="<?php echo BASE_URL; ?>assets/js/ai_chatbot.js"></script>
+
 </body>
 </html>

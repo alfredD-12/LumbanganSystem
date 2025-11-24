@@ -33,13 +33,18 @@ class Gallery {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
     
-    public function create($title, $description, $imagePath, $displayOrder = 0) {
+    public function create($title, $description, $imagePath) {
         try {
+            // Get the highest current display_order and add 1
+            $orderStmt = $this->db->query("SELECT MAX(display_order) FROM gallery");
+            $maxOrder = $orderStmt->fetchColumn();
+            $newOrder = ($maxOrder === null) ? 1 : $maxOrder + 1;
+
             $stmt = $this->db->prepare(
                 "INSERT INTO gallery (title, description, image_path, display_order) 
                  VALUES (?, ?, ?, ?)"
             );
-            $result = $stmt->execute([$title, $description, $imagePath, $displayOrder]);
+            $result = $stmt->execute([$title, $description, $imagePath, $newOrder]);
             if (!$result) {
                 error_log("Gallery Create Error: " . implode(", ", $stmt->errorInfo()));
             }
@@ -50,19 +55,17 @@ class Gallery {
         }
     }
     
-    public function update($id, $title, $description, $imagePath = null, $displayOrder = null) {
+    public function update($id, $title, $description, $imagePath = null) {
         if ($imagePath) {
             $stmt = $this->db->prepare(
-                "UPDATE gallery SET title = ?, description = ?, image_path = ?, display_order = ? 
-                 WHERE id = ?"
+                "UPDATE gallery SET title = ?, description = ?, image_path = ? WHERE id = ?"
             );
-            return $stmt->execute([$title, $description, $imagePath, $displayOrder, $id]);
+            return $stmt->execute([$title, $description, $imagePath, $id]);
         } else {
             $stmt = $this->db->prepare(
-                "UPDATE gallery SET title = ?, description = ?, display_order = ? 
-                 WHERE id = ?"
+                "UPDATE gallery SET title = ?, description = ? WHERE id = ?"
             );
-            return $stmt->execute([$title, $description, $displayOrder, $id]);
+            return $stmt->execute([$title, $description, $id]);
         }
     }
     
@@ -85,5 +88,28 @@ class Gallery {
             "UPDATE gallery SET is_active = NOT is_active WHERE id = ?"
         );
         return $stmt->execute([$id]);
+    }
+
+    
+
+    public function updateOrder($orderedIds) {
+        $this->db->beginTransaction();
+        try {
+            foreach ($orderedIds as $index => $id) {
+                // The order is the array index. Add 1 if you don't want a 0-based order.
+                $displayOrder = $index + 1; 
+                $stmt = $this->db->prepare('UPDATE gallery SET display_order = :display_order WHERE id = :id');
+                $stmt->bindValue(':display_order', $displayOrder, PDO::PARAM_INT);
+                $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+                $stmt->execute();
+            }
+            $this->db->commit();
+            return true;
+        } catch (\PDOException $e) {
+            $this->db->rollBack();
+            // Log the error for debugging
+            error_log("Update Order Exception: " . $e->getMessage());
+            return false;
+        }
     }
 }

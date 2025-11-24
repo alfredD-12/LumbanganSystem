@@ -2,10 +2,10 @@ const container = document.getElementById('loginContainer');
 const registerBtn = document.getElementById('modalRegisterBtn');
 const loginBtn = document.getElementById('modalLoginBtn');
 
+// Desktop toggle buttons
 if (registerBtn) {
     registerBtn.addEventListener('click', () => {
         container.classList.add("active");
-        // Hide login error when switching to register
         hideLoginError();
     });
 }
@@ -13,10 +13,35 @@ if (registerBtn) {
 if (loginBtn) {
     loginBtn.addEventListener('click', () => {
         container.classList.remove("active");
-        // Hide register error when switching to login
         hideRegisterError();
     });
 }
+
+// Mobile toggle links
+setTimeout(() => {
+    const mobileToSignUp = document.getElementById('mobileToSignUp');
+    const mobileToSignIn = document.getElementById('mobileToSignIn');
+    
+    if (mobileToSignUp) {
+        mobileToSignUp.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Switching to Sign Up');
+            container.classList.add("active");
+            hideLoginError();
+        });
+    }
+    
+    if (mobileToSignIn) {
+        mobileToSignIn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Switching to Sign In');
+            container.classList.remove("active");
+            hideRegisterError();
+        });
+    }
+}, 100);
 
 // Handle Sign In Form Submission
 document.getElementById('signinForm')?.addEventListener('submit', async function(e) {

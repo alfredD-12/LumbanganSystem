@@ -32,8 +32,27 @@ class GalleryController {
             case 'toggle':
                 $this->toggleGallery();
                 break;
+            case 'fetch_one':
+                $this->fetchOne();
+                break;
+            case 'update_order':
+                $this->updateOrder();
+                break;
             default:
                 echo json_encode(['success' => false, 'message' => 'Invalid action']);
+        }
+    }
+
+    private function fetchOne() {
+        if (!isset($_GET['id'])) {
+            echo json_encode(['success' => false, 'message' => 'ID is required.']);
+            return;
+        }
+        $item = $this->galleryModel->getById($_GET['id']);
+        if ($item) {
+            echo json_encode(['success' => true, 'data' => $item]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Gallery item not found.']);
         }
     }
     
@@ -47,7 +66,6 @@ class GalleryController {
         try {
             $title = $_POST['title'] ?? '';
             $description = $_POST['description'] ?? '';
-            $displayOrder = $_POST['display_order'] ?? 0;
             
             // Validate required fields
             if (empty($title)) {
@@ -96,7 +114,7 @@ class GalleryController {
             $uploadPath = $uploadDir . $fileName;
             
             if (move_uploaded_file($_FILES['image']['tmp_name'], $uploadPath)) {
-                if ($this->galleryModel->create($title, $description, $fileName, $displayOrder)) {
+                if ($this->galleryModel->create($title, $description, $fileName)) {
                     echo json_encode(['success' => true, 'message' => 'Gallery item added successfully']);
                 } else {
                     // Clean up uploaded file if database insert fails
@@ -115,7 +133,6 @@ class GalleryController {
         $id = $_POST['id'] ?? 0;
         $title = $_POST['title'] ?? '';
         $description = $_POST['description'] ?? '';
-        $displayOrder = $_POST['display_order'] ?? 0;
         
         // Handle file upload if new image provided
         $imagePath = null;
@@ -135,7 +152,7 @@ class GalleryController {
             }
         }
         
-        if ($this->galleryModel->update($id, $title, $description, $imagePath, $displayOrder)) {
+        if ($this->galleryModel->update($id, $title, $description, $imagePath)) {
             echo json_encode(['success' => true, 'message' => 'Gallery item updated successfully']);
         } else {
             echo json_encode(['success' => false, 'message' => 'Failed to update gallery item']);
@@ -159,6 +176,26 @@ class GalleryController {
             echo json_encode(['success' => true, 'message' => 'Gallery status updated']);
         } else {
             echo json_encode(['success' => false, 'message' => 'Failed to update status']);
+        }
+    }
+
+    private function updateOrder() {
+        if (!isset($_POST['ordered_ids'])) {
+            echo json_encode(['success' => false, 'message' => 'Order data is missing.']);
+            return;
+        }
+        $orderedIds = json_decode($_POST['ordered_ids']);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            echo json_encode(['success' => false, 'message' => 'Invalid order data format.']);
+            return;
+        }
+
+        $success = $this->galleryModel->updateOrder($orderedIds);
+
+        if ($success) {
+            echo json_encode(['success' => true, 'message' => 'Display order updated successfully.']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Failed to update display order.']);
         }
     }
 }

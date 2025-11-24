@@ -101,7 +101,8 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            overflow-x: hidden;
+            position: relative;
+            width: 100%;
         }
 
         :root {
@@ -170,7 +171,7 @@
         /* Replace .navbar style */
 .navbar {
     transition: all 0.4s ease;
-    padding: 1.2rem 0;
+    padding: 1.5rem 0;
     background: rgba(255,255,255,0.7);
     backdrop-filter: blur(16px) saturate(160%);
     -webkit-backdrop-filter: blur(16px) saturate(160%);
@@ -184,7 +185,7 @@
     backdrop-filter: blur(16px) saturate(160%);
     -webkit-backdrop-filter: blur(16px) saturate(160%);
     box-shadow: 0 4px 40px rgba(0,0,0,0.12);
-    padding: 0.8rem 0;
+    padding: 1rem 0;
 }
 
 .navbar-brand {
@@ -266,7 +267,7 @@
             display: flex;
             align-items: center;
             position: relative;
-            padding: 140px 0 80px;
+            padding: 110px 0 80px;
             overflow: hidden;
         }
 
@@ -380,19 +381,225 @@
 
         /* Prevent overlap on small screens: reduce button padding and add gaps */
         @media (max-width: 768px) {
+            /* Fix body overflow */
+            body {
+                overflow-x: hidden !important;
+            }
+            
+            /* Fix all sections to prevent overflow */
+            section, .container, .row {
+                max-width: 100%;
+                overflow-x: hidden;
+            }
+            
+            /* Navbar fixes for mobile - similar to dashboard */
+            .navbar {
+                padding: 0.8rem 0;
+            }
+            
+            .navbar .container {
+                padding: 0 15px;
+            }
+            
+            .navbar-toggler {
+                border: 2px solid var(--primary-blue);
+                padding: 0.4rem 0.6rem;
+                border-radius: 8px;
+            }
+            
+            .navbar-toggler:focus {
+                box-shadow: 0 0 0 0.2rem rgba(30, 58, 95, 0.25);
+            }
+            
+            .navbar-toggler-icon {
+                width: 1.5rem;
+                height: 1.5rem;
+            }
+            
+            .navbar-brand {
+                font-size: 1rem;
+                gap: 10px;
+            }
+            
+            .logo-circle {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            
+            .brand-title {
+                font-size: 0.95rem !important;
+            }
+            
+            .brand-subtitle {
+                font-size: 0.75rem !important;
+            }
+            
+            /* Collapsed navbar menu styling */
+            .navbar-collapse {
+                background: rgba(255, 255, 255, 0.98);
+                backdrop-filter: blur(20px);
+                margin-top: 0.8rem;
+                padding: 1rem;
+                border-radius: 12px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            }
+            
+            .nav-link {
+                display: block;
+                width: 100%;
+                padding: 0.7rem 1rem !important;
+                margin: 0.2rem 0;
+                border-radius: 8px;
+                text-align: center;
+            }
+            
+            .nav-link::before {
+                display: none;
+            }
+            
+            .nav-link:hover {
+                background: rgba(30, 58, 95, 0.05);
+            }
+            
+            .navbar-nav {
+                margin-bottom: 1rem;
+            }
+            
+            .btn-login, .btn-register {
+                width: 100%;
+                margin: 0.3rem 0 !important;
+                padding: 0.7rem 1rem !important;
+                font-size: 0.85rem !important;
+            }
+            
+            /* Hero section mobile fixes */
+            .hero-section {
+                min-height: auto;
+                padding: 140px 0 60px;
+            }
+            
+            /* Matatag logo mobile responsiveness */
+            .matatag-logo-wrapper {
+                margin-bottom: 1.5rem !important;
+                margin-top: 20px !important;
+            }
+            
+            .matatag-logo {
+                width: 250px !important;
+            }
+            
+            .hero-content h1 {
+                font-size: 2.2rem !important;
+                line-height: 1.2;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.1rem !important;
+            }
+            
+            .hero-tagline {
+                font-size: 1rem !important;
+                margin-bottom: 2rem;
+            }
+            
+            .hero-badge {
+                font-size: 0.75rem;
+                padding: 8px 20px;
+            }
+            
+            /* Button fixes */
             .btn-custom {
-                padding: 8px 14px;
-                margin: 6px 6px;
+                padding: 12px 24px;
+                margin: 8px 5px;
                 font-size: 0.85rem;
             }
 
-            /* Ensure rows create vertical gaps when columns wrap */
+            /* Rows and columns */
             .row {
                 row-gap: 1rem;
+                margin-left: 0;
+                margin-right: 0;
+            }
+            
+            .row > * {
+                padding-left: 10px;
+                padding-right: 10px;
             }
 
-            /* Make hero buttons wrap nicely */
-            .hero-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
+            /* Hero buttons */
+            .hero-buttons { 
+                display: flex; 
+                flex-wrap: wrap; 
+                justify-content: center; 
+                gap: 0.5rem; 
+            }
+            
+            /* Section padding */
+            .section-title {
+                font-size: 2.2rem;
+            }
+            
+            section {
+                padding: 60px 0 !important;
+            }
+            
+            .stats-section {
+                padding: 60px 0 !important;
+            }
+            
+            /* Container */
+            .container {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+            
+            /* Images */
+            img {
+                max-width: 100%;
+                height: auto;
+            }
+            
+            /* Cards */
+            .card, .project-card, .official-card, .announcement-card {
+                margin-bottom: 1.5rem;
+            }
+        }
+
+        /* Extra small devices */
+        @media (max-width: 576px) {
+            .navbar-brand {
+                font-size: 0.9rem;
+            }
+            
+            .logo-circle {
+                width: 35px;
+                height: 35px;
+                font-size: 0.9rem;
+            }
+            
+            /* Matatag logo for small phones */
+            .matatag-logo {
+                width: 200px !important;
+            }
+            
+            .hero-content h1 {
+                font-size: 1.8rem !important;
+            }
+            
+            .hero-subtitle {
+                font-size: 1rem !important;
+            }
+            
+            .btn-custom {
+                padding: 10px 20px;
+                font-size: 0.8rem;
+            }
+            
+            .container {
+                padding-left: 15px;
+                padding-right: 15px;
+            }
         }
 
         /* Add safe bottom margin to card-like items to avoid visual overlap */
@@ -1373,19 +1580,242 @@
 }
 
 @media (max-width: 768px) {
+    .login-modal-overlay {
+        padding: 20px 10px;
+        align-items: flex-start;
+        overflow-y: auto;
+    }
+    
+    .login-modal-container {
+        width: 100%;
+        max-width: 450px;
+        margin: 60px auto 20px;
+    }
+    
     .login-container {
-        width: 95vw;
-        min-height: 400px;
-        border-radius: 50px;
+        width: 100%;
+        max-width: 100%;
+        min-height: auto;
+        border-radius: 25px;
+        padding: 0;
     }
     
     .modal-main-logo {
-        width: 150px;
-        top: -60px;
+        width: 100px;
+        top: -45px;
     }
     
-    .login-typewriter-text {
-        font-size: 22px;
+    .login-modal-close {
+        top: -35px;
+        right: 0;
+        width: 35px;
+        height: 35px;
+        font-size: 18px;
+    }
+    
+    /* Hide toggle panel completely on mobile */
+    .login-toggle-container {
+        display: none !important;
+    }
+    
+    /* Make both forms full width and stack */
+    .login-form-container.login-sign-in,
+    .login-form-container.login-sign-up {
+        position: relative;
+        width: 100% !important;
+        left: 0 !important;
+        transform: none !important;
+        opacity: 1;
+        z-index: 2;
+        height: auto;
+        min-height: auto;
+        padding: 25px 20px 30px;
+    }
+    
+    /* Hide sign up form by default */
+    .login-form-container.login-sign-up {
+        display: none;
+    }
+    
+    /* Show sign in form by default */
+    .login-form-container.login-sign-in {
+        display: block;
+    }
+    
+    /* When active, swap visibility */
+    .login-container.active .login-form-container.login-sign-in {
+        display: none;
+    }
+    
+    .login-container.active .login-form-container.login-sign-up {
+        display: block;
+    }
+    
+    .login-form-container form {
+        padding: 0;
+        height: auto;
+    }
+    
+    .login-form-container h1 {
+        font-size: 1.5rem;
+        margin: 10px 0 20px;
+    }
+    
+    .login-container input {
+        padding: 12px 15px;
+        font-size: 14px;
+        margin: 6px 0;
+    }
+    
+    .login-container button[type="submit"] {
+        padding: 12px 30px;
+        font-size: 13px;
+        margin-top: 15px;
+        width: 100%;
+    }
+    
+    .login-social-icons {
+        margin: 15px 0;
+        gap: 12px;
+    }
+    
+    .login-social-icons img {
+        width: 32px !important;
+        height: 32px;
+    }
+    
+    .login-container a {
+        font-size: 12px;
+        margin: 12px 0 8px;
+    }
+    
+    .login-container p,
+    .login-container span {
+        font-size: 13px;
+        margin: 12px 0;
+    }
+    
+    /* Mobile toggle links */
+    .mobile-toggle-link {
+        display: block !important;
+        text-align: center;
+        margin-top: 20px;
+        padding: 15px 20px;
+        border-top: 2px solid #eee;
+        color: var(--primary-blue);
+        font-size: 14px;
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease 0.3s both;
+    }
+    
+    .mobile-toggle-link::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(30, 58, 95, 0.1), transparent);
+        transition: left 0.5s;
+    }
+    
+    .mobile-toggle-link:hover::before {
+        left: 100%;
+    }
+    
+    .mobile-toggle-link strong {
+        color: var(--accent-red);
+        font-weight: 700;
+        display: inline-block;
+        transition: transform 0.3s;
+    }
+    
+    .mobile-toggle-link:hover strong {
+        transform: scale(1.1);
+    }
+    
+    .mobile-toggle-link:hover {
+        background: rgba(30, 58, 95, 0.05);
+        color: var(--accent-red);
+        border-top-color: var(--accent-red);
+        padding-left: 25px;
+        padding-right: 25px;
+    }
+    
+    .mobile-toggle-link:active {
+        background: rgba(30, 58, 95, 0.15);
+        transform: scale(0.97);
+    }
+    
+    /* Grid for sign up form */
+    .login-form-container div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+        gap: 6px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-modal-container {
+        max-width: 100%;
+        margin: 50px 5px 20px;
+    }
+    
+    .login-container {
+        border-radius: 20px;
+    }
+    
+    .modal-main-logo {
+        width: 80px;
+        top: -35px;
+    }
+    
+    .login-modal-close {
+        top: -30px;
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
+    
+    .login-form-container.login-sign-in,
+    .login-form-container.login-sign-up {
+        padding: 20px 15px 25px;
+    }
+    
+    .login-form-container h1 {
+        font-size: 1.3rem;
+        margin: 8px 0 15px;
+    }
+    
+    .login-container input {
+        padding: 10px 12px;
+        font-size: 13px;
+        margin: 5px 0;
+    }
+    
+    .login-container button[type="submit"] {
+        padding: 11px 25px;
+        font-size: 12px;
+    }
+    
+    .login-social-icons img {
+        width: 28px !important;
+        height: 28px;
+    }
+    
+    .login-container a,
+    .login-container p,
+    .login-container span {
+        font-size: 12px;
+    }
+    
+    .login-form-container::after {
+        font-size: 12px;
+        margin-top: 15px;
+        padding-top: 15px;
     }
 }
 

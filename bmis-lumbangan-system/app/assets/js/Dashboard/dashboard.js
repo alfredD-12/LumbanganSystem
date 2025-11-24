@@ -39,7 +39,10 @@
     function setupCloseOnClick() {
         const clickable = collapseEl.querySelectorAll('.nav-link:not(.dropdown-toggle), .dropdown-item');
         clickable.forEach(el => {
-            el.addEventListener('click', function(){
+            el.addEventListener('click', function(e){
+                // Don't close if it's a dropdown toggle
+                if (this.classList.contains('dropdown-toggle')) return;
+                
                 // Use Bootstrap's Collapse API to hide the collapse
                 try {
                     const bsCollapse = bootstrap.Collapse.getInstance(collapseEl) || new bootstrap.Collapse(collapseEl);
@@ -57,14 +60,26 @@
         // and standalone dropdown containers (like the user profile button).
         const toggles = collapseEl.querySelectorAll('.nav-item.dropdown > .nav-link.dropdown-toggle, .dropdown > .dropdown-toggle');
         toggles.forEach(toggle => {
-            toggle.addEventListener('click', function(e){
-                if (window.innerWidth > 991) return; // keep normal dropdown behavior on desktop
+            // Remove existing listeners by cloning
+            const newToggle = toggle.cloneNode(true);
+            toggle.parentNode.replaceChild(newToggle, toggle);
+            
+            newToggle.addEventListener('click', function(e){
+                if (window.innerWidth > 991) {
+                    // Desktop - let Bootstrap handle it normally
+                    return;
+                }
+                
+                // Mobile - custom accordion behavior
                 e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                
                 const parent = this.parentElement;
                 const isOpen = parent.classList.contains('open');
 
                 // Close other open dropdowns in the collapsed navbar (match any .dropdown.open)
-                const others = collapseEl.querySelectorAll('.dropdown.open');
+                const others = collapseEl.querySelectorAll('.dropdown.open, .nav-item.dropdown.open');
                 others.forEach(o => {
                     if (o !== parent) {
                         o.classList.remove('open');
@@ -73,6 +88,7 @@
                     }
                 });
 
+                // Toggle current dropdown
                 if (isOpen) {
                     parent.classList.remove('open');
                     this.setAttribute('aria-expanded','false');
@@ -80,9 +96,31 @@
                     parent.classList.add('open');
                     this.setAttribute('aria-expanded','true');
                 }
-            });
+                
+                return false;
+            }, { capture: true, passive: false });
         });
     }
+
+    // Close all dropdowns when navbar is collapsed
+    collapseEl.addEventListener('hidden.bs.collapse', function() {
+        const openDropdowns = collapseEl.querySelectorAll('.dropdown.open, .nav-item.dropdown.open');
+        openDropdowns.forEach(dropdown => {
+            dropdown.classList.remove('open');
+            const toggle = dropdown.querySelector('.dropdown-toggle');
+            if (toggle) toggle.setAttribute('aria-expanded', 'false');
+        });
+    });
+
+    // Reset dropdowns when navbar is shown
+    collapseEl.addEventListener('show.bs.collapse', function() {
+        const openDropdowns = collapseEl.querySelectorAll('.dropdown.open, .nav-item.dropdown.open');
+        openDropdowns.forEach(dropdown => {
+            dropdown.classList.remove('open');
+            const toggle = dropdown.querySelector('.dropdown-toggle');
+            if (toggle) toggle.setAttribute('aria-expanded', 'false');
+        });
+    });
 
     // Re-init handlers on DOM ready
     document.addEventListener('DOMContentLoaded', function(){
@@ -90,9 +128,28 @@
         setupAccordionDropdowns();
     });
 
+    // Immediately set up handlers if DOM is already loaded
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function(){
+            setupCloseOnClick();
+            setupAccordionDropdowns();
+        });
+    } else {
+        setupCloseOnClick();
+        setupAccordionDropdowns();
+    }
+
     // Also re-run accordion setup on resize (so behavior toggles at breakpoints)
     window.addEventListener('resize', function(){
-        // simply no-op here; handlers respect window.innerWidth when invoked
+        // Close all mobile accordions when resizing to desktop
+        if (window.innerWidth > 991) {
+            const openDropdowns = collapseEl.querySelectorAll('.dropdown.open, .nav-item.dropdown.open');
+            openDropdowns.forEach(dropdown => {
+                dropdown.classList.remove('open');
+                const toggle = dropdown.querySelector('.dropdown-toggle');
+                if (toggle) toggle.setAttribute('aria-expanded', 'false');
+            });
+        }
     });
 })();
 

@@ -40,7 +40,7 @@ if (isLoggedIn()) {
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Landing page styles -->
-  <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/Landing/landing.css?v=2">
+  <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/Landing/landing.css?v=<?php echo time(); ?>">
   <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/Landing/news-styles.css?v=2">
 
   <!-- Optional news fetcher -->
@@ -106,9 +106,10 @@ if (isLoggedIn()) {
   <section class="hero-section" id="home">
     <div class="container">
       <div class="hero-content">
-        <div class="mb-5" style="animation: fadeInUp 1s ease; margin-top: -80px;">
+        <div class="mb-4 matatag-logo-wrapper" style="animation: fadeInUp 1s ease;">
           <img src="https://portal.batangas.gov.ph/wp-content/uploads/2025/06/batangaslogo2025.png"
                alt="Bagong Batangas"
+               class="matatag-logo"
                style="width: 400px; height: auto; filter: drop-shadow(0 10px 30px rgba(0,0,0,0.2));">
         </div>
 
@@ -366,7 +367,7 @@ if (isLoggedIn()) {
             <?php foreach ($galleryItems as $index => $item): ?>
               <?php 
                 $imagePath = dirname(__DIR__, 2) . '/uploads/gallery/' . $item['image_path'];
-                $imageUrl = '../../uploads/gallery/' . $item['image_path'];
+                $imageUrl = BASE_URL . 'uploads/gallery/' . $item['image_path'];
               ?>
               <div class="gallery-carousel-card <?php echo $index === 0 ? 'active' : ''; ?>" data-index="<?php echo $index; ?>">
                 <div class="gallery-img" style="cursor: pointer;" onclick="openImageLightbox('<?php echo htmlspecialchars($imageUrl); ?>')">
@@ -529,10 +530,8 @@ if (isLoggedIn()) {
               <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Seal_of_Nasugbu.png/599px-Seal_of_Nasugbu.png" style="width: 39px;">
               <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Bagong_Pilipinas_logo.png" style="width: 41px;">
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-              <input type="text" name="first_name" placeholder="First Name" required>
-              <input type="text" name="middle_name" placeholder="Middle Name">
-            </div>
+            <input type="text" name="first_name" placeholder="First Name" required>
+            <input type="text" name="middle_name" placeholder="Middle Name">
             <input type="text" name="last_name" placeholder="Last Name" required>
             <div style="position: relative; width: 100%;">
               <input type="text" name="username" id="usernameInput" placeholder="Username" required style="width: 100%; padding-right: 40px;">
@@ -547,6 +546,7 @@ if (isLoggedIn()) {
             <input type="password" name="confirm_password" placeholder="Confirm Password" required>
             <button type="submit">Sign Up</button>
           </form>
+          <div class="mobile-toggle-link" id="mobileToSignIn" style="display: none;">Already have an account? <strong>Sign In</strong></div>
         </div>
 
         <!-- Sign In -->
@@ -571,6 +571,7 @@ if (isLoggedIn()) {
             <a href="#">Forget Your Password?</a>
             <button type="submit">Sign In</button>
           </form>
+          <div class="mobile-toggle-link" id="mobileToSignUp" style="display: none;">Don't have an account? <strong>Sign Up</strong></div>
         </div>
 
         <!-- Toggle Panels -->
@@ -774,6 +775,10 @@ if (isLoggedIn()) {
         }
     });
   </script>
+
+  <?php include dirname(__DIR__, 2) . '/components/ai_chatbot.php'; ?>
+
+  <script src="<?php echo BASE_URL; ?>assets/js/ai_chatbot.js"></script>
   
 </body>
 </html>

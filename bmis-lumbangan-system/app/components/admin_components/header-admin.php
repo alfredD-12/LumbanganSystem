@@ -1,4 +1,12 @@
-<?php include_once __DIR__ . '/../../config/config.php'; ?>
+<?php 
+include_once __DIR__ . '/../../config/config.php';
+require_once __DIR__ . '/../../helpers/notification_helper.php';
+
+// Fetch notifications for admin
+$admin_user_id = $_SESSION['user_id'] ?? null;
+$admin_notifications = getNotifications('admin', $admin_user_id, 20, false);
+$admin_unread_count = getUnreadCount('admin', $admin_user_id);
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -27,6 +35,8 @@
     <link rel="stylesheet" href="<?php echo BASE_URL . 'assets/css/complaint/admin.css'; ?>">
     <!-- Admin Complaint Page CSS -->
     <link rel="stylesheet" href="<?php echo BASE_URL . 'assets/css/complaint/admin.css'; ?>">
+
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/announcement/announcements_modern.css?v=<?php echo time(); ?>">
 </head>
 
 <body>
@@ -70,7 +80,9 @@
             <!-- Notifications Button -->
             <button class="action-icon-btn" title="Notifications" data-bs-toggle="modal" data-bs-target="#notificationsModal">
                 <i class="fas fa-bell"></i>
-                <span class="badge-count pulse">5</span>
+                <?php if ($admin_unread_count > 0): ?>
+                    <span class="badge-count pulse"><?php echo $admin_unread_count; ?></span>
+                <?php endif; ?>
             </button>
 
             <!-- Messages/Inbox Button -->
@@ -200,16 +212,62 @@
                 <div class="modal-header" style="background: white; border-bottom: 1px solid #f0f0f0; border-radius: 12px 12px 0 0; padding: 1.5rem;">
                     <h5 class="modal-title" style="color: var(--primary-blue); font-weight: 600; font-size: 1.1rem;">
                         <i class="fas fa-bell"></i> Notifications
-                        <span style="background: #ef4444; color: white; font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 10px; margin-left: 0.5rem;">
-                            5 New
-                        </span>
+                        <?php if ($admin_unread_count > 0): ?>
+                            <span style="background: #ef4444; color: white; font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 10px; margin-left: 0.5rem;">
+                                <?php echo $admin_unread_count; ?> New
+                            </span>
+                        <?php endif; ?>
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
                 <!-- Modal Body -->
                 <div class="modal-body" style="padding: 0; background: #f8fafc;">
-                    <!-- Notifications content would be rendered here (template only, no logic) -->
+                    <?php if (empty($admin_notifications)): ?>
+                        <div style="padding: 3rem; text-align: center; color: #94a3b8;">
+                            <i class="fas fa-bell-slash" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                            <p style="margin: 0; font-weight: 500;">No notifications yet</p>
+                            <small>You'll see updates here when there's new activity</small>
+                        </div>
+                    <?php else: ?>
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            <?php foreach ($admin_notifications as $notif): 
+                                $icon_map = [
+                                    'document_request' => 'fa-file-alt',
+                                    'announcement' => 'fa-bullhorn',
+                                    'complaint' => 'fa-exclamation-circle',
+                                    'survey' => 'fa-poll'
+                                ];
+                                $icon = $icon_map[$notif['type']] ?? 'fa-info-circle';
+                                $is_unread = !$notif['is_read'];
+                                $time_ago = time_ago($notif['created_at']);
+                            ?>
+                                <div class="notification-item" data-notif-id="<?php echo $notif['id']; ?>" 
+                                     style="padding: 1rem 1.5rem; border-bottom: 1px solid #e2e8f0; cursor: pointer; transition: background 0.2s; <?php echo $is_unread ? 'background: #eff6ff;' : ''; ?>"
+                                     onclick="handleNotificationClick(<?php echo $notif['id']; ?>, '<?php echo htmlspecialchars($notif['link'] ?? '', ENT_QUOTES); ?>')">
+                                    <div style="display: flex; gap: 1rem; align-items: start;">
+                                        <div style="width: 40px; height: 40px; border-radius: 8px; background: <?php echo $is_unread ? 'var(--primary-blue)' : '#cbd5e1'; ?>; color: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                            <i class="fas <?php echo $icon; ?>"></i>
+                                        </div>
+                                        <div style="flex: 1; min-width: 0;">
+                                            <div style="font-weight: <?php echo $is_unread ? '600' : '500'; ?>; color: #1e293b; margin-bottom: 0.25rem;">
+                                                <?php echo htmlspecialchars($notif['title']); ?>
+                                            </div>
+                                            <div style="font-size: 0.875rem; color: #64748b; margin-bottom: 0.5rem;">
+                                                <?php echo htmlspecialchars($notif['message']); ?>
+                                            </div>
+                                            <div style="font-size: 0.75rem; color: #94a3b8;">
+                                                <i class="fas fa-clock"></i> <?php echo $time_ago; ?>
+                                            </div>
+                                        </div>
+                                        <?php if ($is_unread): ?>
+                                            <div style="width: 8px; height: 8px; border-radius: 50%; background: #3b82f6; flex-shrink: 0; margin-top: 0.5rem;"></div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
 
                 <!-- Modal Footer -->
@@ -217,9 +275,11 @@
                     <button type="button" class="btn btn-sm" style="background: transparent; border: 1px solid #cbd5e1; color: #64748b; padding: 0.5rem 1.5rem; border-radius: 8px; font-weight: 500;" data-bs-dismiss="modal">
                         <i class="fas fa-times"></i> Close
                     </button>
-                    <button type="button" class="btn btn-sm" style="background: var(--primary-blue); border: none; color: white; padding: 0.5rem 1.5rem; border-radius: 8px; font-weight: 500;">
-                        <i class="fas fa-check-double"></i> Mark All as Read
-                    </button>
+                    <?php if ($admin_unread_count > 0): ?>
+                        <button type="button" class="btn btn-sm" onclick="markAllNotificationsRead()" style="background: var(--primary-blue); border: none; color: white; padding: 0.5rem 1.5rem; border-radius: 8px; font-weight: 500;">
+                            <i class="fas fa-check-double"></i> Mark All as Read
+                        </button>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -257,3 +317,81 @@
             </div>
         </div>
     </div>
+
+<?php
+/**
+ * Helper function to display relative time
+ */
+function time_ago($datetime_str) {
+    $timestamp = strtotime($datetime_str);
+    $diff = time() - $timestamp;
+    
+    if ($diff < 60) return 'just now';
+    if ($diff < 3600) return floor($diff / 60) . ' min ago';
+    if ($diff < 86400) return floor($diff / 3600) . ' hr ago';
+    if ($diff < 604800) return floor($diff / 86400) . ' day' . (floor($diff / 86400) > 1 ? 's' : '') . ' ago';
+    if ($diff < 2592000) return floor($diff / 604800) . ' week' . (floor($diff / 604800) > 1 ? 's' : '') . ' ago';
+    return date('M d, Y', $timestamp);
+}
+?>
+
+<script>
+// Handle notification click
+function handleNotificationClick(notifId, link) {
+    // Mark as read via AJAX
+    fetch('<?php echo BASE_PUBLIC; ?>index.php?action=mark_notification_read', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'notification_id=' + notifId
+    }).then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              // Update UI
+              const notifEl = document.querySelector('[data-notif-id="' + notifId + '"]');
+              if (notifEl) {
+                  notifEl.style.background = 'white';
+                  const dot = notifEl.querySelector('[style*="background: #3b82f6"]');
+                  if (dot) dot.remove();
+              }
+              
+              // Update badge count
+              const badge = document.querySelector('.action-icon-btn .badge-count.pulse');
+              if (badge) {
+                  let count = parseInt(badge.textContent) - 1;
+                  if (count <= 0) {
+                      badge.remove();
+                  } else {
+                      badge.textContent = count;
+                  }
+              }
+          }
+      });
+    
+    // Navigate if link provided
+    if (link && link.trim() !== '') {
+        setTimeout(function() {
+            window.location.href = link;
+        }, 300);
+    }
+}
+
+// Mark all notifications as read
+function markAllNotificationsRead() {
+    if (!confirm('Mark all notifications as read?')) return;
+    
+    fetch('<?php echo BASE_PUBLIC; ?>index.php?action=mark_all_notifications_read', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'user_type=admin'
+    }).then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              location.reload();
+          }
+      });
+}
+</script>

@@ -1,4 +1,6 @@
 <?php include __DIR__ . '/../../components/resident_components/header-resident.php'; ?>
+    <!-- Residents Complaint Page CSS -->
+    <link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/residents/residents.css?v=<?php echo time(); ?>">
 <?php
 /**
  * Resident Dashboard View

@@ -43,8 +43,6 @@ $hdr_mobile = $_SESSION['mobile'] ?? '';
     <link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/Survey/wizard_personal.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/Survey/bhw-float.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/announcement/public_announcements_modern.css?v=<?php echo time(); ?>">
-    <!-- Residents Complaint Page CSS -->
-    <link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/residents/residents.css?v=<?php echo time(); ?>">
 
 </head>
 <body>
@@ -75,7 +73,7 @@ $hdr_mobile = $_SESSION['mobile'] ?? '';
             <i class="fas fa-concierge-bell"></i> Services
           </a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="#complaint-status"><i class="fas fa-exclamation-circle"></i> Complaint Status</a></li>
+            <li><a class="dropdown-item" href="<?php echo h(BASE_PUBLIC . 'index.php?page=resident_complaints'); ?>"><i class="fas fa-exclamation-circle"></i> Complaint Status</a></li>
             <li><a class="dropdown-item" href="<?php echo h(BASE_PUBLIC . 'index.php?page=document_request'); ?>"><i class="fas fa-file-alt"></i> Document Request</a></li>
             <li><a class="dropdown-item" href="<?php echo h(BASE_PUBLIC . 'index.php?page=survey_wizard_personal'); ?>"><i class="fas fa-poll"></i> Survey Status</a></li>
           </ul>

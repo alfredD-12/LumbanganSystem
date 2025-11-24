@@ -91,7 +91,7 @@ $officials = getActiveOfficials();
                         </a>
                         <ul class="dropdown-menu">
                             <li>
-                                <a class="dropdown-item" href="#complaint-status">
+                                <a class="dropdown-item" href="<?php echo htmlspecialchars((defined('BASE_PUBLIC') ? BASE_PUBLIC : '') . 'index.php?page=resident_complaints', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                     <i class="fas fa-exclamation-circle"></i>
                                     Complaint Status
                                 </a>
@@ -532,20 +532,26 @@ $officials = getActiveOfficials();
         <!-- Quick Stats -->
         <?php
             // Announcements this week count
-            require_once dirname(__DIR__, 2) . '/models/Announcement.php';
-            $announcementModel = new Announcement();
+                require_once dirname(__DIR__, 2) . '/models/Announcement.php';
+                $announcementModel = new Announcement();
 
-            // Calculate start (Monday) and end (Sunday) of current week
-            $startOfWeek = date('Y-m-d', strtotime('monday this week'));
-            $endOfWeek = date('Y-m-d', strtotime('sunday this week'));
+                // Calculate start (Monday) and end (Sunday) of current week
+                $startOfWeek = date('Y-m-d', strtotime('monday this week'));
+                $endOfWeek = date('Y-m-d', strtotime('sunday this week'));
 
-            // Fetch published announcements within week (getAll supports start_date/end_date)
-            $weekAnnouncements = $announcementModel->getAll([
-                'status' => 'published',
-                'start_date' => $startOfWeek,
-                'end_date' => $endOfWeek
-            ]);
-            $thisWeekAnnouncementsCount = is_array($weekAnnouncements) ? count($weekAnnouncements) : 0;
+                // Fetch published announcements within week (getAll supports start_date/end_date)
+                $weekAnnouncements = $announcementModel->getAll([
+                    'status' => 'published',
+                    'start_date' => $startOfWeek,
+                    'end_date' => $endOfWeek
+                ]);
+                $thisWeekAnnouncementsCount = is_array($weekAnnouncements) ? count($weekAnnouncements) : 0;
+
+                // Pending complaints count
+                require_once dirname(__DIR__, 2) . '/models/Complaint.php';
+                $complaintModel = new Complaint();
+                $complaintStats = $complaintModel->getStatistics();
+                $pendingComplaints = isset($complaintStats['pending']) ? (int)$complaintStats['pending'] : 0;
         ?>
         <div class="stats-grid">
             <div class="stat-card" tabindex="0">
@@ -553,11 +559,11 @@ $officials = getActiveOfficials();
                     <div class="stat-icon">
                         <i class="fas fa-exclamation-circle"></i>
                     </div>
-                    <div class="stat-number">3</div>
-                    <div class="stat-label">Active Complaints</div>
+                    <div class="stat-number"><?php echo htmlspecialchars($pendingComplaints, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></div>
+                    <div class="stat-label">Pending Complaints</div>
                 </div>
                 <div class="stat-foot">
-                    <span class="stat-badge badge-pending">2 Pending</span>
+                    <span class="stat-badge badge-pending"><?php echo htmlspecialchars($pendingComplaints, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?> Pending</span>
                     <div class="stat-extra">
                     </div>
                 </div>

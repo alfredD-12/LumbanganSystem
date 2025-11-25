@@ -15,7 +15,7 @@ $(document).ready(function () {
     /* 🔹 Enable Buttons (ColVis + Reset Order) */
     colReorder: true,
     dom:
-      "<'row mb-3'<'col-md-6'B><'col-md-6'f>>" +
+      "<'row mb-3'<'col-md-9'B><'col-md-3'f>>" +
       "<'row'<'col-sm-12'tr>>" +
       "<'row mt-3 text-end'<'col-sm-12'i><'col-sm-12 d-flex justify-content-end' p>>",
     buttons: [
@@ -38,10 +38,23 @@ $(document).ready(function () {
           dt.colReorder.reset();
         },
       },
+      {
+        text: "📃 Manage Document Templates",
+        className:
+          "dt-btn-modern btn btn-secondary text-white rounded-pill px-3 py-1 shadow-sm",
+        action: function () {
+          window.location.href = "index.php?page=document_templates";
+        },
+      },
     ],
     columns: [
       { data: "request_id" },
-      { data: "requester_name" },
+      {
+        data: "requester_name",
+        render: function (data, type, row) {
+          return data || row.requested_for || "—"; // fallback to requested_for
+        },
+      },
       { data: "document_name" },
       { data: "request_date" },
       { data: "requested_for" },
@@ -76,6 +89,22 @@ $(document).ready(function () {
         },
       },
       {
+        data: "pdf_file_path",
+        render: function (path, type, row) {
+          if (!path) return "—";
+
+          const fullPath = `${BASE_PUBLIC}${path}`;
+
+          return `
+                  <button class="btn btn-sm btn-outline-primary view-request-copy"
+                    data-pdf="${fullPath}">
+                    View Request Copy
+                  </button>
+                `;
+        },
+      },
+
+      {
         data: "approval_date",
         render: function (data, type, row) {
           return data ? data : "—";
@@ -104,12 +133,23 @@ $(document).ready(function () {
       },
     ],
   });
+  // Added javascript listrener for viewing request copy modal
+  $(document).on("click", ".view-request-copy", function () {
+    const pdfUrl = $(this).data("pdf");
+
+    $("#requestCopyFrame").attr("src", pdfUrl);
+
+    const modal = new bootstrap.Modal(
+      document.getElementById("requestCopyModal")
+    );
+    modal.show();
+  });
 
   /* ----------------------------
      🔹 STATUS FILTER DROPDOWN
   ----------------------------- */
   $("#statusFilter").on("change", function () {
-    table.column(12).search(this.value).draw();
+    table.column(13).search(this.value).draw();
   });
 
   /* ----------------------------
@@ -278,6 +318,69 @@ $(document).ready(function () {
     $("#status")[0].selectedIndex = 0;
     $("#remarks").val("");
   });
+
+  // Load Modal + Fetch Data
+  document
+    .getElementById("openNewRequestModal")
+    .addEventListener("click", () => {
+      const modal = new bootstrap.Modal(
+        document.getElementById("newRequestModal")
+      );
+      modal.show();
+
+      loadDocumentTypes();
+    });
+
+  // Load Document Types
+  function loadDocumentTypes() {
+    fetch("index.php?action=getDocumentTypes")
+      .then((res) => res.json())
+      .then((data) => {
+        const select = document.getElementById("requestDocType");
+        select.innerHTML = `<option value="">Select Document</option>`;
+
+        data.forEach((d) => {
+          const opt = document.createElement("option");
+          opt.value = d.document_type_id;
+          opt.textContent = d.document_name;
+          select.appendChild(opt);
+        });
+
+        $("#requestDocType").select2({ dropdownParent: $("#newRequestModal") });
+      });
+  }
+
+  // Submit New Document Request
+
+  document
+    .getElementById("newRequestForm")
+    .addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const formData = new FormData(this);
+
+      fetch("index.php?action=addAdminRequest", {
+        method: "POST",
+        body: formData,
+      })
+        .then((res) => res.json())
+        .then((result) => {
+          if (result.success) {
+            alert("Request added successfully!");
+
+            $("#newRequestModal").modal("hide");
+            this.reset();
+
+            $("#requestsTable").DataTable().ajax.reload(null, false);
+          } else {
+            alert(result.message || "Error adding request.");
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          alert("Server error.");
+        });
+    });
 
   /* ----------------------------
      🔹 TOAST NOTIFICATION HELPER

@@ -1,3 +1,9 @@
 # Ignores upload/proofs file
 bmis-lumbangan-system/app/uploads/proofs/*
 !bmis-lumbangan-system/app/uploads/proofs/.gitkeep
+
+# Ignore vendor
+bmis-lumbangan-system/vendor/
+
+#ignore generated  pdfs
+bmis-lumbangan-system/public/uploads/generated_pdfs/

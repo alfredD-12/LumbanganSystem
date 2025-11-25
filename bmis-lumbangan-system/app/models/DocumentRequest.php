@@ -137,6 +137,7 @@ class DocumentRequest
                 dr.proof_upload,
                 dr.approval_date,
                 dr.release_date,
+                dr.pdf_file_path,
                 dr.remarks,
                 CONCAT(p.last_name, ', ', p.first_name, ' ', p.middle_name) AS requester_name,
                 dt.document_name,
@@ -144,9 +145,9 @@ class DocumentRequest
             FROM document_requests dr
             INNER JOIN document_types dt 
                 ON dr.document_type_id = dt.document_type_id
-            INNER JOIN users u
+            LEFT JOIN users u
                 ON dr.user_id = u.id
-            INNER JOIN persons p
+            LEFT JOIN persons p
                 ON u.person_id = p.id
             ORDER BY dr.request_date DESC";
 
@@ -200,6 +201,75 @@ class DocumentRequest
         return $stmt->execute();
     }
 
+    public function savePDFPath($requestId, $pdfPath)
+    {
+        $stmt = $this->conn->prepare("
+        UPDATE document_requests 
+        SET pdf_file_path = :pdfPath
+        WHERE request_id = :requestId
+    ");
+
+        return $stmt->execute([
+            ':pdfPath' => $pdfPath,
+            ':requestId' => $requestId
+        ]);
+    }
+
+
+    public function getRequestData($requestId)
+    {
+        $stmt = $this->conn->prepare("
+                                    SELECT 
+                                        dr.*,
+                                        dt.document_name AS document_type_name,
+                                        u.username,
+                                        p.first_name,
+                                        p.middle_name,
+                                        p.last_name,
+                                        p.suffix,
+
+                                        -- Create a full name for the requester
+                                        CONCAT(p.first_name, ' ',
+                                            COALESCE(CONCAT(p.middle_name, ' '), ''),
+                                            p.last_name,
+                                            COALESCE(CONCAT(' ', p.suffix), '')
+                                        ) AS requester_full_name,
+
+                                        -- Create subject full name (if requested_for IS NOT NULL)
+                                        CASE
+                                            WHEN dr.requested_for IS NOT NULL AND dr.requested_for <> ''
+                                            THEN dr.requested_for
+                                            ELSE CONCAT(p.first_name, ' ',
+                                                        COALESCE(CONCAT(p.middle_name, ' '), ''),
+                                                        p.last_name,
+                                                        COALESCE(CONCAT(' ', p.suffix), '')
+                                            )
+                                        END AS subject_full_name
+
+                                    FROM document_requests dr
+                                    JOIN document_types dt ON dr.document_type_id = dt.document_type_id
+                                    JOIN users u ON dr.user_id = u.id
+                                    JOIN persons p ON u.person_id = p.id
+                                    WHERE dr.request_id = :request_id
+                                    ");
+
+        $stmt->execute([':request_id' => $requestId]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+
+    public function getTemplateByRequest($requestId)
+    {
+        $stmt = $this->conn->prepare("
+            SELECT t.template_html 
+            FROM document_templates t
+            JOIN document_requests dr ON t.document_type_id = dr.document_type_id
+            WHERE dr.request_id = :request_id
+        ");
+        $stmt->execute([':request_id' => $requestId]);
+        return $stmt->fetchColumn();
+    }
+
 
 
     public function getStatusSummary()
@@ -216,5 +286,28 @@ class DocumentRequest
             }
         }
         return $summary;
+    }
+
+
+    public function fetchDocumentTypes()
+    {
+        $stmt = $this->conn->prepare("SELECT document_type_id, document_name FROM document_types ORDER BY document_name ASC");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC); // PDO fetchAll
+    }
+
+    public function insertAdminRequest($data)
+    {
+        $sql = "INSERT INTO document_requests (user_id, requested_for, document_type_id, purpose, status)
+            VALUES (:user_id, :requested_for, :document_type_id, :purpose, 'Pending')";
+
+        $stmt = $this->conn->prepare($sql);
+
+        return $stmt->execute([
+            ':user_id' => $data['user_id'], // null
+            ':requested_for' => $data['requested_for'],
+            ':document_type_id' => $data['document_type_id'],
+            ':purpose' => $data['purpose'],
+        ]);
     }
 }

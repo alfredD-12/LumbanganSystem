@@ -1,16 +1,22 @@
 /* ============================================
-   WIZARD PERSONAL - CONSOLIDATED CSS
-   Modern, Classy Survey Page Styling
+   WIZARD PERSONAL - SURVEY-SCOPED CSS
+   Scoped so rules only apply inside elements with the
+   `.survey-scope` root class (do not affect other views)
    ============================================ */
 
-/* ========== CSS VARIABLES ========== */
-:root{
+/* ========== NAMESPACE ========== */
+/* All styling targets descendants of `.survey-scope` to avoid global leakage.
+   Use this file as: <main class="survey-scope"> ... </main>
+*/
+
+/* ========== Scoped CSS Variables ========== */
+.survey-scope {
   /* Brand colors */
   --brand-blue:#1e3a8a;
   --brand-red:#b91c1c;
   --grad-start:#4f76e2;
   --grad-end:#b91c1c;
-  
+
   /* Primary theme */
   --primary-blue: #1e3a5f;
   --secondary-blue: #2c5282;
@@ -18,68 +24,54 @@
   --surface:#f6f8fb;
   --light-bg: #f7fafc;
   --dark-text: #2d3748;
-  
+
   /* Transitions */
   --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  
+
   /* Wizard dimensions */
   --step-circle:48px;
   --connector:48px;
   --step-width: 100px;
+
+  /* local scoping helpers */
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  color: var(--dark-text);
 }
 
-/* ========== FLOATING SHAPES BACKGROUND ========== */
-.floating-shapes {
-  position: fixed;
-  width: 100%;
-  height: 100vh;
-  top: 0;
-  left: 0;
-  z-index: -1;
-  overflow: hidden;
+/* Make sure internal elements inherit box-sizing as expected */
+.survey-scope *, .survey-scope *::before, .survey-scope *::after { box-sizing: inherit; }
+
+/* ========== MODERN SCROLLBAR (scoped to survey container) ========== */
+.survey-scope ::-webkit-scrollbar { width: 12px; height: 6px; }
+.survey-scope ::-webkit-scrollbar-track {
+  background: linear-gradient(180deg, #f7fafc 0%, #edf2f7 100%);
+}
+.survey-scope ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #1e3a5f, #2c5282);
+  border-radius: 6px;
+  border: 2px solid #f7fafc;
+}
+.survey-scope ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #2c5282, #c53030);
 }
 
-.shape {
-  position: absolute;
-  opacity: 0.08;
-  animation: floatMove 15s ease-in-out infinite;
-  will-change: transform;
+/* ========== ANIMATIONS (namespaced) ========== */
+@keyframes survey-fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes survey-fadeInUp {
+  from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); }
 }
-
-.shape:nth-child(1) {
-  top: 10%;
-  left: 10%;
-  width: 100px;
-  height: 100px;
-  background: var(--primary-blue);
-  border-radius: 50%;
-  animation-delay: 0s;
-  filter: blur(1px);
+@keyframes survey-slideDownHeader {
+  from { opacity: 0; transform: translateY(-20px);} to { opacity: 1; transform: translateY(0); }
 }
-
-.shape:nth-child(2) {
-  top: 60%;
-  right: 10%;
-  width: 150px;
-  height: 150px;
-  background: var(--accent-red);
-  border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
-  animation-delay: 2s;
-  filter: blur(1px);
+@keyframes survey-slideUpBar {
+  from { opacity: 0; transform: translateY(20px);} to { opacity: 1; transform: translateY(0); }
 }
-
-.shape:nth-child(3) {
-  bottom: 20%;
-  left: 15%;
-  width: 120px;
-  height: 120px;
-  background: var(--secondary-blue);
-  border-radius: 20px;
-  animation-delay: 4s;
-  filter: blur(1px);
-}
-
-@keyframes floatMove {
+@keyframes survey-pulse { 0%,100% { transform:scale(1);} 50%{ transform: scale(1.1); } }
+@keyframes survey-floatMove {
   0% { transform: translateY(0px) translateX(0px); }
   25% { transform: translateY(-50px) translateX(20px); }
   50% { transform: translateY(-100px) translateX(-20px); }
@@ -87,727 +79,293 @@
   100% { transform: translateY(0px) translateX(0px); }
 }
 
-/* ========== GLOBAL STYLES ========== */
-html {
-  scroll-behavior: smooth;
-}
-
-body.bg-surface{ 
-  background:var(--surface);
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}
-
-.content-narrow{ 
-  max-width: 1100px; 
-  margin: 0 auto;
-  animation: fadeIn 0.8s ease-out;
-}
-
-/* ========== ANIMATIONS ========== */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideDownHeader {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideUpBar {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-}
-
-/* ========== BRAND ELEMENTS ========== */
-.brand-mark{
-  width:42px;
-  height:42px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  background:linear-gradient(135deg,var(--brand-blue),var(--brand-red)); 
-  color:#fff;
-  border-radius: 10px;
-  box-shadow: 0 4px 15px rgba(30, 58, 95, 0.3);
-  transition: var(--transition-smooth);
-}
-.brand-mark:hover {
-  transform: rotate(360deg) scale(1.1);
-  box-shadow: 0 8px 25px rgba(30, 58, 95, 0.4);
-}
-
-.hero{
-  background:linear-gradient(90deg,var(--grad-start),var(--grad-end));
-  color:#fff;
-  position: relative;
-  overflow: hidden;
-}
-.hero::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-  animation: pulse 8s ease-in-out infinite;
-}
-
-.site-footer{
-  background:linear-gradient(135deg,var(--brand-blue),var(--brand-red));
-  color:#fff;
-  margin-top:48px;
-  position: relative;
-  overflow: hidden;
-}
-.site-footer::before {
-  content: '';
-  position: absolute;
+/* ========== FLOATING SHAPES BACKGROUND (scoped) ========== */
+.survey-scope .floating-shapes {
+  position: fixed;
+  width: 100%;
+  height: 100vh;
   top: 0;
   left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent-red), transparent);
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
 }
-.text-white-70{ color:rgba(255,255,255,.85); }
+.survey-scope .floating-shapes .shape {
+  position: absolute;
+  opacity: 0.08;
+  animation: survey-floatMove 15s ease-in-out infinite;
+  will-change: transform;
+  filter: blur(1px);
+}
+.survey-scope .floating-shapes .shape:nth-child(1){
+  width:100px;height:100px; top:10%; left:10%; background:var(--primary-blue); border-radius:50%;
+}
+.survey-scope .floating-shapes .shape:nth-child(2){
+  width:150px;height:150px; top:60%; right:10%; background:var(--accent-red);
+  border-radius:30% 70% 70% 30% / 30% 30% 70% 70%;
+}
+.survey-scope .floating-shapes .shape:nth-child(3){
+  width:120px;height:120px; bottom:20%; left:15%; background:var(--secondary-blue); border-radius:20px;
+}
 
-/* ========== SURVEY PAGE HEADER ========== */
-.survey-page-header { 
+/* ========== BRAND / HERO / FOOTER (scoped) ========== */
+.survey-scope .brand-mark {
+  width:42px;height:42px;display:inline-flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--brand-blue),var(--brand-red)); color:#fff; border-radius:10px;
+  box-shadow: 0 4px 15px rgba(30,58,95,0.3); transition: var(--transition-smooth);
+}
+.survey-scope .brand-mark:hover { transform: rotate(360deg) scale(1.1); box-shadow: 0 8px 25px rgba(30,58,95,0.4); }
+
+.survey-scope .hero{ background:linear-gradient(90deg,var(--grad-start),var(--grad-end)); color:#fff; position:relative; overflow:hidden; }
+.survey-scope .site-footer{ background:linear-gradient(135deg,var(--brand-blue),var(--brand-red)); color:#fff; margin-top:48px; }
+
+/* ========== SURVEY PAGE HEADER (scoped) ========== */
+.survey-scope .survey-page-header {
   background: rgba(255,255,255,0.95);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-  border-bottom: 1px solid rgba(30, 58, 95, 0.1);
-  position: sticky;
-  top: 0;
-  z-index: 99;
-  animation: slideDownHeader 0.5s ease-out;
+  border-bottom: 1px solid rgba(30,58,95,0.1);
+  position: sticky; top:0; z-index:99; animation: survey-slideDownHeader 0.5s ease-out;
 }
+.survey-scope .survey-title { font-weight:700; color:var(--primary-blue); position:relative; padding-bottom:0.25rem; }
+.survey-scope .survey-title::after {
+  content: ''; position:absolute; bottom:0; left:0; width:60px; height:3px;
+  background: linear-gradient(90deg,#1e3a5f,#c53030); border-radius:2px;
+}
+.survey-scope .lang-toggle .btn { min-width:44px; padding:0.25rem 0.75rem; border-radius:8px; font-weight:600; border:2px solid #e2e8f0; transition:all .3s; }
 
-.survey-title { 
-  font-weight:700; 
-  color:#1e3a5f;
-  position: relative;
-  padding-bottom: 0.25rem;
-}
-.survey-title::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 60px;
-  height: 3px;
-  background: linear-gradient(90deg, #1e3a5f, #c53030);
-  border-radius: 2px;
-}
-
-.lang-toggle .btn { 
-  min-width:44px; 
-  padding:0.25rem 0.75rem;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 2px solid #e2e8f0;
-}
-.lang-toggle .btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(30, 58, 95, 0.15);
-  border-color: #1e3a5f;
-}
-.lang-toggle .btn.active { 
-  background: linear-gradient(135deg, #1e3a5f, #2c5282);
-  color: white;
-  border-color: #1e3a5f;
-  box-shadow: 0 4px 15px rgba(30, 58, 95, 0.3);
-}
-
-/* ========== WIZARD STEPPER ========== */
-/* Large screens (lg and up): centered row with segmented connectors */
+/* ========== WIZARD STEPPER (scoped) ========== */
 @media (min-width: 992px){
-  .wizard{ display:flex; justify-content:center; }
-  .wizard-track{
-    position: relative;
-    display:flex; 
-    justify-content:center; 
-    align-items:flex-start;
-    gap: 0;
-    padding: 18px 0 6px;
-  }
-
-  .wizard-step{
-    position: relative;
-    text-decoration:none; 
-    color:#333;
-    display:flex; 
-    flex-direction:column; 
-    align-items:center; 
-    gap:6px;
-    z-index: 1;
-    margin: 0 8px;
-    width: auto;
-  }
-
-  .wizard-connector{
-    width: var(--connector);
-    height: 2px;
-    background:#d0d7de;
-    border-radius: 1px;
-    position: relative;
-    top: calc(var(--step-circle)/2 - 1px);
-    margin: 0 8px;
-    display: inline-block;
-  }
+  .survey-scope .wizard{ display:flex; justify-content:center; }
+  .survey-scope .wizard-track{ position:relative; display:flex; justify-content:center; align-items:flex-start; gap:0; padding:18px 0 6px; }
+  .survey-scope .wizard-step{ position:relative; text-decoration:none; color:#333; display:flex; flex-direction:column; align-items:center; gap:6px; z-index:1; margin:0 8px; }
+  .survey-scope .wizard-connector{ width:var(--connector); height:2px; background:#d0d7de; border-radius:1px; position:relative; top:calc(var(--step-circle)/2 - 1px); margin:0 8px; display:inline-block; }
 }
-
-/* Small/medium screens: horizontal scrolling */
 @media (max-width: 991.98px){
-  .wizard{ 
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-    scrollbar-color: #cbd5e0 #f7fafc;
-    margin-left: -15px;
-    margin-right: -15px;
-    padding-left: 15px;
-    padding-right: 15px;
-    width: calc(100% + 30px);
-  }
-  
-  .wizard::-webkit-scrollbar {
-    height: 6px;
-  }
-  
-  .wizard::-webkit-scrollbar-track {
-    background: #f7fafc;
-    border-radius: 3px;
-  }
-  
-  .wizard::-webkit-scrollbar-thumb {
-    background: #cbd5e0;
-    border-radius: 3px;
-  }
-  
-  .wizard::-webkit-scrollbar-thumb:hover {
-    background: #a0aec0;
-  }
-  
-  .wizard-track{
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    align-items: center;
-    gap: 0;
-    padding: 18px 0 6px;
-    white-space: nowrap;
-  }
-
-  .wizard-step{
-    text-decoration: none; 
-    color: #333;
-    display: flex !important; 
-    flex-direction: column; 
-    align-items: center; 
-    gap: 6px;
-    width: auto;
-    min-width: 85px;
-    margin: 0 6px;
-    flex-shrink: 0 !important;
-  }
-
-  .wizard-connector{
-    width: 30px;
-    height: 2px;
-    background: #d0d7de;
-    border-radius: 1px;
-    margin: 0 6px;
-    display: inline-block !important;
-    flex-shrink: 0 !important;
-    position: relative;
-    top: calc(var(--step-circle) / 2 - 1px);
-    align-self: flex-start;
-  }
+  .survey-scope .wizard{ display:flex !important; overflow-x:auto !important; -webkit-overflow-scrolling:touch; padding-left:15px; padding-right:15px; width:calc(100% + 30px); }
+  .survey-scope .wizard-track{ display:flex !important; gap:0; align-items:center; white-space:nowrap; }
+  .survey-scope .wizard-step{ min-width:85px; margin:0 6px; flex-shrink:0 !important; }
+  .survey-scope .wizard-connector{ width:30px; margin:0 6px; top:calc(var(--step-circle)/2 - 1px); }
 }
 
-/* Step circle styling */
-.step-circle{
-  width:var(--step-circle); 
-  height:var(--step-circle); 
-  border-radius:50%;
-  display:flex; 
-  align-items:center; 
-  justify-content:center;
-  background:#fff; 
-  border:2px solid #d0d7de; 
-  color:var(--primary-blue); 
-  font-size:18px;
-  box-shadow: 0 4px 15px rgba(0,0,0,.08);
-  transition: var(--transition-smooth);
-  position: relative;
-  overflow: hidden;
+.survey-scope .step-circle {
+  width:var(--step-circle); height:var(--step-circle); border-radius:50%; display:flex; align-items:center; justify-content:center;
+  background:#fff; border:2px solid #d0d7de; color:var(--primary-blue); font-size:18px; box-shadow:0 4px 15px rgba(0,0,0,.08); transition:var(--transition-smooth); position:relative; overflow:hidden;
 }
-.step-circle::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
-  transition: all 0.6s;
-  transform: translateX(-100%);
-}
-.wizard-step:hover .step-circle::before {
-  transform: translateX(100%);
-}
+.survey-scope .step-circle::before { content:''; position:absolute; top:-50%; right:-50%; width:200%; height:200%; background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent); transform: translateX(-100%); transition: all 0.6s; }
+.survey-scope .wizard-step:hover .step-circle::before { transform: translateX(100%); }
 
-.step-label{
-  font-size:.85rem;
-  text-align:center;
-  max-width: var(--step-width);
-  line-height: 1.2;
-  font-weight: 500;
-  transition: var(--transition-smooth);
-}
+.survey-scope .step-label { font-size:.85rem; text-align:center; max-width:var(--step-width); line-height:1.2; font-weight:500; transition:var(--transition-smooth); }
+.survey-scope .wizard-step:hover .step-label { color:var(--primary-blue); font-weight:600; }
+.survey-scope .wizard-step.active .step-circle { background: linear-gradient(135deg,var(--primary-blue),var(--secondary-blue)); color:#fff; border-color:var(--primary-blue); box-shadow:0 8px 20px rgba(30,58,95,0.3); transform: scale(1.05); }
+.survey-scope .wizard-step.active .step-label { color:var(--primary-blue); font-weight:700; }
+.survey-scope .wizard-step.disabled{ opacity:.55; }
 
-.wizard-step:hover .step-label {
-  color: var(--primary-blue);
-  font-weight: 600;
-}
+/* NOTE: Removed step-circle completed visual — step-level checks are disabled.
+   Completion indicators are shown at the section/card level only. */
 
-.wizard-step.active .step-circle{ 
-  background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue)); 
-  color:#fff; 
-  border-color: var(--primary-blue);
-  box-shadow: 0 8px 20px rgba(30, 58, 95, 0.3);
-  transform: scale(1.05);
-}
+/* Section/card completion style */
+.survey-scope .section-card.completed { background: linear-gradient(180deg, #ecfdf5 0%, #f0fdf4 100%); border-color: #bbf7d0; }
+.survey-scope .section-card.completed .section-title { color: #065f46; }
+.survey-scope .section-card .complete-badge { position:absolute; top:12px; right:12px; width:36px; height:36px; border-radius:50%; background:#10b981; color:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 18px rgba(16,185,129,0.16); font-size:0.95rem; }
+.survey-scope .vital-card.completed { background: linear-gradient(180deg,#ecfdf5 0%,#f0fdf4 100%); border-color:#bbf7d0; }
+.survey-scope .vital-card .complete-badge { position:absolute; top:10px; right:10px; width:30px; height:30px; border-radius:50%; background:#10b981; color:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 16px rgba(16,185,129,0.16); font-size:0.85rem; }
 
-.wizard-step.active .step-label {
-  color: var(--primary-blue);
-  font-weight: 700;
+/* ========== SECTION CARDS (scoped) ========== */
+.survey-scope .section-card{
+  background:#fff; border-radius:18px; border:1px solid rgba(0,0,0,0.06); box-shadow:0 12px 28px rgba(0,0,0,0.06);
+  transition:var(--transition-smooth); position:relative; overflow:hidden; animation: survey-fadeInUp 0.6s ease-out; padding:18px;
 }
+.survey-scope .section-card::before { content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background: linear-gradient(90deg, transparent, rgba(30,58,95,0.03), transparent); transition:left .6s; pointer-events: none; }
+.survey-scope .section-card:hover { transform: translateY(-4px) scale(1.02) !important; box-shadow:0 20px 40px rgba(0,0,0,.1); border-color: rgba(30,58,95,0.1); }
+.survey-scope .section-card:hover::before { left:100%; }
 
-.wizard-step.disabled{ opacity:.55; }
+.survey-scope .section-head{ display:flex; align-items:center; gap:12px; }
+.survey-scope .section-icon{ width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg, rgba(30,58,95,0.1), rgba(44,82,130,0.1)); color:var(--primary-blue); transition:var(--transition-smooth); box-shadow:0 4px 10px rgba(30,58,95,0.15); }
+.survey-scope .section-card:hover .section-icon { transform: scale(1.08) rotate(-12deg) translateY(-2px); background: linear-gradient(135deg,var(--primary-blue),var(--secondary-blue)); color:#fff; box-shadow:0 8px 22px rgba(30,58,95,0.28); }
+.survey-scope .section-title{ font-weight:700; color:var(--primary-blue); transition:var(--transition-smooth); }
+.survey-scope .section-card:hover .section-title { color:var(--secondary-blue); }
 
-.wizard-step:not(.disabled):hover .step-circle {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(30, 58, 95, 0.2);
-  border-color: var(--primary-blue);
-}
-
-@media (max-width: 400px){
-  .step-label{ font-size: .80rem; }
-}
-
-/* ========== SECTION CARDS ========== */
-.section-card{
-  background:#fff;
-  border-radius:18px;
-  border:1px solid rgba(0,0,0,.06);
-  box-shadow:0 12px 28px rgba(0,0,0,.06);
-  transition: var(--transition-smooth);
-  position: relative;
-  overflow: hidden;
-  animation: fadeInUp 0.6s ease-out;
-}
-.section-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(30, 58, 95, 0.03), transparent);
-  transition: left 0.6s;
-}
-.section-card:hover {
-  transform: translateY(-4px) scale(1.02) !important;
-  box-shadow: 0 20px 40px rgba(0,0,0,.1);
-  border-color: rgba(30, 58, 95, 0.1);
+/* ========== VITALS CARD STYLES (scoped) ========== */
+.survey-scope .vital-card{ padding:18px; background:#fff; border-radius:18px; border:1px solid rgba(0,0,0,.06); box-shadow:0 12px 28px rgba(0,0,0,.06); transition:var(--transition-smooth); }
+.survey-scope .vital-card::before{ content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background: linear-gradient(90deg, transparent, rgba(30,58,95,0.03), transparent); transition:left .6s; pointer-events: none; }
+.survey-scope .vital-card:hover{ transform: translateY(-4px) scale(1.02) !important; box-shadow:0 20px 40px rgba(0,0,0,.1); border-color: rgba(30,58,95,0.1); }
+.survey-scope .vital-card .vital-icon{
+  width:44px; height:44px; border-radius:12px; display:inline-flex; align-items:center; justify-content:center;
+  color:#fff; font-size:18px; box-shadow:0 6px 18px rgba(30,58,95,0.12);
+  transition: transform 0.28s cubic-bezier(0.22,1,0.36,1), box-shadow 0.28s ease, background 0.28s ease;
+  transform-origin:center center;
+  /* Ensure no rotation/tilt by default even if other rules or inline styles exist */
+  transform: none !important;
   will-change: transform;
 }
-.section-card:hover::before {
-  left: 100%;
+
+/* Only non-completed cards should tilt/scale on hover — completed cards keep their lively style */
+.survey-scope .vital-card:not(.completed):hover .vital-icon {
+  /* Keep the icon's original per-type color, but emphasize with size/tilt on hover */
+  transform: translateY(-4px) rotate(-8deg) scale(1.08);
+  box-shadow: 0 12px 30px rgba(30,58,95,0.18);
 }
 
-.section-card:nth-child(1) { animation-delay: 0.1s; }
-.section-card:nth-child(2) { animation-delay: 0.2s; }
-.section-card:nth-child(3) { animation-delay: 0.3s; }
-.section-card:nth-child(4) { animation-delay: 0.4s; }
-
-.section-head{ 
-  display:flex; 
-  align-items:center; 
-  gap:12px; 
-}
-
-.section-icon{
-  width:44px;
-  height:44px;
-  border-radius:10px; 
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background: linear-gradient(135deg, rgba(30, 58, 95, 0.1), rgba(44, 82, 130, 0.1));
-  color: var(--primary-blue);
-  transition: var(--transition-smooth);
-  box-shadow: 0 4px 10px rgba(30, 58, 95, 0.15);
-}
-.section-card:hover .section-icon {
-  /* Subtle grow + slight tilt instead of full spin */
-  transform: scale(1.08) rotate(-12deg) translateY(-2px);
-  transform-origin: center center;
-  background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
-  color: white;
-  box-shadow: 0 8px 22px rgba(30, 58, 95, 0.28);
-}
-
-.section-title{ 
-  font-weight:700;
-  color: var(--primary-blue);
-  transition: var(--transition-smooth);
-}
-.section-card:hover .section-title {
-  color: var(--secondary-blue);
-}
-
-/* ========== VITALS CARD STYLES ========== */
-/* These styles are used on the vitals wizard page to layout each metric card */
-.vital-card{
-  background:#fff;
-  border-radius:18px;
-  border:1px solid rgba(0,0,0,.06);
-  box-shadow:0 12px 28px rgba(0,0,0,.06);
-  transition: var(--transition-smooth);
-  position: relative;
-  overflow: hidden;
-  animation: fadeInUp 0.6s ease-out;
-  padding:18px;
-}
-.vital-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(30, 58, 95, 0.03), transparent);
-  transition: left 0.6s;
-}
-.vital-card:hover {
-  transform: translateY(-4px) scale(1.02) !important;
-  box-shadow: 0 20px 40px rgba(0,0,0,.1);
-  border-color: rgba(30, 58, 95, 0.1);
-  will-change: transform;
-}
-.vital-card:hover::before {
-  left: 100%;
-}
-.vital-card:hover .vital-icon {
-  transform: scale(1.08) rotate(-12deg) translateY(-2px);
-  transform-origin: center center;
-  background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
-  color: white;
-  box-shadow: 0 8px 22px rgba(30,58,95,0.28);
-}
-.vital-card:nth-child(1) { animation-delay: 0.1s; }
-.vital-card:nth-child(2) { animation-delay: 0.2s; }
-.vital-card:nth-child(3) { animation-delay: 0.3s; }
-.vital-card:nth-child(4) { animation-delay: 0.4s; }
-.vital-card h5{ margin-top: 8px; margin-bottom: 12px; color:var(--dark-text); }
-
-.vital-icon{
-  width:44px;
-  height:44px;
-  border-radius:10px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  color:#fff;
-  font-size:18px;
-  box-shadow: 0 6px 18px rgba(30,58,95,0.12);
-
-  /* Smooth transform for hover tilt effect copied from .section-icon */
-  transition: var(--transition-smooth);
-}
-.vital-icon i{ font-size:1.05rem; }
-
-/* Make the vital icon tilt and change background on card hover (same effect as personal cards) */
-.vital-card:hover .vital-icon {
-  transform: scale(1.08) rotate(-12deg) translateY(-2px);
-  transform-origin: center center;
-  background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
-  color: white;
-  box-shadow: 0 8px 22px rgba(30,58,95,0.28);
-}
-
-.vital-card .form-text{ color: #6b7280; }
-
-
-.section-divider{
-  height: 14px;
-  background: repeating-linear-gradient(-45deg,#e5e7eb,#e5e7eb 8px,#f5f6fa 8px,#f5f6fa 16px);
-  border-radius: 8px; 
-  margin: 18px 0;
-}
-
-/* ========== FAMILY HISTORY / CHECKBOX LIST STYLES ========== */
-.health-checkbox{
-  background: #fff;
-  border: 1px solid rgba(14, 22, 38, 0.06);
-  border-radius: 10px;
-  padding: 12px 14px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  transition: var(--transition-smooth);
-  min-height: 56px;
-}
-.health-checkbox .condition-icon{
-  width:40px;
-  height:40px;
-  border-radius:10px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  background: linear-gradient(135deg, rgba(30, 58, 95, 0.06), rgba(44, 82, 130, 0.06));
-  color: var(--primary-blue);
-  box-shadow: 0 4px 10px rgba(30,58,95,0.06);
-  flex: 0 0 40px;
-}
-.health-checkbox label { cursor: pointer; margin: 0; font-weight: 500; color: var(--dark-text); }
-.health-checkbox input[type="checkbox"]{ width: 18px; height: 18px; margin-right: 8px; accent-color: var(--primary-blue); }
-
-/* checked state applied by JS */
-.health-checkbox.checked{
-  background: linear-gradient(135deg, #f8fafc, #f1f7fb);
-  border-color: rgba(30,58,95,0.08);
-}
-.health-checkbox.checked .condition-icon{
-  background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
-  color: #fff;
-  box-shadow: 0 8px 22px rgba(30,58,95,0.12);
-}
-
-
-/* ========== FORM CONTROLS ========== */
-.form-control-lg, .form-select-lg{
-  font-size: 1rem;
-  padding-top: .65rem; 
-  padding-bottom: .65rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 10px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background: #f8fafc;
-}
-.form-control-lg:focus, .form-select-lg:focus {
-  background: #fff;
-  border-color: #1e3a5f;
-  box-shadow: 0 0 0 4px rgba(30, 58, 95, 0.1);
-  transform: translateY(-2px);
-}
-.form-control-lg:hover:not(:focus), .form-select-lg:hover:not(:focus) {
-  border-color: #cbd5e0;
-  background: #fff;
-}
-
-.form-label {
-  font-weight: 600;
-  color: #2d3748;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
-  letter-spacing: 0.3px;
-}
-
-/* Flatpickr input aligned with -lg controls */
-.flatpickr-input, .flatpickr-input[readonly], .flatpickr-alt-input{
-  height: auto !important;
-  padding: .65rem .75rem !important;
-  font-size: 1rem !important;
-  border-radius: 10px !important;
-  width: 100%;
-  background: #f8fafc !important;
-  border: 2px solid #e2e8f0 !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-.flatpickr-input:focus, .flatpickr-input[readonly]:focus, .flatpickr-alt-input:focus {
-  background: #fff !important;
-  border-color: #1e3a5f !important;
-  box-shadow: 0 0 0 4px rgba(30, 58, 95, 0.1) !important;
-  transform: translateY(-2px);
-}
-
-/* Sex buttons equal widths with modern styling */
-.sex-group .btn{ 
-  padding: .65rem 1rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 10px;
-  font-weight: 600;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-}
-.sex-group .btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(30, 58, 95, 0.1), transparent);
-  transition: left 0.5s;
-}
-.sex-group .btn:hover::before {
-  left: 100%;
-}
-.sex-group .btn.flex-fill{ flex: 1 1 auto; }
-.sex-group .btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(30, 58, 95, 0.15);
-  border-color: #1e3a5f;
-}
-.sex-group .btn-check:checked + .btn {
-  background: linear-gradient(135deg, #1e3a5f, #2c5282);
-  color: white;
-  border-color: #1e3a5f;
-  box-shadow: 0 6px 20px rgba(30, 58, 95, 0.3);
-  transform: scale(1.02);
-}
-
-/* Validation feedback */
-.invalid-feedback {
-  color: #c53030;
-  font-weight: 500;
-  font-size: 0.85rem;
-  margin-top: 0.4rem;
-}
-
-.form-control-lg.is-valid, .form-select-lg.is-valid {
-  border-color: #10b981;
-  background-image: none;
-}
-.form-control-lg.is-valid:focus, .form-select-lg.is-valid:focus {
-  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
-}
-
-.form-control-lg.is-invalid, .form-select-lg.is-invalid {
-  border-color: #c53030;
-  background-image: none;
-}
-.form-control-lg.is-invalid:focus, .form-select-lg.is-invalid:focus {
-  box-shadow: 0 0 0 4px rgba(197, 48, 48, 0.1);
-}
-
-/* ========== STICKY ACTIONS BAR ========== */
-.sticky-actions{
-  position: sticky;
-  bottom: 0;
-  background: rgba(255,255,255,.95);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-top: 1px solid rgba(30, 58, 95, 0.1);
-  border-radius: 12px;
-  margin-top: 24px;
-  box-shadow: 0 -8px 32px rgba(0,0,0,.08);
-  z-index: 100;
-  animation: slideUpBar 0.5s ease-out;
-}
-
-.actions-inner{ 
-  padding: 14px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-}
-@media (min-width: 576px){ .actions-inner{ padding: 16px 24px; } }
-@media (min-width: 992px){ .actions-inner{ padding: 18px 28px; } }
-
-.sticky-actions .btn {
-  border-radius: 10px;
-  padding: 0.65rem 1.5rem;
-  font-weight: 600;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-  border: 2px solid transparent;
-}
-.sticky-actions .btn::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
-}
-.sticky-actions .btn:hover::before {
-  width: 300px;
-  height: 300px;
-}
-.sticky-actions .btn-primary {
-  background: linear-gradient(135deg, #1e3a5f, #2c5282);
-  border-color: #1e3a5f;
-  color: white;
-  box-shadow: 0 4px 15px rgba(30, 58, 95, 0.3);
-}
-.sticky-actions .btn-primary:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(30, 58, 95, 0.4);
-}
-.sticky-actions .btn-outline-secondary {
-  border-color: #cbd5e0;
-  color: #2d3748;
-}
-.sticky-actions .btn-outline-secondary:hover {
-  background: #f8fafc;
-  border-color: #1e3a5f;
-  color: #1e3a5f;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-/* ========== SCROLL REVEAL ========== */
-.scroll-reveal {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
-}
-.scroll-reveal.active {
+.survey-scope .vital-card.completed .vital-icon {
+  /* Completed: green rounded-square with white glyph (flat by default) */
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 22px rgba(16,185,129,0.16);
+  /* Keep completed icons visually distinct but do not rotate by default */
+  transform: none !important;
   opacity: 1;
-  transform: translateY(0);
 }
+
+/* When a completed card is hovered, emphasize with a tilt/scale */
+.survey-scope .vital-card.completed:hover .vital-icon {
+  transform: translateY(-6px) rotate(-10deg) scale(1.12) !important;
+  box-shadow: 0 14px 34px rgba(16,185,129,0.22);
+}
+.survey-scope .vital-card .vital-icon i{ font-size:1.05rem; }
+
+.survey-scope .vital-icon.bp { background: linear-gradient(135deg, #dc3545, #e74c3c); }
+.survey-scope .vital-icon.pulse { background: linear-gradient(135deg, #fd7e14, #ff6b6b); }
+.survey-scope .vital-icon.respiratory { background: linear-gradient(135deg, #20c997, #17a2b8); }
+.survey-scope .vital-icon.temperature { background: linear-gradient(135deg, #ffc107, #ff9800); }
+
+/* Helper to force rounded-square shape when markup uses `rounded-square` */
+.survey-scope .vital-icon.rounded-square { border-radius: 12px !important; }
+
+/* ========== QUESTION CARD (ANGINA) (scoped) ========== */
+.survey-scope .question-card{
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+}
+.survey-scope .question-card:hover{ border-color: #1e3a5f; box-shadow: 0 4px 12px rgba(30, 58, 95, 0.1); }
+.survey-scope .question-number{
+  display:inline-block; width:32px; height:32px; background: linear-gradient(135deg,#1e3a5f,#2c5282); color:white; border-radius:50%;
+  text-align:center; line-height:32px; font-weight:600; margin-right:0.75rem; flex-shrink:0;
+}
+.survey-scope .form-check-input:checked { background-color: var(--primary-blue); border-color: var(--primary-blue); }
+
+/* ========== FAMILY MEMBER / TREE / SEARCH STYLES (scoped) ========== */
+.survey-scope .family-member-card{ position:relative; padding:1.25rem; border:2px solid #e2e8f0; border-radius:12px; transition:all .3s; background:#f8fafc; }
+.survey-scope .family-member-card:hover{ border-color:var(--primary-blue); background:#fff; transform:translateY(-2px); box-shadow:0 4px 15px rgba(30,58,95,0.15); }
+.survey-scope .member-avatar{ width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:1.2rem; color:#fff; background:linear-gradient(135deg,#1e3a5f,#4f76e2); }
+.survey-scope .relationship-badge{ display:inline-block; padding:0.25rem 0.75rem; border-radius:20px; font-size:0.75rem; font-weight:600; text-transform:uppercase; background:linear-gradient(135deg,#10b981,#059669); color:white; }
+
+.survey-scope .search-box{ position:relative; }
+.survey-scope .search-results{ position:absolute; top:100%; left:0; right:0; max-height:300px; overflow-y:auto; background:#fff; border:2px solid #1e3a5f; border-radius:12px; margin-top:0.5rem; box-shadow:0 4px 20px rgba(30,58,95,0.2); z-index:1000; display:none; }
+.survey-scope .search-results.show{ display:block; }
+.survey-scope .search-result-item{ padding:0.75rem 1rem; cursor:pointer; border-bottom:1px solid #e2e8f0; transition:all .2s; }
+.survey-scope .search-result-item:last-child{ border-bottom:none; }
+.survey-scope .search-result-item:hover{ background: linear-gradient(135deg, rgba(30,58,95,0.05), rgba(79,118,226,0.05)); }
+
+/* Family tree modal and node styles (scoped) */
+.survey-scope .family-tree-modal{ display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); z-index:9999; backdrop-filter: blur(5px); }
+.survey-scope .family-tree-modal.show{ display:flex; align-items:center; justify-content:center; }
+.survey-scope .tree-modal-content{ background:white; border-radius:20px; width:90%; height:85%; max-width:1400px; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.3); overflow:hidden; }
+.survey-scope .tree-modal-header{ padding:1.5rem 2rem; background: linear-gradient(135deg,#1e3a5f,#4f76e2); color:white; display:flex; align-items:center; justify-content:space-between; }
+.survey-scope .tree-modal-body{ flex:1; overflow:auto; padding:2rem; background:#f8fafc; }
+.survey-scope .tree-canvas{ min-width:100%; min-height:100%; position:relative; }
+.survey-scope .tree-node{ position:absolute; width:140px; padding:0.75rem; background:white; border:2px solid #1e3a5f; border-radius:12px; text-align:center; cursor:move; transition:all .3s; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
+.survey-scope .tree-node:hover{ transform:scale(1.05); box-shadow:0 4px 20px rgba(30,58,95,0.3); z-index:10; }
+.survey-scope .tree-node.current-user{ background: linear-gradient(135deg,#10b981,#059669); color:white; border-color:#059669; font-weight:600; }
+.survey-scope .tree-node-avatar{ width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,#1e3a5f,#4f76e2); color:white; display:flex; align-items:center; justify-content:center; font-weight:600; margin:0 auto 0.5rem; }
+.survey-scope #tree-svg{ position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+.survey-scope .tree-connection{ stroke:#1e3a5f; stroke-width:2; fill:none; opacity:0.5; }
+.survey-scope .tree-controls{ position:absolute; bottom:2rem; right:2rem; display:flex; gap:0.5rem; }
+.survey-scope .tree-control-btn{ width:45px; height:45px; border-radius:50%; background:white; border:2px solid #1e3a5f; color:#1e3a5f; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.15); }
+.survey-scope .tree-control-btn:hover{ background:#1e3a5f; color:white; transform:scale(1.1); }
+
+/* ========== FAMILY HISTORY CHECKBOX STYLES (scoped) ========== */
+.survey-scope .health-checkbox{ background:#fff; border:1px solid rgba(14,22,38,0.06); border-radius:10px; padding:12px 14px; display:flex; align-items:center; gap:12px; transition:var(--transition-smooth); min-height:56px; }
+.survey-scope .health-checkbox .condition-icon{ width:40px; height:40px; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; background: linear-gradient(135deg, rgba(30,58,95,0.06), rgba(44,82,130,0.06)); color:var(--primary-blue); box-shadow:0 4px 10px rgba(30,58,95,0.06); flex:0 0 40px; }
+.survey-scope .health-checkbox label{ cursor:pointer; margin:0; font-weight:500; color:var(--dark-text); }
+.survey-scope .health-checkbox.checked{ background: linear-gradient(135deg,#f8fafc,#f1f7fb); border-color: rgba(30,58,95,0.08); }
+.survey-scope .health-checkbox.checked .condition-icon{ background: linear-gradient(135deg,var(--primary-blue),var(--secondary-blue)); color:#fff; box-shadow:0 8px 22px rgba(30,58,95,0.12); }
+
+/* ========== FORM CONTROLS (scoped) ========== */
+.survey-scope .form-control-lg, .survey-scope .form-select-lg{
+  font-size:1rem; padding-top:.65rem; padding-bottom:.65rem; border:2px solid #e2e8f0; border-radius:10px;
+  transition:all .3s cubic-bezier(0.4,0,0.2,1); background:#f8fafc;
+}
+.survey-scope .form-control-lg:focus, .survey-scope .form-select-lg:focus{
+  background:#fff; border-color:var(--primary-blue); box-shadow:0 0 0 4px rgba(30,58,95,0.1); transform:translateY(-2px);
+}
+.survey-scope .flatpickr-input, .survey-scope .flatpickr-input[readonly], .survey-scope .flatpickr-alt-input{
+  height:auto !important; padding:.65rem .75rem !important; font-size:1rem !important; border-radius:10px !important;
+  background:#f8fafc !important; border:2px solid #e2e8f0 !important;
+}
+.survey-scope .sex-group .btn{ padding:.65rem 1rem; border:2px solid #e2e8f0; border-radius:10px; font-weight:600; transition:all .3s; }
+.survey-scope .sex-group .btn-check:checked + .btn{ background: linear-gradient(135deg,#1e3a5f,#2c5282); color:white; border-color:#1e3a5f; box-shadow:0 6px 20px rgba(30,58,95,0.3); transform:scale(1.02); }
+
+/* ========== QUESTION / VALIDATION (scoped) ========== */
+.survey-scope .invalid-feedback{ color:#c53030; font-weight:500; font-size:0.85rem; margin-top:0.4rem; }
+.survey-scope .form-control-lg.is-valid, .survey-scope .form-select-lg.is-valid{ border-color:#10b981; }
+.survey-scope .form-control-lg.is-invalid, .survey-scope .form-select-lg.is-invalid{ border-color:#c53030; background-image:none; }
+
+/* ========== STICKY ACTIONS BAR (scoped) ========== */
+.survey-scope .sticky-actions{
+  position: sticky; bottom:0; background: rgba(255,255,255,0.95); backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%); border-top:1px solid rgba(30,58,95,0.1); border-radius:12px; margin-top:24px;
+  box-shadow:0 -8px 32px rgba(0,0,0,0.08); z-index:100; animation: survey-slideUpBar 0.5s ease-out;
+}
+.survey-scope .actions-inner{ padding:14px 20px; display:flex; justify-content:space-between; align-items:center; gap:1rem; }
+.survey-scope .sticky-actions .btn{ border-radius:10px; padding:0.65rem 1.5rem; font-weight:600; transition:all .3s; }
+.survey-scope .sticky-actions .btn-primary{ background: linear-gradient(135deg,#1e3a5f,#2c5282); border-color:#1e3a5f; color:white; box-shadow:0 4px 15px rgba(30,58,95,0.3); }
+.survey-scope .sticky-actions .btn-primary:hover{ transform:translateY(-3px); box-shadow:0 8px 25px rgba(30,58,95,0.4); }
+.survey-scope .sticky-actions .btn-outline-secondary{ border-color:#cbd5e0; color:#2d3748; }
+
+/* ========== HELPER CLASSES (scoped) ========== */
+.survey-scope .section-divider{ height:14px; background: repeating-linear-gradient(-45deg,#e5e7eb,#e5e7eb 8px,#f5f6fa 8px,#f5f6fa 16px); border-radius:8px; margin:18px 0; }
+.survey-scope .other-input{ margin-top:0.5rem; display:none; }
+.survey-scope .other-input.show{ display:block; }
+.survey-scope .range-value{ display:inline-block; min-width:3rem; text-align:center; font-weight:600; color:var(--primary-blue); }
+
+/* ========== FLOATING INFO BUTTON (BHW) (scoped) ========== */
+.survey-scope #bhwFloatBtn{
+  position:fixed; bottom:24px; right:24px; z-index:1060; width:56px; height:56px; border-radius:50%;
+  background:var(--primary-blue); color:#fff; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 8px 20px rgba(0,0,0,0.18); cursor:grab; transition: transform .12s;
+}
+.survey-scope #bhwFloatBtn:active{ cursor:grabbing; transform: scale(0.98); }
+.survey-scope #bhwFloatBtn .fa-circle-info{ font-size:1.35rem; }
+.survey-scope #bhwFloatBtn.hidden{ display:none; }
+.survey-scope .bhw-hide-btn{ position:absolute; top:-8px; right:-8px; background:#fff; color:#000; width:20px; height:20px; border-radius:50%; font-size:12px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(0,0,0,0.08); cursor:pointer; }
+
+/* ========== QUESTION-SPECIFIC SMALL ELEMENTS (scoped) ========== */
+.survey-scope .form-check-label { cursor:pointer; margin-left: 0.25rem; }
+
+/* ========== SCROLL REVEAL (scoped) ========== */
+.survey-scope .scroll-reveal { opacity:0; transform:translateY(30px); transition: opacity .8s ease, transform .8s ease; }
+.survey-scope .scroll-reveal.active { opacity:1; transform:translateY(0); }
+
+/* ========== BACKWARDS-COMPATIBILITY / LEGACY HELPERS (scoped) ========== */
+.survey-scope .text-muted.small { font-size:0.85rem; color:#6b7280; }
+
+/* Ensure completion badges/overlays don't block pointer events */
+.survey-scope .section-complete::after { pointer-events: none; }
+.survey-scope .vital-card .complete-badge { pointer-events: none; }
+.survey-scope .section-card .complete-badge { pointer-events: none; }
+
+::-webkit-scrollbar {
+      width: 12px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: linear-gradient(180deg, #f7fafc 0%, #edf2f7 100%);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #1e3a5f, #2c5282);
+      border-radius: 6px;
+      border: 2px solid #f7fafc;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, #2c5282, #c53030);
+    }
+
+/* End of survey-scoped CSS */

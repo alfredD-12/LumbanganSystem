@@ -1,0 +1,94 @@
+/* Floating BHW "i" control - robust rules (scoped + global fallback)
+   Ensure this file is available under public/assets/css/Survey/bhw-float.css
+   so header-resident.php (which uses BASE_PUBLIC) can load it.
+*/
+
+/* Strong rules that apply whether button is inside .survey-scope or not */
+.survey-scope #bhwFloatBtn,
+#bhwFloatBtn {
+  position: fixed !important;
+  bottom: 24px !important;
+  right: 24px !important;
+  z-index: 1060 !important;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--primary-blue, #1e3a5f) !important;
+  color: #fff !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+  cursor: grab;
+  transition: transform .12s ease, opacity .12s ease;
+  border: 2px solid rgba(0,0,0,0.06);
+  overflow: visible;
+}
+
+/* Smaller active transform when dragging */
+.survey-scope #bhwFloatBtn:active,
+#bhwFloatBtn:active {
+  transform: scale(0.98);
+}
+
+/* Icon styling — ensure the white "i" appears and is centered */
+.survey-scope #bhwFloatBtn .fa-circle-info,
+#bhwFloatBtn .fa-circle-info {
+  font-size: 1.05rem;
+  line-height: 1;
+  color: #fff !important;
+  pointer-events: none;
+}
+
+/* The small square "×" hide control */
+.survey-scope .bhw-hide-btn,
+.bhw-hide-btn {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  color: #111;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(0,0,0,0.08);
+  cursor: pointer;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+}
+
+/* Hidden state */
+.survey-scope #bhwFloatBtn.hidden,
+#bhwFloatBtn.hidden {
+  display: none !important;
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Accessibility focus */
+.survey-scope #bhwFloatBtn:focus,
+#bhwFloatBtn:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(30,58,95,0.15);
+}
+
+/* Touch devices: slightly larger target */
+@media (pointer: coarse) {
+  .survey-scope #bhwFloatBtn,
+  #bhwFloatBtn {
+    width: 56px;
+    height: 56px;
+    bottom: 20px;
+    right: 20px;
+  }
+  .survey-scope .bhw-hide-btn,
+  .bhw-hide-btn {
+    width: 24px;
+    height: 24px;
+    top: -12px;
+    right: -12px;
+  }
+}

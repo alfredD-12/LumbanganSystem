@@ -23,7 +23,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // small delay to ensure DOM is updated
     setTimeout(function () {
       const ev = new Event('includes:loaded');
-      console.log('includes:loaded dispatched');
       document.dispatchEvent(ev);
     }, 0);
   });

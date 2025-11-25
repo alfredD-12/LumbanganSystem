@@ -25,6 +25,7 @@ if (isLoggedIn()) {
 }
 ?>
 <?php include_once dirname(__DIR__, 2) . '/config/config.php'; ?>
+<?php render_favicon(); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

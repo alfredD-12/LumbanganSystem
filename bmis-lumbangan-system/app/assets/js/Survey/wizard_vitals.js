@@ -221,6 +221,210 @@
     });
   }
 
+  // ========== WIZARD STEP PROGRESS ==========
+  function getAllSteps() {
+    return Array.from(document.querySelectorAll('.wizard-step'));
+  }
+
+  function getStepByKey(key) {
+    return document.querySelector(`.wizard-step[data-key="${key}"]`);
+  }
+
+  // Step-level completion visuals are intentionally disabled.
+  // Card-level completion and the top progress bar remain active.
+
+  // Mark individual vital cards as completed when their contained inputs are valid
+  function wireCardCompletion() {
+    const cards = Array.from(document.querySelectorAll('.vital-card'));
+    if (!cards || cards.length === 0) return;
+
+    function checkCard(card) {
+      // find form controls inside the card
+      const inputs = Array.from(card.querySelectorAll('input, select, textarea')).filter(i => i.type !== 'hidden');
+      if (inputs.length === 0) return false;
+      // card is complete only if all controls that are required are valid (or if none required then valid if any has value)
+      const requiredInputs = inputs.filter(i => i.hasAttribute('required'));
+      if (requiredInputs.length > 0) {
+        return requiredInputs.every(i => i.checkValidity());
+      }
+      // if no required fields, consider it complete if at least one input has a non-empty value
+      return inputs.some(i => String(i.value || '').trim() !== '');
+    }
+
+    function updateAll() {
+      cards.forEach(card => {
+        try {
+          const ok = checkCard(card);
+          const changed = card.classList.toggle('completed', ok);
+          // add/remove badge
+          let badge = card.querySelector('.complete-badge');
+          if (ok && !badge) {
+            badge = document.createElement('div'); badge.className = 'complete-badge'; badge.innerHTML = '<i class="fa-solid fa-check"></i>';
+            card.appendChild(badge);
+          } else if (!ok && badge) {
+            badge.remove();
+          }
+        } catch (e) { /* ignore per-card */ }
+      });
+    }
+
+    // initial
+    updateAll();
+    // watch inputs within the form (debounced)
+    let tt;
+    const form = document.getElementById('form-vitals');
+    if (!form) return;
+    form.addEventListener('input', function(){ clearTimeout(tt); tt = setTimeout(updateAll, 200); }, { capture: true });
+    form.addEventListener('change', function(){ clearTimeout(tt); tt = setTimeout(updateAll, 200); }, { capture: true });
+  }
+
+  // ========== FORM PROGRESS TRACKER (section + overall) ==========
+  function initProgressTracker() {
+    const form = document.getElementById('form-vitals');
+    if (!form) return;
+
+    // Build a de-duplicated list of form "fields" where radio groups count as one field
+    const allElements = Array.from(form.elements).filter(el =>
+      (el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') &&
+      el.type !== 'hidden' && el.type !== 'submit' && el.type !== 'button' &&
+      !el.hasAttribute('data-optional')
+    );
+    const seenRadioNames = new Set();
+    const allInputs = [];
+    allElements.forEach(el => {
+      if (el.type === 'radio') {
+        if (seenRadioNames.has(el.name)) return; // already accounted for this group
+        seenRadioNames.add(el.name);
+        allInputs.push(el); // push a representative radio element (group counted once)
+      } else {
+        allInputs.push(el);
+      }
+    });
+
+    function updateProgress() {
+      const filledInputs = allInputs.filter(el => {
+        if (el.type === 'radio') {
+          return !!form.querySelector(`input[name="${el.name}"]:checked`);
+        }
+        if (el.type === 'checkbox') {
+          return el.checked;
+        }
+        try {
+          if (el._flatpickr) {
+            if (Array.isArray(el._flatpickr.selectedDates) && el._flatpickr.selectedDates.length > 0) return true;
+            if (el._flatpickr.altInput && el._flatpickr.altInput.value) return true;
+          }
+        } catch(e){}
+        return el.value && el.value.trim() !== '';
+      });
+
+      const progress = allInputs.length > 0 ? (filledInputs.length / allInputs.length) * 100 : 0;
+
+      // Update any progress bar if exists
+      const progressBar = $('.form-progress-bar');
+      if (progressBar) {
+        progressBar.style.width = `${progress}%`;
+        progressBar.style.transition = 'width 0.4s ease';
+      }
+
+      // Update step indicators based on section completion
+      updateSectionProgress();
+    }
+
+    function updateSectionProgress() {
+      const sections = $$('.section-card');
+      sections.forEach(section => {
+        // Build section-level unique inputs (radio groups counted once)
+        const secElements = Array.from(section.querySelectorAll('input, select, textarea')).filter(el =>
+          el.type !== 'hidden' && el.type !== 'submit' && el.type !== 'button' && !el.hasAttribute('data-optional')
+        );
+        const secSeenRadio = new Set();
+        const sectionInputs = [];
+        secElements.forEach(el => {
+          if (el.type === 'radio') {
+            if (secSeenRadio.has(el.name)) return;
+            secSeenRadio.add(el.name);
+            sectionInputs.push(el);
+          } else {
+            sectionInputs.push(el);
+          }
+        });
+
+        const filledInSection = sectionInputs.filter(el => {
+          if (el.type === 'radio') {
+            return !!section.querySelector(`input[name="${el.name}"]:checked`);
+          }
+          if (el.type === 'checkbox') return el.checked;
+          try {
+            if (el._flatpickr) {
+              if (Array.isArray(el._flatpickr.selectedDates) && el._flatpickr.selectedDates.length > 0) return true;
+              if (el._flatpickr.altInput && el._flatpickr.altInput.value) return true;
+            }
+          } catch(e){}
+          return el.value && el.value.trim() !== '';
+        }).length;
+
+        const sectionProgress = sectionInputs.length > 0 ? (filledInSection / sectionInputs.length) * 100 : 0;
+
+        // Add visual feedback
+        if (sectionProgress === 100) {
+          section.classList.add('section-complete');
+        } else {
+          section.classList.remove('section-complete');
+        }
+      });
+    }
+
+    // Listen to all input changes
+    allInputs.forEach(input => {
+      input.addEventListener('input', updateProgress);
+      input.addEventListener('change', updateProgress);
+    });
+
+    // Initial progress check
+    updateProgress();
+  }
+
+  // Add section complete styling (if not already present)
+  (function addProgressStyle(){
+    const id = 'survey-vitals-progress-style'; if (document.getElementById(id)) return;
+    const progressStyle = document.createElement('style'); progressStyle.id = id;
+    progressStyle.textContent = `
+    .section-complete {
+      border-color: #10b981 !important;
+      background: linear-gradient(135deg, #f0fdf4, #dcfce7) !important;
+    }
+    .section-complete .section-icon {
+      background: linear-gradient(135deg, #10b981, #059669) !important;
+      color: white !important;
+    }
+    .section-complete::after {
+      content: '✓';
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 18px;
+      animation: scaleIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+    @keyframes scaleIn {
+      from { transform: scale(0) rotate(-180deg); opacity: 0; }
+      to { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    .form-progress-bar { height: 4px; background: linear-gradient(90deg, #1e3a5f, #c53030); position: fixed; top: 0; left: 0; z-index: 9999; box-shadow: 0 2px 10px rgba(30, 58, 95, 0.3); }
+    `;
+    document.head.appendChild(progressStyle);
+  })();
+
   // ========== SMOOTH SCROLLING ==========
   function initSmoothScrolling() {
     $$('a[href^="#"]').forEach(anchor => {
@@ -268,6 +472,20 @@
     enhanceFormInputs();
     validateVitalSigns();
     handleFormSubmit();
+    // wizard progress helpers: step-level completed checks disabled — keep card-level only
+    // mark per-card completion
+    try { wireCardCompletion(); } catch(e){}
+
+    // init progress tracker and top progress bar (if not present)
+    try { initProgressTracker(); } catch(e){}
+    try {
+      if (!document.querySelector('.form-progress-bar')) {
+        const progressBar = document.createElement('div');
+        progressBar.className = 'form-progress-bar';
+        progressBar.style.width = '0%';
+        document.body.insertBefore(progressBar, document.body.firstChild);
+      }
+    } catch(e) {}
     initSmoothScrolling();
   }
 
@@ -277,5 +495,7 @@
   } else {
     initialize();
   }
+
+  
 
 })();

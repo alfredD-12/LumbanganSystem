@@ -15,4 +15,12 @@ $baseFolder = '/Lumbangan_BMIS/bmis-lumbangan-system/';
 // Define dynamic URLs
 define('BASE_URL', $protocol . $host . $baseFolder . 'app/');
 define('BASE_PUBLIC', $protocol . $host . $baseFolder . 'public/');
+
+define('FAVICON_PATH', $protocol . $host . $baseFolder . 'favicon.ico');
+
+function render_favicon() {
+    echo '<link rel="icon" type="image/x-icon" href="' . FAVICON_PATH . '">' . "\n";
+    echo '    <link rel="shortcut icon" type="image/x-icon" href="' . FAVICON_PATH . '">' . "\n";
+}
+
 ?>

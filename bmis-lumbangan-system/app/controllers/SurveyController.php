@@ -1,397 +1,650 @@
 <?php
-// Minimal SurveyController to save survey head and sections
-require_once dirname(__DIR__,1) . '/config/Database.php';
-require_once dirname(__DIR__,1) . '/helpers/session_helper.php';
+// app/controllers/SurveyController.php
+// Controller: validation, session checks and orchestration. Calls SurveyModel for DB SQL.
+// This class performs no top-level action dispatch; call its methods from your router.
 
-// Allow only logged-in users
-if (!isLoggedIn()) {
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
-    exit;
+// Action dispatcher
+if (isset($_GET['action']) || isset($_POST['action'])) {
+    $action = $_GET['action'] ?? $_POST['action'];
+    
+    // Ensure session is started
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    require_once __DIR__ . '/../config/Database.php';
+    require_once __DIR__ . '/../models/SurveyModel.php';
+    require_once __DIR__ . '/../helpers/session_helper.php';
+
+    $controller = new SurveyController();
+    $methodName = $action . '_action';
+
+    if (method_exists($controller, $methodName)) {
+        $controller->$methodName();
+        exit;
+    } else {
+        http_response_code(404);
+        echo json_encode(['success' => false, 'message' => 'Action not found']);
+        exit;
+    }
 }
 
-$db = (new Database())->getConnection();
-$action = $_GET['action'] ?? '';
-// Normalize action: allow hyphens and some legacy names (backwards compatible)
-$action = str_replace('-', '_', $action);
-if ($action === 'save_person') $action = 'save_personal';
-$person_id = $_SESSION['person_id'] ?? null;
-$user_id = $_SESSION['user_id'] ?? null;
 
-if (!$person_id) {
-    echo json_encode(['success' => false, 'message' => 'Person not found in session']);
-    exit;
-}
+require_once __DIR__ . '/../config/Database.php';
+require_once __DIR__ . '/../models/SurveyModel.php';
+require_once __DIR__ . '/../helpers/session_helper.php';
 
-function jsonResponse($arr) { header('Content-Type: application/json'); echo json_encode($arr); exit; }
+class SurveyController
+{
+    protected $db;
+    protected $model;
 
-// Ensure a head assessment exists for this person within last 30 days or create new
-function ensureAssessment(PDO $db, $person_id, $user_id) {
-    // check existing within 30 days
-    $stmt = $db->prepare('SELECT id FROM cvd_ncd_risk_assessments WHERE person_id = :person_id AND survey_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) ORDER BY survey_date DESC LIMIT 1');
-    $stmt->execute([':person_id' => $person_id]);
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    if ($row) return $row['id'];
+    public function __construct($db = null)
+    {
+        // Accept external PDO or Database instance for easier testing
+        if ($db instanceof PDO) {
+            $this->db = $db;
+        } elseif ($db && method_exists($db, 'getConnection')) {
+            $this->db = $db->getConnection();
+        } else {
+            $database = new Database();
+            $this->db = $database->getConnection();
+        }
 
-    // create new head record with answered_at = NOW()
-    $insert = $db->prepare('INSERT INTO cvd_ncd_risk_assessments (person_id, survey_date, answered_at) VALUES (:person_id, CURDATE(), NOW())');
-    $insert->execute([':person_id' => $person_id]);
-    return $db->lastInsertId();
-}
+        $this->model = new SurveyModel($this->db);
+    }
 
-try {
-    switch ($action) {
-        case 'create_assessment':
-            $cvd_id = ensureAssessment($db, $person_id, $user_id);
-            jsonResponse(['success' => true, 'cvd_id' => $cvd_id]);
-            break;
+    protected function jsonResponse($arr, $status = 200){
+        // ensure the HTTP status is set for the client
+        http_response_code($status);
 
-        case 'save_personal':
-            // Update persons table with submitted personal info
-            $cvd_id = ensureAssessment($db, $person_id, $user_id);
-            
-            // Collect all personal fields that might be submitted
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($arr);
+        exit;
+    }
+
+    protected function requireLoggedIn(){
+        if (!isLoggedIn()) {
+            $this->jsonResponse(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+    }
+
+    public function wizard_personal(){
+        $view = __DIR__ . '/../views/Survey/wizard_personal.php';
+        include $view;
+    }
+    public function wizard_vitals(){
+        $view = __DIR__ . '/../views/Survey/wizard_vitals.php';
+        include $view;
+    }
+    public function wizard_family_history(){
+        $view = __DIR__ . '/../views/Survey/wizard_family_history.php';
+        include $view;
+    }
+    public function wizard_family() {
+        $view = __DIR__ . '/../views/Survey/wizard_family.php';
+        include $view;
+    }
+    public function wizard_lifestyle() {
+        $view = __DIR__ . '/../views/Survey/wizard_lifestyle.php';
+        include $view;
+    }
+    public function wizard_angina() {
+        $view = __DIR__ . '/../views/Survey/wizard_angina.php';
+        include $view;
+    }
+    public function wizard_diabetes() {
+        $view = __DIR__ . '/../views/Survey/wizard_diabetes.php';
+        include $view;
+    }
+    public function wizard_household() {
+        $view = __DIR__ . '/../views/Survey/wizard_household.php';
+        include $view;
+    }
+
+    public function create_assessment_action()
+    {
+        $this->requireLoggedIn();
+        $person_id = $_SESSION['person_id'] ?? null;
+        $user_id = $_SESSION['user_id'] ?? null;
+        if (!$person_id) $this->jsonResponse(['success' => false, 'message' => 'Person not found in session'], 400);
+
+        $row = $this->model->getRecentAssessmentForPerson($person_id);
+        if ($row && !empty($row['id'])) {
+            $cvd_id = (int)$row['id'];
+        } else {
+            $cvd_id = $this->model->createAssessment($person_id);
+        }
+        $this->jsonResponse(['success' => true, 'cvd_id' => $cvd_id]);
+    }
+
+    /**
+     * Save personal info (handles saving person fields, contact mobile to users, and vitals)
+     */
+    public function save_personal_action()
+    {
+        ob_start();
+        try {
+            $this->requireLoggedIn();
+            $person_id = $_SESSION['person_id'] ?? null;
+            $user_id = $_SESSION['user_id'] ?? null;
+            if (!$person_id) $this->jsonResponse(['success' => false, 'message' => 'Person not found in session'], 400);
+
+            $cvd_id = $this->ensureAssessment($person_id, $user_id);
+
+            // collect personal fields
             $personalFields = [
-                'first_name', 'middle_name', 'last_name', 'suffix', 'sex', 'birthdate',
-                'marital_status', 'family_position', 'blood_type', 'disability', 
+                'first_name', 'middle_name', 'last_name', 'suffix', 'sex', 'birthdate', 'is_head',
+                'marital_status', 'blood_type', 'disability', 
                 'religion', 'occupation', 'highest_educ_attainment'
             ];
-            
-            // Build dynamic update query
-            $setParts = [];
-            $params = [':person_id' => $person_id];
-            
-            foreach ($personalFields as $field) {
-                if (isset($_POST[$field])) {
-                    $setParts[] = "$field = :$field";
-                    $params[":$field"] = $_POST[$field] ?: null;
-                }
+            $save = [];
+            foreach ($personalFields as $f) {
+                if (isset($_POST[$f])) $save[$f] = $_POST[$f] !== '' ? $_POST[$f] : null;
             }
-            
-            if (count($setParts) > 0) {
-                $sql = 'UPDATE persons SET ' . implode(', ', $setParts) . ', updated_at = NOW() WHERE id = :person_id';
-                $stmt = $db->prepare($sql);
-                $stmt->execute($params);
-            }
+            if (!empty($save)) $this->model->updatePersonFields($person_id, $save);
 
-            // If the personal form included contact number, save it to the users table (mobile)
-            // The `persons` table schema does not include a contact_no column, so we persist
-            // this value on the `users.mobile` column which is associated with the person.
+            // contact no to users
             if (isset($_POST['contact_no'])) {
-                $contact_no_val = $_POST['contact_no'] ?: null;
-                try {
-                    if ($user_id) {
-                        $u = $db->prepare('UPDATE users SET mobile = :mobile, updated_at = NOW() WHERE id = :uid');
-                        $u->execute([':mobile' => $contact_no_val, ':uid' => $user_id]);
-                    } else {
-                        $u = $db->prepare('UPDATE users SET mobile = :mobile, updated_at = NOW() WHERE person_id = :person_id');
-                        $u->execute([':mobile' => $contact_no_val, ':person_id' => $person_id]);
-                    }
-                } catch (Exception $e) {
-                    // non-fatal: log silently and continue
-                }
+                $contact = $_POST['contact_no'] !== '' ? $_POST['contact_no'] : null;
+                if ($user_id) $this->model->updateUserMobileByUserId($user_id, $contact);
+                else $this->model->updateUserMobileByPersonId($person_id, $contact);
             }
 
-            // Additionally, if the personal form included basic biometrics (height/weight/waist),
-            // persist them into the vitals table so data entered on the Personal page is not lost.
-            $vitalsFields = ['height_cm','weight_kg','waist_circumference_cm'];
-            $hasVitals = false;
-            $vdata = [];
+            // Vitals: merge posted values with existing row so we do NOT null unspecified columns
+            $vitalsFields = ['height_cm','weight_kg','bmi','waist_circumference_cm','bp_systolic','bp_diastolic','pulse','temperature_c','respiratory_rate'];
+            $existing = $this->model->getVitalsByCvdId($cvd_id);
+
+            $merged = [];
             foreach ($vitalsFields as $vf) {
                 if (isset($_POST[$vf]) && $_POST[$vf] !== '') {
-                    $hasVitals = true;
-                    $vdata[$vf] = $_POST[$vf];
+                    $merged[$vf] = $_POST[$vf];
+                } elseif ($existing && array_key_exists($vf, $existing)) {
+                    $merged[$vf] = $existing[$vf];
                 } else {
-                    $vdata[$vf] = null;
+                    $merged[$vf] = null;
                 }
             }
 
-            if ($hasVitals) {
-                // Upsert vitals for this assessment (cvd_id)
-                $exists = $db->prepare('SELECT id FROM vitals WHERE cvd_id = :cvd_id LIMIT 1');
-                $exists->execute([':cvd_id' => $cvd_id]);
-                if ($exists->fetch()) {
-                    $update = $db->prepare('UPDATE vitals SET height_cm=:height_cm, weight_kg=:weight_kg, waist_circumference_cm=:waist_circumference_cm WHERE cvd_id=:cvd_id');
-                    $update->execute([
-                        ':height_cm'=>$vdata['height_cm'], ':weight_kg'=>$vdata['weight_kg'], ':waist_circumference_cm'=>$vdata['waist_circumference_cm'], ':cvd_id'=>$cvd_id
-                    ]);
-                } else {
-                    $ins = $db->prepare('INSERT INTO vitals (cvd_id, height_cm, weight_kg, waist_circumference_cm) VALUES (:cvd_id, :height_cm, :weight_kg, :waist_circumference_cm)');
-                    $ins->execute([':cvd_id'=>$cvd_id, ':height_cm'=>$vdata['height_cm'], ':weight_kg'=>$vdata['weight_kg'], ':waist_circumference_cm'=>$vdata['waist_circumference_cm']]);
-                }
+            // Only insert/update if at least one non-empty value present OR existing row exists
+            $anyNonNull = false;
+            foreach ($merged as $v) {
+                if ($v !== null && $v !== '') { $anyNonNull = true; break; }
             }
 
-            jsonResponse(['success' => true, 'cvd_id' => $cvd_id, 'message' => 'Personal information saved']);
-            break;
-
-        case 'save_vitals':
-            $cvd_id = ensureAssessment($db, $person_id, $user_id);
-            $fields = ['height_cm','weight_kg','bmi','waist_circumference_cm','bp_systolic','bp_diastolic','pulse','temperature_c','respiratory_rate'];
-            $data = [];
-            foreach ($fields as $f) { $data[$f] = $_POST[$f] ?? null; }
-
-            // Insert or update vitals (unique cvd_id)
-            $exists = $db->prepare('SELECT id FROM vitals WHERE cvd_id = :cvd_id LIMIT 1');
-            $exists->execute([':cvd_id' => $cvd_id]);
-            if ($exists->fetch()) {
-                // Update only the vitals columns. Don't modify or reference created_at here
-                // (some environments may lack an updatable created_at column).
-                $update = $db->prepare('UPDATE vitals SET height_cm=:height_cm, weight_kg=:weight_kg, bmi=:bmi, waist_circumference_cm=:waist_circumference_cm, bp_systolic=:bp_systolic, bp_diastolic=:bp_diastolic, pulse=:pulse, temperature_c=:temperature_c, respiratory_rate=:respiratory_rate WHERE cvd_id=:cvd_id');
-                $update->execute([
-                    ':height_cm'=>$data['height_cm'], ':weight_kg'=>$data['weight_kg'], ':bmi'=>$data['bmi'], ':waist_circumference_cm'=>$data['waist_circumference_cm'], ':bp_systolic'=>$data['bp_systolic'], ':bp_diastolic'=>$data['bp_diastolic'], ':pulse'=>$data['pulse'], ':temperature_c'=>$data['temperature_c'], ':respiratory_rate'=>$data['respiratory_rate'], ':cvd_id'=>$cvd_id
-                ]);
-            } else {
-                // Current database schema for `vitals` does not include a created_at column
-                // so insert only the defined columns.
-                $ins = $db->prepare('INSERT INTO vitals (cvd_id, height_cm, weight_kg, bmi, waist_circumference_cm, bp_systolic, bp_diastolic, pulse, temperature_c, respiratory_rate) VALUES (:cvd_id, :height_cm, :weight_kg, :bmi, :waist_circumference_cm, :bp_systolic, :bp_diastolic, :pulse, :temperature_c, :respiratory_rate)');
-                $ins->execute([':cvd_id'=>$cvd_id, ':height_cm'=>$data['height_cm'], ':weight_kg'=>$data['weight_kg'], ':bmi'=>$data['bmi'], ':waist_circumference_cm'=>$data['waist_circumference_cm'], ':bp_systolic'=>$data['bp_systolic'], ':bp_diastolic'=>$data['bp_diastolic'], ':pulse'=>$data['pulse'], ':temperature_c'=>$data['temperature_c'], ':respiratory_rate'=>$data['respiratory_rate']]);
-            }
-            jsonResponse(['success'=>true, 'cvd_id'=>$cvd_id]);
-            break;
-
-        case 'save_angina':
-            $cvd_id = ensureAssessment($db, $person_id, $user_id);
-            $qfields = ['q1_chest_discomfort','q2_pain_location_left_arm_neck_back','q3_pain_on_exertion','q4_pain_relieved_by_rest_or_nitro','q5_pain_lasting_10min_plus','q6_pain_front_of_chest_half_hour','screen_positive','needs_doctor_referral'];
-            $vals = [];
-            // Properly interpret posted radio values ('1' or '0'). Using isset() alone
-            // treats '0' as present and would incorrectly mark it as true. Cast to int
-            // from the posted value (or default 0) to get reliable 1/0.
-            foreach ($qfields as $q) { $vals[$q] = isset($_POST[$q]) ? (int)$_POST[$q] : 0; }
-            $exists = $db->prepare('SELECT id FROM angina_stroke_screening WHERE cvd_id = :cvd_id LIMIT 1');
-            $exists->execute([':cvd_id'=>$cvd_id]);
-            if ($exists->fetch()) {
-                $update = $db->prepare('UPDATE angina_stroke_screening SET q1_chest_discomfort=:q1, q2_pain_location_left_arm_neck_back=:q2, q3_pain_on_exertion=:q3, q4_pain_relieved_by_rest_or_nitro=:q4, q5_pain_lasting_10min_plus=:q5, q6_pain_front_of_chest_half_hour=:q6, screen_positive=:sp, needs_doctor_referral=:ndr WHERE cvd_id=:cvd_id');
-                $update->execute([':q1'=>$vals['q1_chest_discomfort'],':q2'=>$vals['q2_pain_location_left_arm_neck_back'],':q3'=>$vals['q3_pain_on_exertion'],':q4'=>$vals['q4_pain_relieved_by_rest_or_nitro'],':q5'=>$vals['q5_pain_lasting_10min_plus'],':q6'=>$vals['q6_pain_front_of_chest_half_hour'],':sp'=>$vals['screen_positive'],':ndr'=>$vals['needs_doctor_referral'],':cvd_id'=>$cvd_id]);
-            } else {
-                $ins = $db->prepare('INSERT INTO angina_stroke_screening (cvd_id, q1_chest_discomfort, q2_pain_location_left_arm_neck_back, q3_pain_on_exertion, q4_pain_relieved_by_rest_or_nitro, q5_pain_lasting_10min_plus, q6_pain_front_of_chest_half_hour, screen_positive, needs_doctor_referral, created_at) VALUES (:cvd_id,:q1,:q2,:q3,:q4,:q5,:q6,:sp,:ndr,NOW())');
-                $ins->execute([':cvd_id'=>$cvd_id,':q1'=>$vals['q1_chest_discomfort'],':q2'=>$vals['q2_pain_location_left_arm_neck_back'],':q3'=>$vals['q3_pain_on_exertion'],':q4'=>$vals['q4_pain_relieved_by_rest_or_nitro'],':q5'=>$vals['q5_pain_lasting_10min_plus'],':q6'=>$vals['q6_pain_front_of_chest_half_hour'],':sp'=>$vals['screen_positive'],':ndr'=>$vals['needs_doctor_referral']]);
-            }
-            jsonResponse(['success'=>true,'cvd_id'=>$cvd_id]);
-            break;
-
-        case 'save_diabetes':
-            $cvd_id = ensureAssessment($db, $person_id, $user_id);
-
-            // Parse posted values robustly: radio inputs may post '0' or '1', so cast when present.
-            $boolFields = ['known_diabetes','on_medications','family_history','polyuria','polydipsia','polyphagia','weight_loss','urine_ketone','urine_protein','screen_positive'];
-            $vals = [];
-            foreach ($boolFields as $f) {
-                if (isset($_POST[$f])) {
-                    $vals[$f] = (int)$_POST[$f];
-                } else {
-                    $vals[$f] = null;
-                }
+            if ($existing) {
+                $this->model->updateVitalsByCvdId($cvd_id, $merged);
+            } elseif ($anyNonNull) {
+                $this->model->insertVitals($cvd_id, $merged);
             }
 
-            // Numeric fields
-            $vals['rbs_mg_dl'] = $_POST['rbs_mg_dl'] ?? null;
-            $vals['fbs_mg_dl'] = $_POST['fbs_mg_dl'] ?? null;
-            $vals['hba1c_percent'] = $_POST['hba1c_percent'] ?? null;
-
-            // Append a new diabetes screening record instead of updating the existing one.
-            // This preserves history for the assessment. If you prefer deduplication, we can
-            // change this behavior later.
-            // Use INSERT ... ON DUPLICATE KEY UPDATE to avoid unique-key errors
-            $ins = $db->prepare('INSERT INTO diabetes_screening (cvd_id, known_diabetes, on_medications, family_history, polyuria, polydipsia, polyphagia, weight_loss, rbs_mg_dl, fbs_mg_dl, hba1c_percent, urine_ketone, urine_protein, screen_positive, created_at) VALUES (:cvd_id,:known_diabetes,:on_medications,:family_history,:polyuria,:polydipsia,:polyphagia,:weight_loss,:rbs_mg_dl,:fbs_mg_dl,:hba1c_percent,:urine_ketone,:urine_protein,:screen_positive,NOW()) ON DUPLICATE KEY UPDATE known_diabetes=VALUES(known_diabetes), on_medications=VALUES(on_medications), family_history=VALUES(family_history), polyuria=VALUES(polyuria), polydipsia=VALUES(polydipsia), polyphagia=VALUES(polyphagia), weight_loss=VALUES(weight_loss), rbs_mg_dl=VALUES(rbs_mg_dl), fbs_mg_dl=VALUES(fbs_mg_dl), hba1c_percent=VALUES(hba1c_percent), urine_ketone=VALUES(urine_ketone), urine_protein=VALUES(urine_protein), screen_positive=VALUES(screen_positive), created_at=VALUES(created_at)');
-            $ins->execute([
-                ':cvd_id' => $cvd_id,
-                ':known_diabetes' => $vals['known_diabetes'],
-                ':on_medications' => $vals['on_medications'],
-                ':family_history' => $vals['family_history'],
-                ':polyuria' => $vals['polyuria'],
-                ':polydipsia' => $vals['polydipsia'],
-                ':polyphagia' => $vals['polyphagia'],
-                ':weight_loss' => $vals['weight_loss'],
-                ':rbs_mg_dl' => $vals['rbs_mg_dl'],
-                ':fbs_mg_dl' => $vals['fbs_mg_dl'],
-                ':hba1c_percent' => $vals['hba1c_percent'],
-                ':urine_ketone' => $vals['urine_ketone'],
-                ':urine_protein' => $vals['urine_protein'],
-                ':screen_positive' => $vals['screen_positive']
-            ]);
-
-            jsonResponse(['success'=>true,'cvd_id'=>$cvd_id]);
-            break;
-
-        case 'save_family_history':
-            $cvd_id = ensureAssessment($db, $person_id, $user_id);
-            $fields = ['hypertension','stroke','heart_attack','asthma','diabetes','cancer','kidney_disease'];
-            $recorded_at = date('Y-m-d');
-            $vals=[]; foreach($fields as $f) { $vals[$f] = isset($_POST[$f]) ? 1 : 0; }
-
-            // insert or update health_family_history unique (person_id, recorded_at)
-            $ins = $db->prepare('INSERT INTO health_family_history (person_id, hypertension, stroke, heart_attack, asthma, diabetes, cancer, kidney_disease, recorded_at) VALUES (:person_id,:hypertension,:stroke,:heart_attack,:asthma,:diabetes,:cancer,:kidney_disease,:recorded_at) ON DUPLICATE KEY UPDATE hypertension=VALUES(hypertension), stroke=VALUES(stroke), heart_attack=VALUES(heart_attack), asthma=VALUES(asthma), diabetes=VALUES(diabetes), cancer=VALUES(cancer), kidney_disease=VALUES(kidney_disease)');
-            $ins->execute([':person_id'=>$person_id,':hypertension'=>$vals['hypertension'],':stroke'=>$vals['stroke'],':heart_attack'=>$vals['heart_attack'],':asthma'=>$vals['asthma'],':diabetes'=>$vals['diabetes'],':cancer'=>$vals['cancer'],':kidney_disease'=>$vals['kidney_disease'],':recorded_at'=>$recorded_at]);
-            jsonResponse(['success'=>true,'cvd_id'=>$cvd_id]);
-            break;
-
-        case 'save_family':
-            $cvd_id = ensureAssessment($db, $person_id, $user_id);
-            // families table expects household_id - we will attempt to find or create a household for this person
-            $household_id = null;
-            // try to get household via persons.family_id -> families.household_id
-            $p = $db->prepare('SELECT family_id FROM persons WHERE id = :person_id');
-            $p->execute([':person_id'=>$person_id]);
-            $pf = $p->fetch();
-            if ($pf && $pf['family_id']) {
-                $f = $db->prepare('SELECT household_id FROM families WHERE id = :family_id');
-                $f->execute([':family_id'=>$pf['family_id']]);
-                $fr = $f->fetch();
-                if ($fr) $household_id = $fr['household_id'];
-            }
-            // fallback: use first household
-            if (!$household_id) {
-                $h = $db->query('SELECT id FROM households LIMIT 1')->fetch();
-                $household_id = $h['id'] ?? null;
-            }
-
-            $family_number = $_POST['family_number'] ?? null;
-            $residency_status = $_POST['residency_status'] ?? null;
-            $length_of_residency_months = $_POST['length_of_residency_months'] ?? null;
-            $email = $_POST['email'] ?? null;
-            $survey_date = date('Y-m-d');
-
-            // Insert family record without head_person_id (DB trigger requires head_person_id be set after insert)
-            try {
-                $db->beginTransaction();
-                $ins = $db->prepare('INSERT INTO families (household_id, family_number, residency_status, length_of_residency_months, email, survey_date, created_at) VALUES (:household_id,:family_number,:residency_status,:length_of_residency_months,:email,:survey_date,NOW())');
-                $ins->execute([':household_id'=>$household_id,':family_number'=>$family_number,':residency_status'=>$residency_status,':length_of_residency_months'=>$length_of_residency_months,':email'=>$email,':survey_date'=>$survey_date]);
-                $family_id = $db->lastInsertId();
-
-                // Associate person -> family (set persons.family_id) so the subsequent UPDATE to families.head_person_id passes the trigger check
-                $updPerson = $db->prepare('UPDATE persons SET family_id = :family_id, updated_at = NOW() WHERE id = :person_id');
-                $updPerson->execute([':family_id'=>$family_id, ':person_id'=>$person_id]);
-
-                // Now safely set head_person_id on the families row
-                $updFamily = $db->prepare('UPDATE families SET head_person_id = :person_id WHERE id = :family_id');
-                $updFamily->execute([':person_id'=>$person_id, ':family_id'=>$family_id]);
-
-                $db->commit();
-            } catch (Exception $e) {
-                if ($db->inTransaction()) $db->rollBack();
-                throw $e;
-            }
-
-            jsonResponse(['success'=>true,'cvd_id'=>$cvd_id]);
-            break;
-
-        case 'save_household':
-            $cvd_id = ensureAssessment($db, $person_id, $user_id);
-            // Save basic household info; if household exists update it, else create new and associate family
-            $p = $db->prepare('SELECT family_id FROM persons WHERE id = :person_id');
-            $p->execute([':person_id'=>$person_id]);
-            $pf = $p->fetch();
-            // Build combined address from the separate address fields submitted by the form
-            $house_no = trim($_POST['address_house_no'] ?? '');
-            $street = trim($_POST['address_street'] ?? '');
-            $subdivision = trim($_POST['address_sitio_subdivision'] ?? '');
-            $building = trim($_POST['address_building'] ?? '');
-            $addressParts = [];
-            if ($house_no !== '') $addressParts[] = $house_no;
-            if ($street !== '') $addressParts[] = $street;
-            $subParts = [];
-            if ($subdivision !== '') $subParts[] = $subdivision;
-            if ($building !== '') $subParts[] = $building;
-            if (count($subParts) > 0) $addressParts[] = implode(' / ', $subParts);
-            $combinedAddress = count($addressParts) > 0 ? implode(', ', $addressParts) : null;
-
-            // Normalize incoming purok selection: the view now posts purok_id (numeric). If legacy 'purok_sitio' is present, try to map it.
-            $purok_id = null;
-            if (isset($_POST['purok_id']) && $_POST['purok_id'] !== '') {
-                $purok_id = (int)$_POST['purok_id'];
-            } elseif (isset($_POST['purok_sitio']) && $_POST['purok_sitio'] !== '') {
-                // legacy: try to map code to id by looking up puroks.name LIKE value or code...
-                $code = trim($_POST['purok_sitio']);
-                // Attempt to find by name or by containing code in parentheses (best-effort)
-                $stmtp = $db->prepare('SELECT id FROM puroks WHERE name = :name LIMIT 1');
-                $stmtp->execute([':name' => $code]);
-                $r = $stmtp->fetch(PDO::FETCH_ASSOC);
-                if ($r) $purok_id = (int)$r['id'];
-            }
-
-            $household_fields = ['purok_id','household_no','address','latitude','longitude','home_ownership','home_ownership_other','construction_material','construction_material_other','lighting_facility','lighting_facility_other','water_level','water_source','water_storage','drinking_water_other_source','garbage_container','garbage_segregated','garbage_disposal_method','garbage_disposal_other','toilet_type','toilet_type_other'];
-            $vals = [];
-            foreach ($household_fields as $hf) {
-                // address and purok_id are assembled from separate fields
-                if ($hf === 'address') {
-                    $vals['address'] = $combinedAddress;
-                    continue;
-                }
-                if ($hf === 'purok_id') {
-                    $vals['purok_id'] = $purok_id;
-                    continue;
-                }
-                $vals[$hf] = $_POST[$hf] ?? null;
-            }
-
-            if ($pf && $pf['family_id']) {
-                // find household id from families
-                $f = $db->prepare('SELECT household_id FROM families WHERE id = :family_id');
-                $f->execute([':family_id'=>$pf['family_id']]);
-                $fr = $f->fetch();
-                if ($fr && $fr['household_id']) {
-                    $update_sql = 'UPDATE households SET address=:address, household_no=:household_no, purok_id=:purok_id, latitude=:latitude, longitude=:longitude, home_ownership=:home_ownership, home_ownership_other=:home_ownership_other, construction_material=:construction_material, construction_material_other=:construction_material_other, lighting_facility=:lighting_facility, lighting_facility_other=:lighting_facility_other, water_level=:water_level, water_source=:water_source, water_storage=:water_storage, drinking_water_other_source=:drinking_water_other_source, garbage_container=:garbage_container, garbage_segregated=:garbage_segregated, garbage_disposal_method=:garbage_disposal_method, garbage_disposal_other=:garbage_disposal_other, toilet_type=:toilet_type, toilet_type_other=:toilet_type_other, updated_at=NOW() WHERE id=:hid';
-                    $stmt = $db->prepare($update_sql);
-                    $stmt->execute(array_merge([
-                        ':address'=>$vals['address'], ':household_no'=>$vals['household_no'], ':purok_id'=>$vals['purok_id'], ':latitude'=>$vals['latitude'], ':longitude'=>$vals['longitude'], ':home_ownership'=>$vals['home_ownership'], ':home_ownership_other'=>$vals['home_ownership_other'], ':construction_material'=>$vals['construction_material'], ':construction_material_other'=>$vals['construction_material_other'], ':lighting_facility'=>$vals['lighting_facility'], ':lighting_facility_other'=>$vals['lighting_facility_other'], ':water_level'=>$vals['water_level'], ':water_source'=>$vals['water_source'], ':water_storage'=>$vals['water_storage'], ':drinking_water_other_source'=>$vals['drinking_water_other_source'], ':garbage_container'=>$vals['garbage_container'], ':garbage_segregated'=>$vals['garbage_segregated'], ':garbage_disposal_method'=>$vals['garbage_disposal_method'], ':garbage_disposal_other'=>$vals['garbage_disposal_other'], ':toilet_type'=>$vals['toilet_type'], ':toilet_type_other'=>$vals['toilet_type_other']
-                    ], [':hid'=>$fr['household_id']]));
-                    jsonResponse(['success'=>true,'cvd_id'=>$cvd_id]);
-                }
-            }
-
-            // otherwise create a new household
-            $ins_sql = 'INSERT INTO households (purok_id, household_no, address, latitude, longitude, home_ownership, home_ownership_other, construction_material, construction_material_other, lighting_facility, lighting_facility_other, water_level, water_source, water_storage, drinking_water_other_source, garbage_container, garbage_segregated, garbage_disposal_method, garbage_disposal_other, toilet_type, toilet_type_other, created_at) VALUES (:purok_id,:household_no,:address,:latitude,:longitude,:home_ownership,:home_ownership_other,:construction_material,:construction_material_other,:lighting_facility,:lighting_facility_other,:water_level,:water_source,:water_storage,:drinking_water_other_source,:garbage_container,:garbage_segregated,:garbage_disposal_method,:garbage_disposal_other,:toilet_type,:toilet_type_other,NOW())';
-            $stmt = $db->prepare($ins_sql);
-            $stmt->execute([
-                ':purok_id'=>$vals['purok_id'], ':household_no'=>$vals['household_no'], ':address'=>$vals['address'], ':latitude'=>$vals['latitude'], ':longitude'=>$vals['longitude'], ':home_ownership'=>$vals['home_ownership'], ':home_ownership_other'=>$vals['home_ownership_other'], ':construction_material'=>$vals['construction_material'], ':construction_material_other'=>$vals['construction_material_other'], ':lighting_facility'=>$vals['lighting_facility'], ':lighting_facility_other'=>$vals['lighting_facility_other'], ':water_level'=>$vals['water_level'], ':water_source'=>$vals['water_source'], ':water_storage'=>$vals['water_storage'], ':drinking_water_other_source'=>$vals['drinking_water_other_source'], ':garbage_container'=>$vals['garbage_container'], ':garbage_segregated'=>$vals['garbage_segregated'], ':garbage_disposal_method'=>$vals['garbage_disposal_method'], ':garbage_disposal_other'=>$vals['garbage_disposal_other'], ':toilet_type'=>$vals['toilet_type'], ':toilet_type_other'=>$vals['toilet_type_other']
-            ]);
-            $new_hid = $db->lastInsertId();
-            // Create a family record linking the person to this household. Follow trigger rules: insert without head_person_id,
-            // then set persons.family_id and update families.head_person_id.
-            try {
-                $db->beginTransaction();
-                $insf = $db->prepare('INSERT INTO families (household_id, family_number, created_at) VALUES (:hid, NULL, NOW())');
-                $insf->execute([':hid'=>$new_hid]);
-                $new_fid = $db->lastInsertId();
-
-                // Associate person with this new family
-                $updPerson = $db->prepare('UPDATE persons SET family_id = :family_id, updated_at = NOW() WHERE id = :person_id');
-                $updPerson->execute([':family_id'=>$new_fid, ':person_id'=>$person_id]);
-
-                // Now set the family's head_person_id
-                $updFamily = $db->prepare('UPDATE families SET head_person_id = :person_id WHERE id = :family_id');
-                $updFamily->execute([':person_id'=>$person_id, ':family_id'=>$new_fid]);
-
-                $db->commit();
-            } catch (Exception $e) {
-                if ($db->inTransaction()) $db->rollBack();
-                throw $e;
-            }
-
-            jsonResponse(['success'=>true,'cvd_id'=>$cvd_id]);
-            break;
-
-        case 'save_lifestyle':
-            $cvd_id = ensureAssessment($db, $person_id, $user_id);
-            $fields = ['smoking_status','smoking_comments','alcohol_use','excessive_alcohol','alcohol_notes','eats_processed_weekly','fruits_3_servings_daily','vegetables_3_servings_daily','exercise_days_per_week','exercise_minutes_per_day','exercise_intensity'];
-            $vals = [];
-            foreach ($fields as $f) $vals[$f] = $_POST[$f] ?? null;
-            $exists = $db->prepare('SELECT id FROM lifestyle_risk WHERE cvd_id = :cvd_id LIMIT 1');
-            $exists->execute([':cvd_id'=>$cvd_id]);
-            if ($exists->fetch()) {
-                $update = $db->prepare('UPDATE lifestyle_risk SET smoking_status=:smoking_status, smoking_comments=:smoking_comments, alcohol_use=:alcohol_use, excessive_alcohol=:excessive_alcohol, alcohol_notes=:alcohol_notes, eats_processed_weekly=:eats_processed_weekly, fruits_3_servings_daily=:fruits_3_servings_daily, vegetables_3_servings_daily=:vegetables_3_servings_daily, exercise_days_per_week=:exercise_days_per_week, exercise_minutes_per_day=:exercise_minutes_per_day, exercise_intensity=:exercise_intensity WHERE cvd_id=:cvd_id');
-                $update->execute([
-                    ':smoking_status'=>$vals['smoking_status'],':smoking_comments'=>$vals['smoking_comments'],':alcohol_use'=>$vals['alcohol_use'],':excessive_alcohol'=>$vals['excessive_alcohol'],':alcohol_notes'=>$vals['alcohol_notes'],':eats_processed_weekly'=>$vals['eats_processed_weekly'],':fruits_3_servings_daily'=>$vals['fruits_3_servings_daily'],':vegetables_3_servings_daily'=>$vals['vegetables_3_servings_daily'],':exercise_days_per_week'=>$vals['exercise_days_per_week'],':exercise_minutes_per_day'=>$vals['exercise_minutes_per_day'],':exercise_intensity'=>$vals['exercise_intensity'],':cvd_id'=>$cvd_id
-                ]);
-            } else {
-                $ins = $db->prepare('INSERT INTO lifestyle_risk (cvd_id, smoking_status, smoking_comments, alcohol_use, excessive_alcohol, alcohol_notes, eats_processed_weekly, fruits_3_servings_daily, vegetables_3_servings_daily, exercise_days_per_week, exercise_minutes_per_day, exercise_intensity) VALUES (:cvd_id,:smoking_status,:smoking_comments,:alcohol_use,:excessive_alcohol,:alcohol_notes,:eats_processed_weekly,:fruits_3_servings_daily,:vegetables_3_servings_daily,:exercise_days_per_week,:exercise_minutes_per_day,:exercise_intensity)');
-                $ins->execute([':cvd_id'=>$cvd_id,':smoking_status'=>$vals['smoking_status'],':smoking_comments'=>$vals['smoking_comments'],':alcohol_use'=>$vals['alcohol_use'],':excessive_alcohol'=>$vals['excessive_alcohol'],':alcohol_notes'=>$vals['alcohol_notes'],':eats_processed_weekly'=>$vals['eats_processed_weekly'],':fruits_3_servings_daily'=>$vals['fruits_3_servings_daily'],':vegetables_3_servings_daily'=>$vals['vegetables_3_servings_daily'],':exercise_days_per_week'=>$vals['exercise_days_per_week'],':exercise_minutes_per_day'=>$vals['exercise_minutes_per_day'],':exercise_intensity'=>$vals['exercise_intensity']]);
-            }
-            jsonResponse(['success'=>true,'cvd_id'=>$cvd_id]);
-            break;
-
-        default:
-            jsonResponse(['success'=>false,'message'=>'Unknown action']);
+            $capt = ob_get_clean();
+            // inside save_vitals_action() after $capt = ob_get_clean();
+            $resp = ['success' => true, 'cvd_id' => $cvd_id, 'message' => 'Saved successfully'];
+            if ($capt !== '') $resp['debug_output'] = substr($capt, 0, 20000);
+            $this->jsonResponse($resp);
+        } catch (\Throwable $ex) {
+            $capt = ob_get_clean();
+            $debug = [
+                'exception' => $ex->getMessage(),
+                'file' => $ex->getFile(),
+                'line' => $ex->getLine()
+            ];
+            if ($capt !== '') $debug['captured_output'] = substr($capt, 0, 20000);
+            $this->jsonResponse(['success' => false, 'message' => 'Server error', 'debug' => $debug], 500);
+        }
     }
-} catch (PDOException $ex) {
-    jsonResponse(['success'=>false,'message'=>'Database error: '.$ex->getMessage()]);
+
+    public function save_vitals_action()
+    {
+        ob_start();
+        try {
+            $this->requireLoggedIn();
+            $person_id = $_SESSION['person_id'] ?? null;
+            $user_id = $_SESSION['user_id'] ?? null;
+            if (!$person_id) $this->jsonResponse(['success' => false, 'message' => 'Person not in session'], 400);
+
+            $cvd_id = $this->ensureAssessment($person_id, $user_id);
+
+            $fields = ['height_cm','weight_kg','bmi','waist_circumference_cm','bp_systolic','bp_diastolic','pulse','temperature_c','respiratory_rate'];
+
+            // Fetch existing row to preserve values when not provided by POST
+            $existing = $this->model->getVitalsByCvdId($cvd_id);
+
+            $merged = [];
+            foreach ($fields as $f) {
+                if (isset($_POST[$f]) && $_POST[$f] !== '') {
+                    $merged[$f] = $_POST[$f];
+                } elseif ($existing && array_key_exists($f, $existing)) {
+                    $merged[$f] = $existing[$f];
+                } else {
+                    $merged[$f] = null;
+                }
+            }
+
+            // Only insert/update if there's some real data to store or if a row already exists
+            $anyNonNull = false;
+            foreach ($merged as $v) {
+                if ($v !== null && $v !== '') { $anyNonNull = true; break; }
+            }
+
+            if ($existing) {
+                $this->model->updateVitalsByCvdId($cvd_id, $merged);
+            } elseif ($anyNonNull) {
+                $this->model->insertVitals($cvd_id, $merged);
+            }
+
+            $capt = ob_get_clean();
+            $resp = ['success' => true, 'cvd_id' => $cvd_id, 'message' => 'Saved successfully'];
+            if ($capt !== '') $resp['debug_output'] = substr($capt, 0, 20000);
+            $this->jsonResponse($resp);
+        } catch (\Throwable $ex) {
+            $capt = ob_get_clean();
+            $debug = [
+                'exception' => $ex->getMessage(),
+                'file' => $ex->getFile(),
+                'line' => $ex->getLine()
+            ];
+            if ($capt !== '') $debug['captured_output'] = substr($capt, 0, 20000);
+            $this->jsonResponse(['success' => false, 'message' => 'Server error', 'debug' => $debug], 500);
+        }
+    }
+
+
+    /**
+     * Save angina action
+     */
+    public function save_angina_action()
+    {
+        $this->requireLoggedIn();
+        $person_id = $_SESSION['person_id'] ?? null;
+        $user_id = $_SESSION['user_id'] ?? null;
+        if (!$person_id) $this->jsonResponse(['success' => false, 'message' => 'Person not in session'], 400);
+
+        $cvd_id = $this->ensureAssessment($person_id, $user_id);
+        $qfields = ['q1_chest_discomfort','q2_pain_location_left_arm_neck_back','q3_pain_on_exertion','q4_pain_relieved_by_rest_or_nitro','q5_pain_lasting_10min_plus','q6_pain_front_of_chest_half_hour','screen_positive','needs_doctor_referral'];
+        $vals = [];
+        foreach ($qfields as $q) $vals[$q] = isset($_POST[$q]) ? (int)$_POST[$q] : 0;
+        $this->model->upsertAnginaStroke($cvd_id, [
+            ':q1' => $vals['q1_chest_discomfort'],
+            ':q2' => $vals['q2_pain_location_left_arm_neck_back'],
+            ':q3' => $vals['q3_pain_on_exertion'],
+            ':q4' => $vals['q4_pain_relieved_by_rest_or_nitro'],
+            ':q5' => $vals['q5_pain_lasting_10min_plus'],
+            ':q6' => $vals['q6_pain_front_of_chest_half_hour'],
+            ':sp' => $vals['screen_positive'],
+            ':ndr' => $vals['needs_doctor_referral']
+        ]);
+        $this->jsonResponse(['success'=>true,'cvd_id'=>$cvd_id, 'message' => 'Saved Successfully']);
+    }
+
+    /**
+     * Save diabetes action
+     */
+    public function save_diabetes_action()
+    {
+        $this->requireLoggedIn();
+        $person_id = $_SESSION['person_id'] ?? null;
+        $user_id = $_SESSION['user_id'] ?? null;
+        if (!$person_id) $this->jsonResponse(['success' => false, 'message' => 'Person not in session'], 400);
+
+        $cvd_id = $this->ensureAssessment($person_id, $user_id);
+
+        $boolFields = ['known_diabetes','on_medications','family_history','polyuria','polydipsia','polyphagia','weight_loss','urine_ketone','urine_protein','screen_positive'];
+        $vals = [];
+        foreach ($boolFields as $f) $vals[":$f"] = isset($_POST[$f]) ? (int)$_POST[$f] : null;
+
+        $vals[':rbs_mg_dl'] = $_POST['rbs_mg_dl'] ?? null;
+        $vals[':fbs_mg_dl'] = $_POST['fbs_mg_dl'] ?? null;
+        $vals[':hba1c_percent'] = $_POST['hba1c_percent'] ?? null;
+
+        $this->model->upsertDiabetesScreening($cvd_id, array_merge([
+            ':known_diabetes' => $vals[':known_diabetes'],
+            ':on_medications' => $vals[':on_medications'],
+            ':family_history' => $vals[':family_history'],
+            ':polyuria' => $vals[':polyuria'],
+            ':polydipsia' => $vals[':polydipsia'],
+            ':polyphagia' => $vals[':polyphagia'],
+            ':weight_loss' => $vals[':weight_loss'],
+            ':urine_ketone' => $vals[':urine_ketone'],
+            ':urine_protein' => $vals[':urine_protein'],
+            ':screen_positive' => $vals[':screen_positive'],
+        ], [
+            ':rbs_mg_dl' => $vals[':rbs_mg_dl'],
+            ':fbs_mg_dl' => $vals[':fbs_mg_dl'],
+            ':hba1c_percent' => $vals[':hba1c_percent']
+        ]));
+
+        $this->jsonResponse(['success'=>true,'cvd_id'=>$cvd_id, 'message' => 'Saved Successfully']);
+    }
+
+    /**
+     * Save family history
+     */
+    public function save_family_history_action()
+    {
+        $this->requireLoggedIn();
+        $person_id = $_SESSION['person_id'] ?? null;
+        $user_id = $_SESSION['user_id'] ?? null;
+        if (!$person_id) $this->jsonResponse(['success' => false, 'message' => 'Person not in session'], 400);
+
+        $cvd_id = $this->ensureAssessment($person_id, $user_id);
+        $fields = ['hypertension','stroke','heart_attack','asthma','diabetes','cancer','kidney_disease'];
+        $vals = [];
+        foreach ($fields as $f) $vals[$f] = isset($_POST[$f]) ? 1 : 0;
+        $recorded_at = date('Y-m-d');
+
+        $this->model->upsertHealthFamilyHistory($person_id, $vals, $recorded_at);
+        $this->jsonResponse(['success'=>true,'cvd_id'=>$cvd_id]);
+    }
+
+    /**
+     * Save lifestyle
+     */
+    public function save_lifestyle_action()
+    {
+        $this->requireLoggedIn();
+        $person_id = $_SESSION['person_id'] ?? null;
+        $user_id = $_SESSION['user_id'] ?? null;
+        if (!$person_id) $this->jsonResponse(['success' => false, 'message' => 'Person not in session'], 400);
+
+        $cvd_id = $this->ensureAssessment($person_id, $user_id);
+        $fields = ['smoking_status','smoking_comments','alcohol_use','excessive_alcohol','alcohol_notes','eats_processed_weekly','fruits_3_servings_daily','vegetables_3_servings_daily','exercise_days_per_week','exercise_minutes_per_day','exercise_intensity'];
+        $vals = [];
+        foreach ($fields as $f) $vals[":$f"] = $_POST[$f] ?? null;
+
+        $this->model->upsertLifestyle($cvd_id, [
+            ':smoking_status'=>$vals[':smoking_status'],
+            ':smoking_comments'=>$vals[':smoking_comments'],
+            ':alcohol_use'=>$vals[':alcohol_use'],
+            ':excessive_alcohol'=>$vals[':excessive_alcohol'],
+            ':alcohol_notes'=>$vals[':alcohol_notes'],
+            ':eats_processed_weekly'=>$vals[':eats_processed_weekly'],
+            ':fruits_3_servings_daily'=>$vals[':fruits_3_servings_daily'],
+            ':vegetables_3_servings_daily'=>$vals[':vegetables_3_servings_daily'],
+            ':exercise_days_per_week'=>$vals[':exercise_days_per_week'],
+            ':exercise_minutes_per_day'=>$vals[':exercise_minutes_per_day'],
+            ':exercise_intensity'=>$vals[':exercise_intensity']
+        ]);
+
+        $this->jsonResponse(['success'=>true,'cvd_id'=>$cvd_id]);
+    }
+
+    /**
+     * Search persons (AJAX)
+     */
+    public function search_persons_action()
+    {
+        $this->requireLoggedIn();
+        $q = trim($_GET['q'] ?? '');
+        if ($q === '') $this->jsonResponse(['success' => true, 'data' => []]);
+        $rows = $this->model->searchPersons($q, 30);
+        $out = [];
+        foreach ($rows as $r) {
+            $full = trim(($r['first_name'] ?? '') . ' ' . ($r['middle_name'] ?? '') . ' ' . ($r['last_name'] ?? ''));
+            $meta = $r['birthdate'] ? date('M d, Y', strtotime($r['birthdate'])) : '';
+            $out[] = ['id' => (int)$r['id'], 'full_name' => $full, 'meta' => $meta];
+        }
+        $this->jsonResponse(['success' => true, 'data' => $out]);
+    }
+
+    public function add_family_member_action()
+    {
+        $this->requireLoggedIn();
+        $person_id = $_SESSION['person_id'] ?? null;
+        if (!$person_id) $this->jsonResponse(['success' => false, 'message' => 'Not logged in'], 401);
+
+        $member_person_id = $_POST['member_person_id'] ?? null;
+        $relationship = $_POST['relationship'] ?? null;
+
+        if (!$member_person_id || !$relationship) {
+            $this->jsonResponse(['success' => false, 'message' => 'Missing parameters'], 400);
+        }
+
+        $ok = $this->model->syncRelationship((int)$person_id, (int)$member_person_id, $relationship);
+        if ($ok) {
+            $this->jsonResponse(['success' => true, 'message' => 'Family member added']);
+        } else {
+            $this->jsonResponse(['success' => false, 'message' => 'Failed to add family member'], 500);
+        }
+    }
+
+    public function remove_family_member_action()
+    {
+        $this->requireLoggedIn();
+        $person_id = $_SESSION['person_id'] ?? null;
+        if (!$person_id) $this->jsonResponse(['success' => false, 'message' => 'Not logged in'], 401);
+
+        $member_person_id = $_POST['member_person_id'] ?? null;
+        if (!$member_person_id) {
+            $this->jsonResponse(['success' => false, 'message' => 'Missing member ID'], 400);
+        }
+
+        $ok = $this->model->deletePersonRelationshipPair((int)$person_id, (int)$member_person_id);
+        if ($ok) {
+            $this->jsonResponse(['success' => true, 'message' => 'Family member removed']);
+        } else {
+            $this->jsonResponse(['success' => false, 'message' => 'Failed to remove family member'], 500);
+        }
+    }
+
+    public function save_family_action()
+    {
+        $this->requireLoggedIn();
+        $person_id = $_SESSION['person_id'] ?? null;
+        if (!$person_id) $this->jsonResponse(['success' => false, 'message' => 'Not logged in'], 401);
+
+        $family_members_json = $_POST['family_members'] ?? '[]';
+        $members = json_decode($family_members_json, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE || !is_array($members)) {
+            $this->jsonResponse(['success' => false, 'message' => 'Invalid family members data'], 400);
+            return;
+        }
+
+        $existing = $this->model->getPersonRelationships($person_id);
+        $posted_ids = array_map(function ($m) {
+            return (int)$m['id'];
+        }, $members);
+
+        // Removals
+        foreach ($existing as $rel_id => $rel_type) {
+            if (!in_array($rel_id, $posted_ids)) {
+                $this->model->deletePersonRelationshipPair((int)$person_id, (int)$rel_id);
+            }
+        }
+
+        // Additions/Updates
+        foreach ($members as $m) {
+            $rel_id = (int)$m['id'];
+            $existing_rel_type = $existing[$rel_id] ?? null;
+            $rel_type = $m['relationship'] ?? 'other';
+            // Sync only if it's a new relationship or the type has changed
+            if ($existing_rel_type === null || $existing_rel_type !== $rel_type)
+            if ($rel_id === $person_id) continue;
+            $this->model->syncRelationship($person_id, $rel_id, $rel_type);
+        }
+
+        $this->jsonResponse(['success' => true, 'message' => 'Family members updated']);
+    }
+
+    /**
+     * Get person relationships (AJAX)
+     */
+    public function get_person_relationships_action()
+    {
+        $this->requireLoggedIn();
+        $for = isset($_GET['person_id']) && is_numeric($_GET['person_id']) ? (int)$_GET['person_id'] : ($_SESSION['person_id'] ?? null);
+        if (!$for) $this->jsonResponse(['success' => false, 'message' => 'person_id missing'], 400);
+
+        $debug = isset($_GET['debug']) && in_array($_GET['debug'], ['1','true','yes'], true);
+        $rowsRes = $this->model->getRelationshipsForPerson($for, $debug);
+        if ($debug && is_array($rowsRes) && array_key_exists('rows', $rowsRes)) {
+            $rows = $rowsRes['rows'];
+            $rel_sql_info = $rowsRes['sqls'] ?? null;
+        } else {
+            $rows = $rowsRes;
+            $rel_sql_info = null;
+        }
+        $data = [];
+        $relatedIds = [];
+        foreach ($rows as $r) {
+            $full = trim(($r['first_name'] ?? '') . ' ' . ($r['middle_name'] ?? '') . ' ' . ($r['last_name'] ?? ''));
+            $relatedIds[] = (int)$r['id'];
+            $data[] = [
+                'id' => (int)$r['id'],
+                'full_name' => $full,
+                'relationship_type' => $r['relationship_type'],
+                'family_id' => $r['family_id'],
+                'is_inverse' => (int)$r['is_inverse'],
+                'sex' => $r['sex'] ?? null
+            ];
+        }
+
+        $edges = [];
+        $allIds = $relatedIds;
+        if (!in_array($for, $allIds)) $allIds[] = $for;
+        if (count($allIds) > 0) {
+            $edgesRes = $this->model->getEdgesForNodeList($allIds, $debug);
+            if ($debug && is_array($edgesRes) && array_key_exists('edges', $edgesRes)) {
+                $edges = $edgesRes['edges'];
+                $edges_sql_info = ['sql' => $edgesRes['sql'], 'params' => $edgesRes['params']];
+            } else {
+                $edges = $edgesRes;
+                $edges_sql_info = null;
+            }
+            // Normalize types and ints
+            foreach ($edges as &$e) {
+                $e['person_id'] = (int)$e['person_id'];
+                $e['related_person_id'] = (int)$e['related_person_id'];
+            }
+        } else {
+            $edges_sql_info = null;
+        }
+
+        $resp = ['success' => true, 'data' => $data, 'edges' => $edges];
+        if ($debug) {
+            $resp['debug_sql'] = ['relationships' => $rel_sql_info, 'edges' => $edges_sql_info];
+        }
+        $this->jsonResponse($resp);
+    }
+
+    /**
+     * Get next household number
+     */
+    public function next_household_no_action()
+    {
+        $this->requireLoggedIn();
+        $purok_id = isset($_GET['purok_id']) && is_numeric($_GET['purok_id']) ? (int)$_GET['purok_id'] : null;
+        $code = isset($_GET['code']) ? trim($_GET['code']) : null;
+        if (!$purok_id && !$code) $this->jsonResponse(['success' => false, 'message' => 'purok_id or code required'], 400);
+        $res = $this->model->nextHouseholdNoByPurok($purok_id, $code);
+        $this->jsonResponse($res);
+    }
+
+    /**
+     * Save household and family info (final step)
+     */
+    public function save_household_action()
+    {
+        $this->requireLoggedIn();
+        $person_id = $_SESSION['person_id'] ?? null;
+        if (!$person_id) $this->jsonResponse(['success' => false, 'message' => 'Person not in session'], 400);
+
+        $use_head_address = isset($_POST['use_head_address']) ? (bool)(int)$_POST['use_head_address'] : true;
+
+        // --- Step 1: Find or Create Household and Family ---
+        $family_id = null;
+        $household_id = null;
+
+        // If user is part of a family and chooses to use the head's address, use existing family/household.
+        // Otherwise (if they are head, not in a family, or choose 'No'), create new ones.
+        if ($use_head_address) {
+            $family_id = $this->model->getFamilyIdForPerson($person_id);
+            if ($family_id) {
+                $household_id = $this->model->getHouseholdIdForFamily($family_id);
+            }
+        }
+
+        // If no household exists, create a minimal one first
+        $createdNewHousehold = false;
+        $createdNewFamily = false;
+        if (!$household_id) {
+            $household_id = $this->model->createMinimalHousehold();
+            $createdNewHousehold = true;
+        }
+
+        // If no family exists, create one and link it to the person and household
+        if (!$family_id) {
+            $family_id = $this->model->insertFamily(['household_id' => $household_id]);
+            $createdNewFamily = true;
+        }
+
+        // --- Step 2: Collect and Save Household Data ---
+        $household_fields = [
+            'purok_id', 'household_no', 'home_ownership', 'home_ownership_other',
+            'construction_material', 'construction_material_other', 'lighting_facility',
+            'lighting_facility_other', 'water_level', 'water_source', 'water_storage',
+            'drinking_water_other_source', 'garbage_container', 'garbage_segregated',
+            'garbage_disposal_method', 'garbage_disposal_other', 'toilet_type', 'toilet_type_other'
+        ];
+        $household_data = [];
+        foreach ($household_fields as $f) {
+            $household_data[$f] = $_POST[$f] ?? null;
+        }
+        // Construct the 'address' field from parts
+        $address_parts = [
+            $_POST['address_house_no'] ?? '',
+            $_POST['address_street'] ?? '',
+            $_POST['address_sitio_subdivision'] ?? '',
+            $_POST['address_building'] ?? ''
+        ];
+        $household_data['address'] = implode(', ', array_filter($address_parts));
+
+        $this->model->updateHousehold($household_id, $household_data);
+
+        // --- Step 3: Collect and Save Family Data ---
+        $family_fields = [
+            'family_number', 'residency_status', 'length_of_residency_months', 'email'
+        ];
+        $family_data = [];
+        foreach ($family_fields as $f) {
+            $family_data[$f] = $_POST[$f] ?? null;
+        }
+        $family_data['survey_date'] = date('Y-m-d');
+
+        $this->model->updateFamily($family_id, $family_data);
+
+        // If we created a new family/household for this person (they chose a new address),
+        // ensure the persons table reflects this: set their family_id, household_id and mark them head.
+        if ($createdNewFamily || $createdNewHousehold) {
+            try {
+                $this->model->setPersonFamily($person_id, $family_id);
+                $this->model->setPersonHousehold($person_id, $household_id);
+                $this->model->setPersonIsHead($person_id, true);
+                $this->model->setFamilyHead($family_id, $person_id);
+            } catch (\Throwable $ex) {
+                // Non-fatal: the survey succeeded; person update can be retried via admin tools.
+            }
+        }
+
+        $this->jsonResponse([
+            'success' => true,
+            'message' => 'Survey completed successfully!'
+        ]);
+    }
+
+    /**
+     * Small helper to ensure an assessment exists; returns cvd id
+     */
+    protected function ensureAssessment($person_id, $user_id = null)
+    {
+        $row = $this->model->getRecentAssessmentForPerson($person_id);
+        if ($row && !empty($row['id'])) return (int)$row['id'];
+        return $this->model->createAssessment($person_id);
+    }
 }

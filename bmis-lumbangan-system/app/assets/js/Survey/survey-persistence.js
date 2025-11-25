@@ -1,18 +1,21 @@
 /**
- * Survey Form Persistence with localStorage
- * Automatically saves form data as user types and restores it when they return
- * Clears all survey data on logout
+ * Survey Form Persistence with localStorage (per-person)
+ * Automatically saves form data as user types and restores it when they return.
+ * Per-person keys prevent leakage across accounts.
+ *
+ * To use: ensure your page injects window.CURRENT_PERSON_ID (person id from server)
+ * and window.BASE_URL / window.SURVEY_API (see footer-resident.php).
  */
-
 (function() {
     'use strict';
 
     const STORAGE_PREFIX = 'survey_';
-    const STORAGE_KEY_LIST = 'survey_form_keys';
+    const STORAGE_KEY_LIST = 'survey_form_keys'; // list of form identifiers stored (global)
 
-    /**
-     * Get the current form identifier based on page
-     */
+    // Use server-provided person id to namespace keys, fallback to 'anon'
+    const CURRENT_PERSON_ID = (typeof window.CURRENT_PERSON_ID !== 'undefined' && window.CURRENT_PERSON_ID !== null) ? String(window.CURRENT_PERSON_ID) : 'anon';
+    const PERSON_PREFIX = STORAGE_PREFIX + 'person_' + CURRENT_PERSON_ID + '_';
+
     function getFormIdentifier() {
         const path = window.location.pathname;
         if (path.includes('wizard_personal')) return 'personal';
@@ -26,34 +29,26 @@
         return null;
     }
 
-    /**
-     * Get storage key for current form
-     */
     function getStorageKey(formId) {
-        return STORAGE_PREFIX + formId;
+        return PERSON_PREFIX + (formId || 'unknown');
     }
 
-    /**
-     * Track which forms have data in localStorage
-     */
     function trackFormKey(formId) {
-        const keys = JSON.parse(localStorage.getItem(STORAGE_KEY_LIST) || '[]');
+        // Track by person to avoid mixing keys across users
+        const ksKey = STORAGE_KEY_LIST + ':' + CURRENT_PERSON_ID;
+        const keys = JSON.parse(localStorage.getItem(ksKey) || '[]');
         if (!keys.includes(formId)) {
             keys.push(formId);
-            localStorage.setItem(STORAGE_KEY_LIST, JSON.stringify(keys));
+            localStorage.setItem(ksKey, JSON.stringify(keys));
         }
     }
 
-    /**
-     * Save form data to localStorage
-     */
     function saveFormData(form) {
         const formId = getFormIdentifier();
         if (!formId) {
             console.warn('Survey Persistence: Cannot save - form identifier not found');
             return;
         }
-
         const formData = {};
         const elements = form.elements;
         let savedCount = 0;
@@ -62,54 +57,36 @@
             const element = elements[i];
             const name = element.name;
             if (!name) continue;
+            if (element.hasAttribute('data-persist-skip')) continue;
 
-            // Special handling for Flatpickr-backed birthdate: if the hidden input has no value
-            // try to read the selected date from the flatpickr instance or altInput and store it
             if (name === 'birthdate') {
                 try {
                     let bdVal = '';
                     if (element._flatpickr && Array.isArray(element._flatpickr.selectedDates) && element._flatpickr.selectedDates.length) {
-                        try {
-                            bdVal = element._flatpickr.formatDate(element._flatpickr.selectedDates[0], 'Y-m-d');
-                        } catch (e) {
-                            bdVal = element.value || '';
-                        }
+                        bdVal = element._flatpickr.formatDate(element._flatpickr.selectedDates[0], 'Y-m-d');
                     } else if (element.value) {
                         bdVal = element.value;
                     } else if (element._flatpickr && element._flatpickr.altInput && element._flatpickr.altInput.value) {
-                        // Try parsing altInput to canonical Y-m-d
                         try {
-                            const altFmt = (element._flatpickr.config && element._flatpickr.config.altFormat) || 'F j, Y';
-                            const parsed = window.flatpickr.parseDate(element._flatpickr.altInput.value, altFmt);
+                            const parsed = window.flatpickr.parseDate(element._flatpickr.altInput.value, element._flatpickr.config.altFormat || 'F j, Y');
                             if (parsed) bdVal = window.flatpickr.formatDate(parsed, 'Y-m-d');
-                        } catch (e) {
-                            bdVal = element._flatpickr.altInput.value;
-                        }
+                        } catch(e){ bdVal = element._flatpickr.altInput.value || ''; }
                     }
-
-                    if (bdVal) {
+                    if (bdVal !== '') {
                         formData[name] = bdVal;
                         savedCount++;
-                        // Skip normal processing for this element
                         continue;
                     }
-                } catch (e) {
-                    // swallow and continue to regular handling
-                }
+                } catch(e){}
             }
-            if (element.hasAttribute('data-persist-skip')) continue; // allow opt-out
 
-            // Persist all common types including range
             switch (element.type) {
                 case 'checkbox':
                     formData[name] = element.checked;
                     savedCount++;
                     break;
                 case 'radio':
-                    if (element.checked) {
-                        formData[name] = element.value;
-                        savedCount++;
-                    }
+                    if (element.checked) { formData[name] = element.value; savedCount++; }
                     break;
                 case 'range':
                 case 'text':
@@ -130,72 +107,46 @@
 
         const storageKey = getStorageKey(formId);
         localStorage.setItem(storageKey, JSON.stringify(formData));
-        if ('birthdate' in formData) {
-            console.log('Survey Persistence: birthdate saved as', formData.birthdate);
-        }
         trackFormKey(formId);
-        
-        console.log('Survey Persistence: Saved', savedCount, 'fields to localStorage for:', formId);
+        console.log('Survey Persistence: Saved', savedCount, 'fields for:', formId, 'key=', storageKey);
     }
 
-    /**
-     * Restore form data from localStorage
-     */
     function restoreFormData(form) {
         const formId = getFormIdentifier();
         if (!formId) {
             console.warn('Survey Persistence: Could not identify form');
             return;
         }
-
         const storageKey = getStorageKey(formId);
         const savedData = localStorage.getItem(storageKey);
-        
         if (!savedData) {
-            console.log('Survey Persistence: No saved data found for:', formId);
+            console.log('Survey Persistence: No saved data for:', formId);
             return;
         }
-
         try {
             const formData = JSON.parse(savedData);
-            console.log('Survey Persistence: Restoring data for:', formId, formData);
-            if ('birthdate' in formData) {
-                console.log('Survey Persistence: birthdate to restore =', formData.birthdate);
-            }
-            
+            console.log('Survey Persistence: Restoring', Object.keys(formData).length, 'fields for', formId);
             const elements = form.elements;
             let restoredCount = 0;
-
             for (let i = 0; i < elements.length; i++) {
                 const element = elements[i];
                 const name = element.name;
                 if (!name || !(name in formData)) continue;
-                if (element.hasAttribute('data-persist-skip')) continue; // opt-out
-
-                // If the form control already has a value (for example rendered from DB),
-                // prefer the existing value and do not overwrite it from localStorage.
-                // This prevents localStorage from re-populating fields after logout when
-                // the server already has authoritative data.
+                if (element.hasAttribute('data-persist-skip')) continue;
                 const currentVal = (element.type === 'checkbox') ? element.checked : (element.value || '');
                 const savedVal = formData[name];
+                // If page already rendered DB value, prefer it (don't overwrite)
                 if (currentVal !== '' && currentVal !== false && currentVal !== null) {
-                    // There's already a value present (likely from the DB render); skip restoring
                     continue;
                 }
-
                 switch (element.type) {
                     case 'checkbox':
                         element.checked = !!savedVal;
                         restoredCount++;
-                        // fire change for any UI bindings
                         element.dispatchEvent(new Event('change', { bubbles: true }));
                         break;
                     case 'radio':
-                        if (element.value === savedVal) {
-                            element.checked = true;
-                            restoredCount++;
-                            element.dispatchEvent(new Event('change', { bubbles: true }));
-                        }
+                        if (element.value === savedVal) { element.checked = true; restoredCount++; element.dispatchEvent(new Event('change', { bubbles: true })); }
                         break;
                     case 'range':
                     case 'text':
@@ -204,54 +155,12 @@
                     case 'tel':
                     case 'date':
                         if (element._flatpickr && savedVal) {
-                            try {
-                                element._flatpickr.setDate(savedVal, true);
-                            } catch (err) {
-                                element.value = savedVal;
-                            }
+                            try { element._flatpickr.setDate(savedVal, true); } catch(e){ element.value = savedVal; }
                         } else {
                             element.value = savedVal;
                         }
-                        // Special birthdate force restore
                         if (name === 'birthdate') {
-                            try {
-                                console.log('Survey Persistence: birthdate force restore attempt (direct value):', savedVal);
-                                // Always set the underlying input value first
-                                element.value = savedVal;
-
-                                if (element._flatpickr) {
-                                    try {
-                                        element._flatpickr.setDate(savedVal, true);
-                                        // Also update altInput if present
-                                        if (element._flatpickr.altInput) {
-                                            try {
-                                                var parsed = element._flatpickr.parseDate(savedVal, element._flatpickr.config.dateFormat || 'Y-m-d');
-                                                if (parsed) {
-                                                    var altFmt = element._flatpickr.config.altFormat || 'F j, Y';
-                                                    element._flatpickr.altInput.value = element._flatpickr.formatDate(parsed, altFmt);
-                                                }
-                                            } catch(e) { /* ignore formatting errors */ }
-                                        }
-                                        console.log('Survey Persistence: birthdate applied via flatpickr.setDate');
-                                    } catch(e) {
-                                        console.warn('Survey Persistence: flatpickr.setDate failed, falling back to raw value', e);
-                                        element.value = savedVal;
-                                    }
-                                } else if (window.flatpickr && typeof window.flatpickr.parseDate === 'function') {
-                                    // Try to parse and keep raw value
-                                    try {
-                                        var p = window.flatpickr.parseDate(savedVal, 'Y-m-d');
-                                        if (p) {
-                                            element.value = savedVal;
-                                            console.log('Survey Persistence: birthdate parsed successfully (no instance)');
-                                        }
-                                    } catch(e) { element.value = savedVal; }
-                                } else {
-                                    // No picker available, raw value stays
-                                    element.value = savedVal;
-                                    console.log('Survey Persistence: birthdate applied raw (no picker instance)');
-                                }
-                            } catch(e){ console.warn('Survey Persistence: birthdate force restore error', e); }
+                            try { element.value = savedVal; if (element._flatpickr) { element._flatpickr.setDate(savedVal, true); } } catch(e){}
                         }
                         restoredCount++;
                         element.dispatchEvent(new Event('input', { bubbles: true }));
@@ -265,180 +174,79 @@
                         }
                 }
             }
-
-            console.log('Survey Persistence: Restored', restoredCount, 'fields from localStorage');
+            console.log('Survey Persistence: Restored', restoredCount, 'fields for:', formId);
         } catch (e) {
-            console.error('Survey Persistence: Error restoring form data:', e);
+            console.error('Survey Persistence: Error parsing saved data', e);
         }
     }
 
-    /**
-     * Clear survey data for a specific form
-     */
     function clearFormData(formId) {
         const storageKey = getStorageKey(formId);
         localStorage.removeItem(storageKey);
-        console.log('Cleared survey data for:', formId);
+        // Remove from the tracked list
+        const ksKey = STORAGE_KEY_LIST + ':' + CURRENT_PERSON_ID;
+        const keys = JSON.parse(localStorage.getItem(ksKey) || '[]').filter(k => k !== formId);
+        localStorage.setItem(ksKey, JSON.stringify(keys));
+        console.log('Survey Persistence: Cleared data for:', formId);
     }
 
-    /**
-     * Clear all survey data from localStorage
-     */
-    function clearAllSurveyData() {
-        const keys = JSON.parse(localStorage.getItem(STORAGE_KEY_LIST) || '[]');
-        
-        keys.forEach(formId => {
-            clearFormData(formId);
+    function clearAllSurveyDataForPerson() {
+        const ksKey = STORAGE_KEY_LIST + ':' + CURRENT_PERSON_ID;
+        const keys = JSON.parse(localStorage.getItem(ksKey) || '[]');
+        keys.forEach(fid => {
+            const sk = getStorageKey(fid);
+            localStorage.removeItem(sk);
         });
-        
-        localStorage.removeItem(STORAGE_KEY_LIST);
-        console.log('All survey data cleared from localStorage');
+        localStorage.removeItem(ksKey);
+        console.log('Survey Persistence: Cleared all survey data for person:', CURRENT_PERSON_ID);
     }
 
-    /**
-     * Initialize form persistence for survey forms
-     */
     function initFormPersistence() {
-        // Find all survey forms - try multiple selectors
         let surveyForms = document.querySelectorAll('form[id^="form-"]');
-        
-        // If no forms found with that pattern, try finding any form on survey pages
         if (surveyForms.length === 0) {
             surveyForms = document.querySelectorAll('form');
-            console.log('Survey Persistence: Found forms using fallback selector:', surveyForms.length);
-        } else {
-            console.log('Survey Persistence: Found forms with id^="form-":', surveyForms.length);
         }
-        
         if (surveyForms.length === 0) {
             console.warn('Survey Persistence: No forms found on page');
             return;
         }
-        
         surveyForms.forEach(form => {
-            console.log('Survey Persistence: Initializing form:', form.id);
-            
-            // Restore saved data on page load
             restoreFormData(form);
-
-            // Special case: if flatpickr attaches after our restore, try a second restore soon after
-            setTimeout(() => {
-                try { restoreFormData(form); } catch(e) {}
-                try { applyDeferredBirthdate(form); } catch(e) {}
-            }, 300);
-
-            // Save data on input change (debounced)
+            setTimeout(() => { try { restoreFormData(form); } catch(e){} }, 300);
             let saveTimeout;
-            form.addEventListener('input', function(e) {
+            form.addEventListener('input', function() {
                 clearTimeout(saveTimeout);
-                saveTimeout = setTimeout(() => {
-                    console.log('Survey Persistence: Auto-saving form data...');
-                    saveFormData(form);
-                }, 500); // Debounce 500ms
+                saveTimeout = setTimeout(() => saveFormData(form), 500);
             });
-
-            // Save data on form change (for selects and radios)
-            form.addEventListener('change', function(e) {
-                console.log('Survey Persistence: Form changed, saving...');
-                saveFormData(form);
-            });
-
-            // Clear localStorage when form is successfully submitted
-            form.addEventListener('submit', function(e) {
-                // Wait a bit to ensure submission succeeded
+            form.addEventListener('change', function() { saveFormData(form); });
+            form.addEventListener('submit', function() {
                 setTimeout(() => {
                     const formId = getFormIdentifier();
-                    if (formId) {
-                        console.log('Survey Persistence: Form submitted, clearing data for:', formId);
-                        clearFormData(formId);
-                    }
+                    if (formId) clearFormData(formId);
                 }, 1000);
             });
         });
     }
 
-    /**
-     * Apply birthdate after date picker initialization if it was missed earlier.
-     * Polls a few times because picker libraries can attach asynchronously.
-     */
-    function applyDeferredBirthdate(form) {
-        const formId = getFormIdentifier();
-        if (formId !== 'personal') return; // only applies on personal form
-        const storageKey = getStorageKey('personal');
-        const raw = localStorage.getItem(storageKey);
-        if (!raw) return;
-        let birthdate = null;
-        try { birthdate = JSON.parse(raw).birthdate || null; } catch(e){ return; }
-        if (!birthdate) return;
-
-        const bd = form.querySelector('#birthdate');
-        if (!bd) return;
-
-        let attempts = 0;
-        function trySet(){
-            attempts++;
-            const hasFlatpickr = !!bd._flatpickr;
-            const hasLitepicker = !!bd.dataset.lpInitialized; // custom flag (can be set externally if needed)
-            if (hasFlatpickr) {
-                try {
-                    bd._flatpickr.setDate(birthdate, true);
-                    console.log('Survey Persistence: Deferred birthdate applied via Flatpickr:', birthdate);
-                    return;
-                } catch(e){ /* fallthrough */ }
-            }
-            if (hasLitepicker) {
-                // Litepicker does not expose instance the same way; set raw value
-                bd.value = birthdate;
-                console.log('Survey Persistence: Deferred birthdate applied via Litepicker raw value:', birthdate);
-                return;
-            }
-            // If neither picker attached yet, retry until limit
-            if (attempts < 5) {
-                setTimeout(trySet, 250);
-            } else {
-                // Last resort: set underlying input
-                bd.value = birthdate;
-                console.warn('Survey Persistence: Birthdate applied without picker after retries:', birthdate);
-            }
-        }
-        trySet();
-    }
-
-    /**
-     * Listen for successful AJAX submissions and clear localStorage
-     */
     function monitorAjaxSubmissions() {
-        // Hook into the global save-survey.js success callback if available
         window.addEventListener('surveyFormSaved', function(e) {
             const formId = e.detail?.formId || getFormIdentifier();
-            if (formId) {
-                clearFormData(formId);
-            }
+            if (formId) clearFormData(formId);
         });
     }
 
-    /**
-     * Clear all survey data on logout
-     */
     function setupLogoutHandler() {
-        // Find logout links/buttons
         const logoutLinks = document.querySelectorAll('a[href*="logout"], button[onclick*="logout"]');
-        
         logoutLinks.forEach(link => {
             link.addEventListener('click', function() {
-                clearAllSurveyData();
+                clearAllSurveyDataForPerson();
             });
         });
-
-        // Also check for logout action in the URL
         if (window.location.href.includes('action=logout')) {
-            clearAllSurveyData();
+            clearAllSurveyDataForPerson();
         }
     }
 
-    /**
-     * Initialize on page load
-     */
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function() {
             initFormPersistence();
@@ -451,12 +259,11 @@
         setupLogoutHandler();
     }
 
-    // Expose functions globally for manual control if needed
     window.SurveyPersistence = {
         save: saveFormData,
         restore: restoreFormData,
         clear: clearFormData,
-        clearAll: clearAllSurveyData
+        clearAllForPerson: clearAllSurveyDataForPerson
     };
 
 })();

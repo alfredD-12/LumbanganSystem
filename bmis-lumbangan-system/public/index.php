@@ -7,7 +7,7 @@ require_once __DIR__ . '/../app/controllers/admins/AdminDocumentController.php';
 @require_once __DIR__ . '/../app/config/config.php';
 
 // Add SurveyController so AJAX survey actions can be routed here
-//require_once __DIR__ . '/../app/controllers/SurveyController.php';//
+require_once __DIR__ . '/../app/controllers/SurveyController.php';
 // Load announcement helpers (provides base_url/assets_url/uploads_url/announcement_image_url)
 require_once __DIR__ . '/../app/helpers/announcement_helper.php';
 require_once __DIR__ . '/../app/controllers/AdminController.php';
@@ -19,7 +19,7 @@ $action = $_GET['action'] ?? null;
 if ($action) {
     $controller = new DocumentRequestController();
     $adminController = new AdminDocumentController();
-//    $surveyController = new SurveyController(); // instantiate survey controller for AJAX survey actions
+    $surveyController = new SurveyController(); // instantiate survey controller for AJAX survey actions
 
     switch ($action) {
         case 'getRequirements':
@@ -150,6 +150,10 @@ if ($action) {
 
         case 'search_persons':
             $surveyController->search_persons_action();
+            break;
+
+        case 'add_family_member':
+            $surveyController->add_family_member_action();
             break;
 
         case 'get_person_relationships':

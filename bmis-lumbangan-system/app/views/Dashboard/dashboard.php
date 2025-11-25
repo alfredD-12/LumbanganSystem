@@ -33,6 +33,7 @@ $hasMonthlySurvey = $dashboardStats['has_monthly_survey'];
 
 // Get officials data
 $officials = getActiveOfficials();
+render_favicon();
 ?>
 <!DOCTYPE html>
 <html lang="en">

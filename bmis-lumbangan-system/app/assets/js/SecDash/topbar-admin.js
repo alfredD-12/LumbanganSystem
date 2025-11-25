@@ -64,3 +64,38 @@ function toggleMessages() {
 // Export functions for external use
 window.toggleNotifications = toggleNotifications;
 window.toggleMessages = toggleMessages;
+
+// Fallback: ensure clicking any element that targets #adminProfileModal opens it
+document.addEventListener('click', function(e) {
+    var trigger = e.target.closest && e.target.closest('a[data-bs-target="#adminProfileModal"], [data-bs-target="#adminProfileModal"]');
+    if (!trigger) return;
+    // Prevent default anchor behavior
+    e.preventDefault();
+    var modalEl = document.getElementById('adminProfileModal');
+    if (!modalEl) {
+        console.warn('adminProfileModal element not found in DOM');
+        return;
+    }
+
+    try {
+        // Prefer Bootstrap modal if available
+        if (window.bootstrap && typeof window.bootstrap.Modal === 'function') {
+            var m = new bootstrap.Modal(modalEl);
+            m.show();
+            return;
+        }
+    } catch (err) {
+        console.debug('bootstrap modal show failed, falling back', err);
+    }
+
+    // Fallback: manually show modal (basic) — add backdrop and classes
+    modalEl.classList.add('show');
+    modalEl.style.display = 'block';
+    document.body.classList.add('modal-open');
+    // add backdrop
+    if (!document.querySelector('.modal-backdrop')) {
+        var bd = document.createElement('div');
+        bd.className = 'modal-backdrop fade show';
+        document.body.appendChild(bd);
+    }
+});

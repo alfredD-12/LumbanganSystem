@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 22, 2025 at 10:55 AM
+-- Generation Time: Nov 24, 2025 at 05:56 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -46,14 +46,27 @@ CREATE TABLE `angina_stroke_screening` (
 --
 
 INSERT INTO `angina_stroke_screening` (`id`, `cvd_id`, `q1_chest_discomfort`, `q2_pain_location_left_arm_neck_back`, `q3_pain_on_exertion`, `q4_pain_relieved_by_rest_or_nitro`, `q5_pain_lasting_10min_plus`, `q6_pain_front_of_chest_half_hour`, `screen_positive`, `needs_doctor_referral`, `created_at`) VALUES
-(1, 1, 0, 0, 0, 0, 0, 0, 0, 0, '2025-11-01 09:13:00'),
-(2, 2, 0, 0, 0, NULL, NULL, NULL, 0, 0, '2025-11-01 09:14:00'),
-(3, 3, 0, 0, 0, NULL, NULL, NULL, 0, 0, '2025-11-01 09:15:00'),
-(4, 4, 0, 0, 0, NULL, NULL, NULL, 0, 0, '2025-11-01 09:16:00'),
-(5, 5, 1, 1, 1, NULL, NULL, NULL, 1, 1, '2025-11-01 09:17:00'),
-(6, 6, 0, 0, 0, NULL, NULL, NULL, 0, 0, '2025-11-01 09:18:00'),
-(7, 7, 0, 0, 0, NULL, NULL, NULL, 0, 0, '2025-11-01 09:19:00'),
-(8, 8, 0, 0, 0, NULL, NULL, NULL, 0, 0, '2025-11-01 09:20:00');
+(1, 1, 0, 0, 0, 0, 0, 0, 0, 0, '2025-11-22 11:19:00'),
+(2, 2, 0, 1, 1, 0, 1, 0, 1, 1, '2025-10-05 09:10:00'),
+(3, 3, 0, 0, 0, 0, 0, 0, 0, 0, '2025-10-01 09:11:00'),
+(4, 4, 1, 1, 1, 0, 1, 1, 1, 1, '2025-09-15 14:25:00'),
+(5, 5, 0, 0, 0, 0, 0, 0, 0, 0, '2025-08-20 08:35:00'),
+(6, 6, 0, 0, 0, 0, 0, 0, 0, 0, '2025-07-05 10:08:00'),
+(7, 7, 0, 1, 0, 0, 0, 0, 0, 0, '2025-11-10 13:18:00'),
+(8, 8, 1, 1, 1, 1, 1, 1, 1, 1, '2025-10-03 09:55:00'),
+(9, 9, 0, 0, 0, 0, 0, 0, 0, 0, '2025-09-03 16:45:00'),
+(10, 10, 0, 0, 0, 0, 0, 0, 0, 0, '2025-08-11 07:58:00'),
+(11, 11, 0, 0, 0, 0, 0, 0, 0, 0, '2025-07-29 12:05:00'),
+(12, 12, 0, 1, 0, 0, 0, 0, 0, 0, '2025-11-05 09:10:00'),
+(13, 13, 0, 0, 1, 0, 0, 0, 0, 0, '2025-10-08 14:05:00'),
+(14, 14, 1, 0, 1, 0, 1, 0, 1, 1, '2025-09-18 11:15:00'),
+(15, 15, 0, 0, 0, 0, 0, 0, 0, 0, '2025-08-02 10:15:00'),
+(16, 16, 0, 0, 0, 0, 0, 0, 0, 0, '2025-10-12 09:50:00'),
+(17, 17, 0, 0, 0, 0, 0, 0, 0, 0, '2025-11-20 15:25:00'),
+(18, 18, 0, 1, 1, 0, 1, 0, 1, 1, '2025-10-30 08:05:00'),
+(19, 19, 0, 0, 0, 0, 0, 0, 0, 0, '2025-09-25 13:38:00'),
+(20, 20, 0, 0, 0, 0, 0, 0, 0, 0, '2025-08-28 07:25:00'),
+(21, 24, 0, 0, 0, 0, 0, 0, 0, 0, '2025-11-24 19:01:32');
 
 -- --------------------------------------------------------
 
@@ -68,10 +81,20 @@ CREATE TABLE `announcements` (
   `image` varchar(255) DEFAULT NULL,
   `audience` varchar(50) DEFAULT 'all',
   `status` varchar(50) DEFAULT 'published',
+  `type` varchar(64) DEFAULT 'general',
   `expires_at` datetime DEFAULT NULL,
   `author` varchar(150) DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `announcements`
+--
+
+INSERT INTO `announcements` (`id`, `title`, `message`, `image`, `audience`, `status`, `type`, `expires_at`, `author`, `created_at`) VALUES
+(0, 'hff', 'ugbh', NULL, 'all', 'published', 'project', NULL, 'Official', '2025-11-23 00:50:02'),
+(0, 'adfdg', 'safad', NULL, 'all', 'published', 'event', NULL, 'Official', '2025-11-23 00:51:48'),
+(0, 'ftgfgh', 'jgtykyu', NULL, 'all', 'published', 'general', NULL, 'Official', '2025-11-24 01:05:50');
 
 -- --------------------------------------------------------
 
@@ -92,6 +115,27 @@ CREATE TABLE `births` (
   `remarks` varchar(255) DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `case_types`
+--
+
+CREATE TABLE `case_types` (
+  `id` int(11) NOT NULL,
+  `label` varchar(50) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `case_types`
+--
+
+INSERT INTO `case_types` (`id`, `label`, `created_at`) VALUES
+(1, 'Criminal', '2025-11-18 18:53:01'),
+(2, 'Civil', '2025-11-18 18:53:01'),
+(3, 'Others', '2025-11-18 18:53:01');
 
 -- --------------------------------------------------------
 
@@ -117,15 +161,30 @@ CREATE TABLE `cvd_ncd_risk_assessments` (
 --
 
 INSERT INTO `cvd_ncd_risk_assessments` (`id`, `person_id`, `answered_at`, `surveyed_by_official_id`, `survey_date`, `notes`, `is_approved`, `approved_by_official_id`, `approved_at`, `review_notes`) VALUES
-(1, 1, '2025-10-01 09:10:00', 1, '2025-11-01', 'Monthly', 1, 1, '2025-11-01 10:00:00', 'OK'),
-(2, 2, '2025-11-01 09:11:00', 1, '2025-11-01', 'Monthly', 1, 1, '2025-11-01 10:00:00', NULL),
-(3, 3, '2025-11-01 09:12:00', 1, '2025-11-01', 'Monthly', 1, 1, '2025-11-01 10:00:00', NULL),
-(4, 4, '2025-11-01 09:13:00', 1, '2025-11-01', 'Monthly', 1, 1, '2025-11-01 10:00:00', NULL),
-(5, 5, '2025-11-01 09:14:00', 1, '2025-11-01', 'Monthly', 1, 1, '2025-11-01 10:00:00', NULL),
-(6, 6, '2025-11-01 09:15:00', 1, '2025-11-01', 'Monthly', 1, 1, '2025-11-01 10:00:00', NULL),
-(7, 7, '2025-11-01 09:16:00', 1, '2025-11-01', 'Monthly', 1, 1, '2025-11-01 10:00:00', NULL),
-(8, 8, '2025-11-01 09:17:00', 1, '2025-11-01', 'Monthly', 1, 1, '2025-11-01 10:00:00', NULL),
-(9, 1, '2025-11-22 11:18:07', NULL, '2025-11-22', NULL, 0, NULL, NULL, NULL);
+(1, 1, '2025-11-22 11:18:07', 2, '2025-11-22', 'Monthly check', 1, 19, '2025-11-22 12:00:00', 'OK'),
+(2, 2, '2025-10-05 09:05:00', 3, '2025-10-05', 'October monthly - visit 1', 1, 20, '2025-10-05 10:00:00', 'Approved'),
+(3, 2, '2025-10-27 14:12:00', 4, '2025-10-27', 'October monthly - visit 2', 1, 21, '2025-10-27 15:00:00', 'Approved - duplicate'),
+(4, 3, '2025-10-01 09:10:00', 5, '2025-10-01', 'Initial entry', 0, NULL, NULL, NULL),
+(5, 4, '2025-09-15 14:22:00', 6, '2025-09-15', 'Follow-up', 1, 22, '2025-09-15 15:00:00', 'Reviewed'),
+(6, 5, '2025-08-20 08:30:00', 2, '2025-08-20', 'Monthly', 0, NULL, NULL, NULL),
+(7, 6, '2025-07-05 10:05:00', 7, '2025-07-05', 'Baseline', 1, 23, '2025-07-05 11:00:00', 'OK'),
+(8, 7, '2025-11-10 13:15:00', 8, '2025-11-10', 'Monthly', 0, NULL, NULL, 'Needs review'),
+(9, 8, '2025-10-03 09:50:00', 9, '2025-10-03', 'October screening A', 1, 24, '2025-10-03 10:30:00', 'OK'),
+(10, 8, '2025-10-21 11:20:00', 10, '2025-10-21', 'October screening B', 1, 25, '2025-10-21 12:00:00', 'OK - repeat'),
+(11, 9, '2025-09-03 16:40:00', 2, '2025-09-03', 'Check', 0, NULL, NULL, NULL),
+(12, 10, '2025-08-11 07:55:00', 1, '2025-08-11', 'Community visit', 1, 26, '2025-08-11 08:30:00', 'OK'),
+(13, 11, '2025-07-29 12:00:00', 4, '2025-07-29', 'Baseline', 0, NULL, NULL, NULL),
+(14, 12, '2025-11-05 09:05:00', 5, '2025-11-05', 'Monthly', 1, 27, '2025-11-05 10:00:00', NULL),
+(15, 13, '2025-10-08 14:00:00', 6, '2025-10-08', 'October follow-up 1', 1, 28, '2025-10-08 15:00:00', 'OK'),
+(16, 13, '2025-10-29 09:30:00', 3, '2025-10-29', 'October follow-up 2', 1, 29, '2025-10-29 10:15:00', 'OK'),
+(17, 14, '2025-09-18 11:11:00', 11, '2025-09-18', 'Routine', 0, NULL, NULL, NULL),
+(18, 15, '2025-08-02 10:10:00', 12, '2025-08-02', 'Monthly', 0, NULL, NULL, NULL),
+(19, 16, '2025-10-12 09:45:00', 13, '2025-10-12', 'October visit', 1, 30, '2025-10-12 10:30:00', 'Approved'),
+(20, 17, '2025-11-20 15:20:00', 14, '2025-11-20', 'Monthly', 0, NULL, NULL, NULL),
+(21, 18, '2025-10-30 08:00:00', 15, '2025-10-30', 'Follow-up', 1, 19, '2025-10-30 09:00:00', 'Follow up required'),
+(22, 19, '2025-09-25 13:33:00', 16, '2025-09-25', 'Community screening', 0, NULL, NULL, NULL),
+(23, 20, '2025-08-28 07:22:00', 17, '2025-08-28', 'Monthly', 1, 21, '2025-08-28 08:00:00', NULL),
+(24, 51, '2025-11-24 18:58:51', NULL, '2025-11-24', NULL, 0, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -174,14 +233,27 @@ CREATE TABLE `diabetes_screening` (
 --
 
 INSERT INTO `diabetes_screening` (`id`, `cvd_id`, `known_diabetes`, `on_medications`, `family_history`, `polyuria`, `polydipsia`, `polyphagia`, `weight_loss`, `rbs_mg_dl`, `fbs_mg_dl`, `hba1c_percent`, `urine_ketone`, `urine_protein`, `screen_positive`, `created_at`) VALUES
-(1, 1, 0, 0, 0, NULL, NULL, NULL, NULL, 95.50, 90.00, 5.20, NULL, NULL, NULL, '2025-11-22 10:29:38'),
-(2, 2, 0, 0, 0, NULL, NULL, NULL, NULL, 96.00, 91.00, 5.30, NULL, NULL, 0, '2025-11-01 09:13:00'),
-(3, 3, 0, 0, 0, NULL, NULL, NULL, NULL, 92.00, 88.00, 5.00, NULL, NULL, 0, '2025-11-01 09:14:00'),
-(4, 4, 0, 0, 0, NULL, NULL, NULL, NULL, 99.00, 95.00, 5.25, NULL, NULL, 0, '2025-11-01 09:15:00'),
-(5, 5, 0, 0, 1, NULL, NULL, NULL, NULL, 110.00, 100.00, 5.80, NULL, NULL, 0, '2025-11-01 09:16:00'),
-(6, 6, 0, 0, 0, NULL, NULL, NULL, NULL, 88.00, 82.00, 4.90, NULL, NULL, 0, '2025-11-01 09:17:00'),
-(7, 7, 0, 0, 0, NULL, NULL, NULL, NULL, 85.00, 80.00, 4.80, NULL, NULL, 0, '2025-11-01 09:18:00'),
-(8, 8, 0, 0, 0, NULL, NULL, NULL, NULL, 94.00, 90.00, 5.10, NULL, NULL, 0, '2025-11-01 09:19:00');
+(1, 1, 0, 0, 0, 0, 0, 0, 0, 95.50, 90.00, 5.20, NULL, NULL, 0, '2025-11-22 11:21:00'),
+(2, 2, 1, 1, 1, 1, 1, 0, 1, 180.00, 160.00, 9.20, 1, 1, 1, '2025-10-05 09:12:00'),
+(3, 3, 0, 0, 0, 0, 0, 0, 0, 100.00, 95.00, 5.40, NULL, NULL, 0, '2025-10-01 09:12:00'),
+(4, 4, 0, 0, 1, 0, 0, 0, 0, 110.00, 101.00, 6.10, NULL, NULL, 0, '2025-09-15 14:27:00'),
+(5, 5, 0, 0, 0, 0, 0, 0, 0, 92.00, 88.00, 5.00, NULL, NULL, 0, '2025-08-20 08:33:00'),
+(6, 6, 0, 0, 0, 0, 0, 0, 0, 98.00, 94.00, 5.30, NULL, NULL, 0, '2025-07-05 10:10:00'),
+(7, 7, 0, 0, 1, 0, 0, 0, 0, 130.00, 120.00, 7.00, NULL, 1, 1, '2025-11-10 13:17:00'),
+(8, 8, 0, 0, 0, 0, 0, 0, 0, 85.00, 80.00, 4.80, NULL, NULL, 0, '2025-10-03 09:58:00'),
+(9, 9, 0, 0, 0, 0, 0, 0, 0, 105.00, 99.00, 5.60, NULL, NULL, 0, '2025-09-03 16:42:00'),
+(10, 10, 0, 0, 1, 0, 0, 0, 0, 115.00, 108.00, 6.00, NULL, NULL, 0, '2025-08-11 07:59:00'),
+(11, 11, 0, 0, 0, 0, 0, 0, 0, 97.00, 92.00, 5.10, NULL, NULL, 0, '2025-07-29 12:02:00'),
+(12, 12, 0, 0, 0, 0, 0, 0, 0, 89.00, 85.00, 4.90, NULL, NULL, 0, '2025-11-05 09:08:00'),
+(13, 13, 0, 0, 1, 0, 0, 0, 0, 140.00, 130.00, 7.50, NULL, 1, 1, '2025-10-08 14:03:00'),
+(14, 14, 0, 0, 0, 0, 0, 0, 0, 102.00, 96.00, 5.50, NULL, NULL, 0, '2025-09-18 11:13:00'),
+(15, 15, 0, 0, 0, 0, 0, 0, 0, 93.00, 88.00, 5.00, NULL, NULL, 0, '2025-08-02 10:12:00'),
+(16, 16, 1, 1, 1, 1, 1, 1, 1, 190.00, 170.00, 10.10, 1, 1, 1, '2025-10-12 09:48:00'),
+(17, 17, 0, 0, 0, 0, 0, 0, 0, 96.00, 91.00, 5.20, NULL, NULL, 0, '2025-11-20 15:22:00'),
+(18, 18, 0, 0, 1, 0, 0, 0, 0, 125.00, 115.00, 6.90, NULL, NULL, 0, '2025-10-30 08:03:00'),
+(19, 19, 0, 0, 0, 0, 0, 0, 0, 99.00, 94.00, 5.30, NULL, NULL, 0, '2025-09-25 13:35:00'),
+(20, 20, 0, 0, 0, 0, 0, 0, 0, 88.00, 83.00, 4.80, NULL, NULL, 0, '2025-08-28 07:23:00'),
+(21, 24, 0, 0, 0, 0, 0, 0, 0, 70.00, 70.00, 5.00, 0, 0, NULL, '2025-11-24 19:02:01');
 
 -- --------------------------------------------------------
 
@@ -244,8 +316,22 @@ CREATE TABLE `families` (
 --
 
 INSERT INTO `families` (`id`, `household_id`, `family_number`, `head_person_id`, `residency_status`, `length_of_residency_months`, `email`, `survey_date`, `created_at`, `updated_at`) VALUES
-(1, 1, '0917-0000-001', 1, 'Permanent', 0, 'ramon.s@example.local', '2025-11-22', '2025-11-01 09:00:00', '2025-11-22 10:25:24'),
-(2, 2, NULL, 9, 'Permanent', NULL, NULL, NULL, '2025-11-21 18:40:13', '2025-11-21 18:40:13');
+(1, 1, 'FAM-1', 1, 'Permanent', NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(2, 2, 'FAM-2', 3, 'Permanent', NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(3, 3, 'FAM-3', 5, 'Permanent', NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(4, 4, 'FAM-4', 7, 'Permanent', NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(5, 5, 'FAM-5', 11, 'Permanent', NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(6, 6, 'FAM-6', 15, 'Permanent', NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(7, 7, 'FAM-7', 16, 'Permanent', NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(8, 8, 'FAM-8', 23, 'Permanent', NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(9, 9, 'FAM-9', 27, 'Permanent', NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(10, 10, 'FAM-10', 31, 'Permanent', NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(11, 11, 'FAM-11', 34, 'Permanent', NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(12, 12, 'FAM-12', 38, 'Permanent', NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(13, 13, 'FAM-13', 41, 'Permanent', NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(14, 14, 'FAM-14', 43, 'Permanent', NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(15, 15, 'FAM-15', 46, 'Permanent', NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(16, 16, '0995-3373-692', 51, 'Permanent', 26, 'davidgludo@gmail.com', '2025-11-24', '2025-11-24 19:02:38', '2025-11-24 19:02:38');
 
 -- --------------------------------------------------------
 
@@ -310,13 +396,26 @@ CREATE TABLE `health_family_history` (
 
 INSERT INTO `health_family_history` (`id`, `person_id`, `hypertension`, `stroke`, `heart_attack`, `asthma`, `diabetes`, `cancer`, `kidney_disease`, `recorded_at`) VALUES
 (1, 1, 0, 0, 0, 0, 0, 0, 0, '2025-11-22'),
-(2, 2, 1, 0, 0, 0, 0, 0, 0, '2025-11-01'),
-(3, 3, 0, 0, 0, 0, 0, 0, 0, '2025-11-01'),
-(4, 4, 0, 0, 0, 0, 0, 0, 0, '2025-11-01'),
-(5, 5, 0, 0, 0, 0, 0, 0, 0, '2025-11-01'),
-(6, 6, 0, 0, 0, 0, 0, 0, 0, '2025-11-01'),
-(7, 7, 0, 0, 0, 0, 0, 0, 0, '2025-11-01'),
-(8, 8, 0, 0, 0, 0, 0, 0, 0, '2025-11-01');
+(2, 2, 1, 0, 0, 0, 1, 0, 0, '2025-10-05'),
+(3, 3, 0, 0, 0, 0, 0, 0, 0, '2025-10-01'),
+(4, 4, 1, 1, 0, 0, 0, 0, 0, '2025-09-15'),
+(5, 5, 0, 0, 0, 0, 0, 0, 0, '2025-08-20'),
+(6, 6, 0, 0, 0, 0, 0, 0, 0, '2025-07-05'),
+(7, 7, 0, 0, 0, 0, 1, 0, 0, '2025-11-10'),
+(8, 8, 1, 0, 0, 0, 0, 0, 0, '2025-10-03'),
+(9, 9, 0, 0, 0, 0, 0, 0, 0, '2025-09-03'),
+(10, 10, 0, 0, 0, 0, 0, 0, 0, '2025-08-11'),
+(11, 11, 0, 0, 0, 0, 0, 0, 0, '2025-07-29'),
+(12, 12, 0, 0, 0, 0, 0, 0, 0, '2025-11-05'),
+(13, 13, 1, 0, 0, 0, 1, 0, 0, '2025-10-08'),
+(14, 14, 0, 0, 0, 0, 0, 0, 0, '2025-09-18'),
+(15, 15, 0, 0, 0, 0, 0, 0, 0, '2025-08-02'),
+(16, 16, 1, 1, 0, 0, 1, 0, 0, '2025-10-12'),
+(17, 17, 0, 0, 0, 0, 0, 0, 0, '2025-11-20'),
+(18, 18, 0, 0, 0, 0, 0, 0, 0, '2025-10-30'),
+(19, 19, 0, 0, 0, 0, 0, 0, 0, '2025-09-25'),
+(20, 20, 0, 0, 0, 0, 0, 0, 0, '2025-08-28'),
+(21, 51, 0, 0, 0, 0, 0, 1, 1, '2025-11-24');
 
 -- --------------------------------------------------------
 
@@ -356,8 +455,71 @@ CREATE TABLE `households` (
 --
 
 INSERT INTO `households` (`id`, `purok_id`, `household_no`, `address`, `latitude`, `longitude`, `home_ownership`, `home_ownership_other`, `construction_material`, `construction_material_other`, `lighting_facility`, `lighting_facility_other`, `water_level`, `water_source`, `water_storage`, `drinking_water_other_source`, `garbage_container`, `garbage_segregated`, `garbage_disposal_method`, `garbage_disposal_other`, `toilet_type`, `toilet_type_other`, `created_at`, `updated_at`) VALUES
-(1, 2, 'CA-001', 'Blk 2 Lt 25, Bougainvillea Street, Camia Homes', NULL, NULL, 'Rented', '', 'Light', '', 'Electricity', '', 'Level III', '', 'Both', '', 'Uncovered', 0, 'Garbage Collection', '', 'Sanitary', '', '2025-11-01 09:00:00', '2025-11-21 17:48:28'),
-(2, NULL, NULL, 'Pending - To be updated', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-21 18:40:13', '2025-11-21 18:40:13');
+(1, 2, 'CA-001', 'Blk 2 Lt 25, Bougainvillea Street, Camia Homes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 18:44:48'),
+(2, 2, 'CA-002', 'Blk 2 Lt 25, Bougainvillea Street, Camia Homes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 18:44:59'),
+(3, 2, 'CA-003', 'Blk 2 Lt 25, Bougainvillea Street, Camia Homes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 18:45:02'),
+(4, 2, 'CA-004', 'Blk 2 Lt 25, Bougainvillea Street, Camia Homes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 18:45:03'),
+(5, 2, 'CA-005', 'Blk 2 Lt 25, Bougainvillea Street, Camia Homes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 18:45:05'),
+(6, 2, 'CA-006', 'Blk 2 Lt 25, Bougainvillea Street, Camia Homes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 18:45:07'),
+(7, 2, 'CA-007', 'Blk 2 Lt 25, Bougainvillea Street, Camia Homes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 18:45:08'),
+(8, 2, 'CA-008', 'Blk 2 Lt 25, Bougainvillea Street, Camia Homes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 18:45:11'),
+(9, 2, 'CA-009', 'Blk 2 Lt 25, Bougainvillea Street, Camia Homes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 18:45:12'),
+(10, 2, 'CA-010', 'Blk 2 Lt 25, Bougainvillea Street, Camia Homes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 18:45:13'),
+(11, 2, 'CA-011', 'Blk 2 Lt 25, Bougainvillea Street, Camia Homes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 18:45:15'),
+(12, 2, 'CA-012', 'Blk 2 Lt 25, Bougainvillea Street, Camia Homes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 18:45:16'),
+(13, 2, 'CA-013', 'Blk 2 Lt 25, Bougainvillea Street, Camia Homes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 18:45:19'),
+(14, 2, 'CA-014', 'Blk 2 Lt 25, Bougainvillea Street, Camia Homes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 18:45:20'),
+(15, 2, 'CA-015', 'Blk 2 Lt 25, Bougainvillea Street, Camia Homes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 18:45:21'),
+(16, 2, 'CA-016', 'Blk 2 Lt 25, Bougainvillea Street, Camia Homes', NULL, NULL, 'Owned', '', 'Strong', '', 'Electricity', '', 'Level III', '', 'Covered container', '', 'Covered', 1, 'Garbage Collection', '', 'Sanitary', '', '2025-11-24 19:02:38', '2025-11-24 19:02:38');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `incidents`
+--
+
+CREATE TABLE `incidents` (
+  `id` int(11) NOT NULL,
+  `incident_title` varchar(255) NOT NULL,
+  `blotter_type` varchar(50) NOT NULL,
+  `case_type_id` int(11) NOT NULL,
+  `complainant_name` varchar(255) NOT NULL,
+  `complainant_type` varchar(50) NOT NULL,
+  `complainant_contact` varchar(50) DEFAULT NULL,
+  `complainant_gender` varchar(20) NOT NULL,
+  `complainant_birthday` date DEFAULT NULL,
+  `complainant_address` text DEFAULT NULL,
+  `offender_type` varchar(50) DEFAULT NULL,
+  `offender_gender` varchar(20) DEFAULT NULL,
+  `offender_name` varchar(255) DEFAULT NULL,
+  `offender_address` text DEFAULT NULL,
+  `offender_description` text DEFAULT NULL,
+  `date_of_incident` date NOT NULL,
+  `time_of_incident` time NOT NULL,
+  `location` varchar(255) NOT NULL,
+  `narrative` text NOT NULL,
+  `status_id` int(11) NOT NULL DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `resolved_at` datetime DEFAULT NULL COMMENT 'Timestamp when complaint was marked as resolved'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `incidents`
+--
+
+INSERT INTO `incidents` (`id`, `incident_title`, `blotter_type`, `case_type_id`, `complainant_name`, `complainant_type`, `complainant_contact`, `complainant_gender`, `complainant_birthday`, `complainant_address`, `offender_type`, `offender_gender`, `offender_name`, `offender_address`, `offender_description`, `date_of_incident`, `time_of_incident`, `location`, `narrative`, `status_id`, `created_at`, `updated_at`, `resolved_at`) VALUES
+(1, 'Illegal Parking', 'Complaint', 2, 'Gerald Mendoza', 'Resident', '09473428871', 'male', '2025-11-19', 'Sagbat Lumbangan', 'resident', 'female', 'Janna Mae', 'Elpaso', 'Near at sambungan house location', '2025-11-12', '10:50:00', 'Tabing bahay', 'Nakiparada si Janna sa tapat ng bahay nila Gerald', 1, '2025-11-19 00:46:38', '2025-11-19 00:46:38', NULL),
+(2, 'Unpaid Rents', 'Complaint', 2, 'Aling Puring', 'Resident', '09342516635', 'male', '2025-11-10', 'Role Subdivision', 'resident', 'male', 'Joseph', 'Role Subdivision', 'Secret', '2025-11-19', '10:00:00', 'Role Covered Court', 'Ilang buwan na hindi nagbabayad si Joesph kaya binabarangay na ni Aling Puring', 3, '2025-11-19 01:00:54', '2025-11-19 04:53:15', '2025-11-19 11:16:06'),
+(3, 'Carnappings', 'Complaint', 2, 'Joselito ', 'Resident', '09453789346', 'male', '2025-11-19', 'Lumbangan, Nasugbu Batangas', 'resident', 'male', 'Johnmark Marqi', 'Cogunan', 'Payat', '2025-11-19', '15:00:00', 'Sa tabing highway ', 'BAHALAA SILAAA', 1, '2025-11-19 05:28:23', '2025-11-19 16:16:59', NULL),
+(4, 'Drag Racing ', 'Complaint', 2, 'Melany', 'Resident', '12345678912', 'female', '2025-11-19', 'Role ', 'non-resident', 'male', '', '', '', '2025-11-18', '12:00:00', 'Lumbangan Highway', 'HAHAHAHAHAHAHAHA', 1, '2025-11-19 16:34:34', '2025-11-20 01:48:57', NULL),
+(5, 'HAHAJBCHBD', 'Complaint', 2, 'GGDHHHH', 'Resident', '1445565', 'male', '2025-11-19', 'TRTERYETYTY', 'resident', 'male', 'TTRYTRY', 'TFRU', 'YRYUTR', '2025-11-19', '10:07:00', 'TFTGFUUUYR', 'TRRUYTRURUY', 1, '2025-11-20 02:05:07', '2025-11-20 02:05:07', NULL),
+(6, 'Illegal Parking', 'Complaint', 2, 'Joel Salanguit', 'Resident', '09342516257', 'male', '2025-11-05', 'Sagbat Lumbangan', 'resident', 'male', 'Myla Mallari', 'Role Subdivision', 'taga looban ang  bahay', '2025-11-01', '02:16:00', 'Sagbat ', 'SIJBIHBCIHBIHSDBCIHSDBCIHBHISBHISBICBS', 2, '2025-11-20 04:15:06', '2025-11-20 05:39:24', NULL),
+(7, 'Test Complaint 2025-11-20 15:23:55', 'Complaint', 1, 'Test Complainant', 'Resident', NULL, 'male', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-20', '15:23:00', 'Test Location', 'This is a test complaint to verify the save functionality', 1, '2025-11-20 15:23:55', '2025-11-20 15:23:55', NULL),
+(9, 'HAHAHAHAHAHA', 'Complaint', 2, 'hahahahaha', 'Resident', '347847556352', 'male', '2025-11-12', 'HAHAHAHAHAHAHA', 'resident', 'male', 'hahahahahaha', 'AHAHAHAHAHAHA', 'hahahahaha', '2025-11-13', '11:45:00', 'HAHAHAHAHA', 'hahahahaha', 1, '2025-11-20 15:41:23', '2025-11-20 15:41:23', NULL),
+(10, 'Johnnjn', 'Complaint', 2, 'HAHAHAHAAHA', 'Resident', '0485945949854', 'male', '2025-11-19', 'hahahahaha', 'resident', 'male', 'HAHAHAHAHAHAA', 'hahahahaha', 'HAHAHAHAHA', '2025-11-19', '00:44:00', 'hahahahaha', 'HAHAHAHA', 1, '2025-11-20 15:43:47', '2025-11-20 15:43:47', NULL),
+(11, 'gfhjfgdhsfghfghfhf', 'Complaint', 1, 'asadasdsadasdasda', 'Resident', '67867867967969', 'male', '2025-11-19', 'sdjkgiergfuigesbdcgifg', 'resident', 'male', 'asdsadasas', 'asdadasdasdada', 'asdadasddsad', '2025-11-20', '09:58:00', 'asdasdwerwergeggsdfsdg', 'asdasdasdasdsadsdasdasdsasafa', 3, '2025-11-21 01:58:38', '2025-11-21 01:58:51', '2025-11-21 09:58:51'),
+(12, 'RALLYs', 'Complaint', 2, 'bato', 'Resident', '898957485445', 'male', '2025-11-05', 'Graba', 'resident', 'male', 'Marcos', 'HAHAHAHAHAHA', 'hahahahah', '2025-11-07', '10:50:00', 'HAHAHAHAHA DIKO ALAM', 'hahahahahahahaha ean', 2, '2025-11-21 14:49:54', '2025-11-22 05:35:40', NULL);
 
 -- --------------------------------------------------------
 
@@ -386,14 +548,27 @@ CREATE TABLE `lifestyle_risk` (
 --
 
 INSERT INTO `lifestyle_risk` (`id`, `cvd_id`, `smoking_status`, `smoking_comments`, `alcohol_use`, `excessive_alcohol`, `alcohol_notes`, `eats_processed_weekly`, `fruits_3_servings_daily`, `vegetables_3_servings_daily`, `exercise_days_per_week`, `exercise_minutes_per_day`, `exercise_intensity`) VALUES
-(1, 1, 'Never', '', 'Never', 0, '', 0, 1, 1, 3, 30, 'Moderate'),
-(2, 2, 'Never', NULL, 'Never', 0, NULL, 0, 1, 1, 2, 20, 'Light'),
-(3, 3, 'Never', NULL, 'Never', 0, NULL, 0, 1, 1, 2, 20, 'Light'),
-(4, 4, 'Never', NULL, 'Never', 0, NULL, 0, 1, 1, 3, 30, 'Moderate'),
-(5, 5, 'Current', NULL, 'Current', 1, NULL, 1, 0, 0, 1, 20, 'Light'),
-(6, 6, 'Never', NULL, 'Never', 0, NULL, 0, 1, 1, 0, 0, 'Light'),
-(7, 7, 'Never', NULL, 'Never', 0, NULL, 0, 1, 1, 0, 0, 'Light'),
-(8, 8, 'Never', NULL, 'Never', 0, NULL, 0, 1, 1, 3, 30, 'Moderate');
+(1, 1, 'Never', NULL, 'Never', 0, NULL, 0, 1, 1, 3, 30, 'Moderate'),
+(2, 2, 'Current', 'Smokes 5/day', 'Current', 1, 'Occasional binge', 1, 0, 0, 1, 20, 'Light'),
+(3, 3, 'Never', NULL, 'Never', 0, NULL, 0, 1, 1, 4, 40, 'Moderate'),
+(4, 4, 'Stopped_gt_1yr', NULL, 'Former', 0, NULL, 0, 1, 1, 2, 25, 'Light'),
+(5, 5, 'Never', NULL, 'Never', 0, NULL, 0, 1, 1, 3, 30, 'Moderate'),
+(6, 6, 'Never', NULL, 'Never', 0, NULL, 0, 1, 0, 0, 0, 'Light'),
+(7, 7, 'Current', 'Heavy smoker', 'Current', 1, 'Daily', 1, 0, 0, 1, 15, 'Light'),
+(8, 8, 'Never', NULL, 'Never', 0, NULL, 0, 1, 1, 5, 45, 'Vigorous'),
+(9, 9, 'Stopped_lt_1yr', NULL, 'Former', 0, NULL, 0, 1, 0, 1, 20, 'Light'),
+(10, 10, 'Never', NULL, 'Never', 0, NULL, 0, 1, 1, 3, 30, 'Moderate'),
+(11, 11, 'Never', NULL, 'Never', 0, NULL, 0, 1, 1, 2, 20, 'Light'),
+(12, 12, 'Never', NULL, 'Never', 0, NULL, 1, 1, 1, 4, 35, 'Moderate'),
+(13, 13, 'Current', 'Smokes socially', 'Current', 0, NULL, 1, 0, 0, 1, 15, 'Light'),
+(14, 14, 'Never', NULL, 'Never', 0, NULL, 0, 1, 1, 3, 30, 'Moderate'),
+(15, 15, 'Never', NULL, 'Never', 0, NULL, 0, 1, 1, 0, 0, 'Light'),
+(16, 16, 'Current', 'Pack-a-day', 'Current', 1, 'Frequent drinker', 1, 0, 0, 0, 0, 'Light'),
+(17, 17, 'Never', NULL, 'Never', 0, NULL, 0, 1, 1, 3, 25, 'Moderate'),
+(18, 18, 'Stopped_gt_1yr', NULL, 'Former', 0, NULL, 0, 1, 1, 2, 20, 'Light'),
+(19, 19, 'Never', NULL, 'Never', 0, NULL, 0, 1, 1, 3, 30, 'Moderate'),
+(20, 20, 'Never', NULL, 'Never', 0, NULL, 0, 1, 1, 1, 15, 'Light'),
+(21, 24, 'Current', '', 'Never', 1, '', 1, 1, 1, 1, 15, 'Moderate');
 
 -- --------------------------------------------------------
 
@@ -456,11 +631,36 @@ CREATE TABLE `officials` (
 --
 
 INSERT INTO `officials` (`id`, `full_name`, `username`, `password_hash`, `last_login_at`, `role`, `contact_no`, `email`, `photo_url`, `active`, `created_at`, `updated_at`) VALUES
-(1, 'Dr. Liza Santos', 'liza.santos', '$2y$10$/1bBfv0yAdk3Y2jHv6xq0eEUPTYH8Do31g71CovKKMprwItmAOCFK', '2025-11-22 14:47:03', 'Baranggay Health Worker President', '09171234567', 'liza.santos@example.local', NULL, 1, '2025-01-01 08:00:00', '2025-11-22 14:47:03'),
-(2, 'Juan Dela Cruz', 'bhw_president', '$2y$10$/1bBfv0yAdk3Y2jHv6xq0eEUPTYH8Do31g71CovKKMprwItmAOCFK', NULL, 'Baranggay Health Worker', '09171234567', 'bhwpresident@example.com', NULL, 1, '2025-11-22 13:01:19', '2025-11-22 13:03:19'),
-(3, 'Maria Santos', 'barangay_secretary', '$2y$10$/1bBfv0yAdk3Y2jHv6xq0eEUPTYH8Do31g71CovKKMprwItmAOCFK', NULL, 'Baranggay Secretary', '09172345678', 'secretary@example.com', NULL, 1, '2025-11-22 13:01:19', '2025-11-22 13:01:19'),
-(4, 'Pedro Ramos', 'bhw', '$2y$10$/1bBfv0yAdk3Y2jHv6xq0eEUPTYH8Do31g71CovKKMprwItmAOCFK', NULL, 'Baranggay Health Worker', '09173456789', 'bhw@example.com', NULL, 1, '2025-11-22 13:01:19', '2025-11-22 13:01:19'),
-(5, 'Carlos Ignacio', 'barangay_captain', '$2y$10$/1bBfv0yAdk3Y2jHv6xq0eEUPTYH8Do31g71CovKKMprwItmAOCFK', NULL, 'Baranggay Captain', '09174567890', 'captain@example.com', NULL, 1, '2025-11-22 13:01:19', '2025-11-22 13:01:19');
+(1, 'Ramon Santos', 'ramon.santos', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Captain', '09170000001', 'ramon.santos@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(2, 'Maria Reyes', 'maria.reyes', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Secretary', '09170000002', 'maria.reyes@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(3, 'Liza Santos', 'liza.santos', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Health Worker President', '09170000003', 'liza.santos@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(4, 'Pedro Ramos', 'pedro.ramos', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Conciliation Panel', '09170000004', 'pedro.ramos@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(5, 'Ana Villanueva', 'ana.villanueva', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Conciliation Panel', '09170000005', 'ana.villanueva@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(6, 'Julio Mercado', 'julio.mercado', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Conciliation Panel', '09170000006', 'julio.mercado@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(7, 'Rogelio Tanod1', 'rogelio.tanod1', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Tanod', '09170000007', 'rogelio.tanod1@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(8, 'Manuel Tanod2', 'manuel.tanod2', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Tanod', '09170000008', 'manuel.tanod2@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(9, 'Enrique Tanod3', 'enrique.tanod3', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Tanod', '09170000009', 'enrique.tanod3@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(10, 'Pedro Tanod4', 'pedro.tanod4', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Tanod', '09170000010', 'pedro.tanod4@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(11, 'Carlos Tanod5', 'carlos.tanod5', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Tanod', '09170000011', 'carlos.tanod5@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(12, 'Anna Beltran', 'anna.beltran', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Health Worker', '09170000012', 'anna.beltran@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(13, 'Betsy Cruz', 'betsy.cruz', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Health Worker', '09170000013', 'betsy.cruz@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(14, 'Cecilia DelaRosa', 'cecilia.delarosa', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Health Worker', '09170000014', 'cecilia.delarosa@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(15, 'Daniel Eusebio', 'daniel.eusebio', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Health Worker', '09170000015', 'daniel.eusebio@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(16, 'Evelyn Fernandez', 'evelyn.fernandez', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Health Worker', '09170000016', 'evelyn.fernandez@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(17, 'Felix Gonzales', 'felix.gonzales', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Health Worker', '09170000017', 'felix.gonzales@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(18, 'Gloria Hernandez', 'gloria.hernandez', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Health Worker', '09170000018', 'gloria.hernandez@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(19, 'Horace Ignacio', 'horace.ignacio', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Health Worker', '09170000019', 'horace.ignacio@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(20, 'Ida Javier', 'ida.javier', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Health Worker', '09170000020', 'ida.javier@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(21, 'Josefa Katigbak', 'josefa.katigbak', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Health Worker', '09170000021', 'josefa.katigbak@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(22, 'Kevin Lardizabal', 'kevin.lardizabal', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Health Worker', '09170000022', 'kevin.lardizabal@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(23, 'Lucia Manalastas', 'lucia.manalastas', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Health Worker', '09170000023', 'lucia.manalastas@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(24, 'Mario Navarro', 'mario.navarro', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Health Worker', '09170000024', 'mario.navarro@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(25, 'Nina Ocampo', 'nina.ocampo', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Health Worker', '09170000025', 'nina.ocampo@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(26, 'Oscar Pacheco', 'oscar.pacheco', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Health Worker', '09170000026', 'oscar.pacheco@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(27, 'Pia Quiambao', 'pia.quiambao', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Health Worker', '09170000027', 'pia.quiambao@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(28, 'Rico Ramos', 'rico.ramos', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Health Worker', '09170000028', 'rico.ramos@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(29, 'Sally Tolentino', 'sally.tolentino', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Health Worker', '09170000029', 'sally.tolentino@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(30, 'Tony Umali', 'tony.umali', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Health Worker', '09170000030', 'tony.umali@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03');
 
 -- --------------------------------------------------------
 
@@ -470,12 +670,13 @@ INSERT INTO `officials` (`id`, `full_name`, `username`, `password_hash`, `last_l
 
 CREATE TABLE `persons` (
   `id` bigint(20) UNSIGNED NOT NULL,
-  `family_id` bigint(20) UNSIGNED NOT NULL,
+  `family_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `household_id` bigint(20) UNSIGNED DEFAULT NULL,
   `last_name` varchar(128) NOT NULL,
   `first_name` varchar(128) NOT NULL,
   `middle_name` varchar(128) DEFAULT NULL,
   `suffix` varchar(32) DEFAULT NULL,
-  `family_position` varchar(64) DEFAULT NULL,
+  `is_head` tinyint(1) NOT NULL DEFAULT 0,
   `sex` enum('M','F') DEFAULT NULL,
   `birthdate` date DEFAULT NULL,
   `marital_status` varchar(32) DEFAULT NULL,
@@ -494,16 +695,59 @@ CREATE TABLE `persons` (
 -- Dumping data for table `persons`
 --
 
-INSERT INTO `persons` (`id`, `family_id`, `last_name`, `first_name`, `middle_name`, `suffix`, `family_position`, `sex`, `birthdate`, `marital_status`, `blood_type`, `disability`, `highest_educ_attainment`, `occupation`, `religion`, `is_pregnant`, `is_deceased`, `created_at`, `updated_at`) VALUES
-(1, 1, 'Santos', 'Ramon', 'De Castro', NULL, 'Head', 'M', '1970-05-10', 'Married', 'O+', NULL, 'High School', 'Farmer', 'Catholic', 0, 0, '2025-11-01 09:00:00', '2025-11-20 18:14:22'),
-(2, 1, 'Santos', 'Carlos', 'A', NULL, 'Parent', 'M', '1945-03-03', 'Widowed', NULL, NULL, 'Elementary', 'Retired', 'Catholic', 0, 0, '2025-11-01 09:00:00', '2025-11-01 09:00:00'),
-(3, 1, 'Santos', 'Lucia', 'B', NULL, 'Parent', 'F', '1948-08-20', 'Widowed', NULL, NULL, 'Elementary', 'Retired', 'Catholic', 0, 0, '2025-11-01 09:00:00', '2025-11-01 09:00:00'),
-(4, 1, 'Santos', 'Maribel', 'M', NULL, 'Spouse', 'F', '1972-11-02', 'Married', NULL, NULL, 'College', 'Teacher', 'Catholic', 0, 0, '2025-11-01 09:00:00', '2025-11-01 09:00:00'),
-(5, 1, 'Santos', 'Daniel', NULL, NULL, 'Child', 'M', '1998-02-14', 'Married', NULL, NULL, 'High School', 'Driver', 'Catholic', 0, 0, '2025-11-01 09:00:00', '2025-11-01 09:00:00'),
-(6, 1, 'Santos', 'Miguel', NULL, NULL, 'Grandchild', 'M', '2016-01-10', 'Single', NULL, NULL, 'None', 'Child', 'Catholic', 0, 0, '2025-11-01 09:00:00', '2025-11-01 09:00:00'),
-(7, 1, 'Santos', 'Juan', NULL, NULL, 'Grandchild', 'M', '2018-03-15', 'Single', NULL, NULL, 'None', 'Child', 'Catholic', 0, 0, '2025-11-01 09:00:00', '2025-11-01 09:00:00'),
-(8, 1, 'Santos', 'Elena', NULL, NULL, 'Child', 'F', '2001-07-20', 'Single', NULL, NULL, 'Vocational', 'Nurse', 'Catholic', 0, 0, '2025-11-01 09:00:00', '2025-11-01 09:00:00'),
-(9, 2, 'Gludo', 'David Alfred', 'Cabali', NULL, 'Head', NULL, NULL, 'Single', NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-21 18:40:13', '2025-11-21 18:40:13');
+INSERT INTO `persons` (`id`, `family_id`, `household_id`, `last_name`, `first_name`, `middle_name`, `suffix`, `is_head`, `sex`, `birthdate`, `marital_status`, `blood_type`, `disability`, `highest_educ_attainment`, `occupation`, `religion`, `is_pregnant`, `is_deceased`, `created_at`, `updated_at`) VALUES
+(1, 1, 1, 'Cruz', 'Adrian', 'P', NULL, 1, 'M', '1990-04-12', 'Single', 'A+', NULL, 'College', 'Engineer', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(2, 1, 1, 'Reyes', 'Bianca', 'M', NULL, 0, 'F', '1995-11-03', 'Single', 'O+', NULL, 'College', 'Nurse', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(3, 2, 2, 'Mendoza', 'Carlo', 'R', NULL, 1, 'M', '1982-06-20', 'Married', 'B+', NULL, 'College', 'Driver', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(4, 2, 2, 'Lopez', 'Diana', 'S', NULL, 0, 'F', '1988-09-08', 'Married', 'AB+', NULL, 'College', 'Teacher', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(5, 3, 3, 'Garcia', 'Ernesto', 'L', NULL, 1, 'M', '1975-01-30', 'Married', 'O-', NULL, 'High School', 'Farmer', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(6, 3, 3, 'Ramos', 'Fiona', 'A', NULL, 0, 'F', '1992-12-15', 'Single', 'A-', NULL, 'College', 'Clerk', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(7, 4, 4, 'Aquino', 'Gabriel', 'T', NULL, 1, 'M', '1986-05-05', 'Married', 'B-', NULL, 'College', 'Accountant', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(8, 4, 4, 'Castillo', 'Hannah', 'L', NULL, 0, 'F', '1998-07-21', 'Single', 'O+', NULL, 'College', 'Graphic Designer', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(9, 1, 1, 'Delos Santos', 'Ian', 'C', NULL, 0, 'M', '2000-03-10', 'Single', NULL, NULL, 'Vocational', 'Student', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(10, 1, 1, 'Flores', 'Jasmine', 'E', NULL, 0, 'F', '1993-10-02', 'Single', 'AB-', NULL, 'College', 'Pharmacist', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(11, 5, 5, 'Navarro', 'Kevin', 'J', NULL, 1, 'M', '1989-08-18', 'Married', 'A+', NULL, 'College', 'Sales', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(12, 5, 5, 'Mercado', 'Liza', 'B', NULL, 0, 'F', '1978-02-25', 'Widowed', 'O+', NULL, 'College', 'Midwife', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(13, 1, 1, 'Domingo', 'Miguel', 'R', NULL, 0, 'M', '2001-06-11', 'Single', NULL, NULL, 'High School', 'Driver', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(14, 2, 2, 'Valdez', 'Nicole', 'F', NULL, 0, 'F', '1996-01-09', 'Single', 'B+', NULL, 'College', 'IT Support', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(15, 6, 6, 'Pineda', 'Oscar', 'M', NULL, 1, 'M', '1970-11-30', 'Married', 'AB+', NULL, 'High School', 'Mechanic', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(16, 7, 7, 'Santos', 'Paula', 'G', NULL, 1, 'F', '1984-04-04', 'Married', 'O+', NULL, 'College', 'Business Owner', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(17, 4, 4, 'Torres', 'Quincy', 'V', NULL, 0, 'M', '1991-02-14', 'Single', 'A+', NULL, 'College', 'Researcher', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(18, 5, 5, 'Gonzales', 'Rhea', 'K', NULL, 0, 'F', '1999-05-30', 'Single', 'B-', NULL, 'College', 'Designer', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(19, 6, 6, 'Herrera', 'Samuel', 'D', NULL, 0, 'M', '1980-12-01', 'Married', 'O+', NULL, 'College', 'Police', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(20, 6, 6, 'Ilagan', 'Teresita', 'N', NULL, 0, 'F', '1965-07-07', 'Widowed', 'AB-', NULL, 'High School', 'Retired', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(21, 7, 7, 'Jacinto', 'Ulysses', 'R', NULL, 0, 'M', '1994-03-22', 'Single', 'B+', NULL, 'College', 'Teacher', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(22, 7, 7, 'Kahulugan', 'Valeria', 'S', NULL, 0, 'F', '1997-08-29', 'Single', 'A-', NULL, 'College', 'Research Asst', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(23, 8, 8, 'Lorenzo', 'Wesley', 'M', NULL, 1, 'M', '1983-10-17', 'Married', 'O+', NULL, 'College', 'Chef', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(24, 2, 2, 'Manalo', 'Xandra', 'P', NULL, 0, 'F', '1990-09-09', 'Single', 'AB+', NULL, 'College', 'Architect', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(25, 3, 3, 'Noble', 'Yves', 'L', NULL, 0, 'M', '1992-02-02', 'Single', 'A+', NULL, 'College', 'Photographer', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(26, 9, 9, 'Ortega', 'Zara', 'Q', NULL, 0, 'F', '1999-12-12', 'Single', 'O-', NULL, 'College', 'Barista', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(27, 9, 9, 'Padilla', 'Aaron', 'V', NULL, 1, 'M', '1987-06-06', 'Married', 'B+', NULL, 'College', 'Electrician', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(28, 8, 8, 'Quintos', 'Bea', 'R', NULL, 0, 'F', '1994-04-18', 'Single', 'AB-', NULL, 'College', 'Analyst', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(29, 8, 8, 'Rafael', 'Cesar', 'G', NULL, 0, 'M', '1981-03-03', 'Married', 'A-', NULL, 'College', 'Carpenter', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(30, 9, 9, 'Serrano', 'Denise', 'H', NULL, 0, 'F', '1990-05-05', 'Single', 'O+', NULL, 'College', 'Lawyer', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(31, 10, 10, 'Taboada', 'Ethan', 'K', NULL, 1, 'M', '1993-11-11', 'Single', 'B+', NULL, 'College', 'Consultant', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(32, 9, 9, 'Uban', 'Faith', 'M', NULL, 0, 'F', '1997-07-07', 'Single', 'AB+', NULL, 'College', 'Marketing', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(33, 10, 10, 'Velez', 'Gabrielle', 'S', NULL, 0, 'F', '1991-01-01', 'Single', 'O-', NULL, 'College', 'Event Planner', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(34, 11, 11, 'Wong', 'Hector', 'L', NULL, 1, 'M', '1985-08-08', 'Married', 'A+', NULL, 'College', 'IT Manager', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(35, 10, 10, 'Xavier', 'Isla', 'P', NULL, 0, 'F', '1996-06-06', 'Single', 'B-', NULL, 'College', 'Researcher', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(36, 11, 11, 'Yap', 'Jason', 'R', NULL, 0, 'M', '1992-09-19', 'Single', 'AB-', NULL, 'College', 'Consultant', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(37, 11, 11, 'Zamora', 'Katrina', 'L', NULL, 0, 'F', '1998-10-10', 'Single', 'O+', NULL, 'College', 'Social Worker', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(38, 12, 12, 'Alcantara', 'Loren', 'G', NULL, 1, 'M', '1984-04-04', 'Married', 'B+', NULL, 'College', 'Planner', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(39, 12, 12, 'Barrameda', 'Maya', 'T', NULL, 0, 'F', '1990-02-20', 'Single', 'A+', NULL, 'College', 'Trainer', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(40, 12, 12, 'Cabal', 'Noel', 'S', NULL, 0, 'M', '1977-07-07', 'Married', 'O-', NULL, 'High School', 'Fisherman', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(41, 13, 13, 'Dizon', 'Olivia', 'M', NULL, 1, 'F', '1995-05-05', 'Single', 'B-', NULL, 'College', 'Analyst', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(42, 13, 13, 'Eusebio', 'Paul', 'N', NULL, 0, 'M', '1988-08-08', 'Married', 'AB+', NULL, 'College', 'Tutor', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(43, 14, 14, 'Floresca', 'Rico', 'L', NULL, 1, 'M', '1990-09-09', 'Single', 'O+', NULL, 'College', 'Developer', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(44, 13, 13, 'Gamboa', 'Sonia', 'P', NULL, 0, 'F', '1979-03-03', 'Married', 'B+', NULL, 'College', 'Shop Owner', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(45, 14, 14, 'Hidalgo', 'Tristan', 'Q', NULL, 0, 'M', '1991-01-21', 'Single', 'A-', NULL, 'College', 'Plumber', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(46, 15, 15, 'Ibarra', 'Ursula', 'V', NULL, 1, 'F', '1986-12-12', 'Married', 'AB-', NULL, 'College', 'Nurse', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(47, 14, 14, 'Julian', 'Victor', 'S', NULL, 0, 'M', '1982-02-02', 'Married', 'B-', NULL, 'College', 'Technician', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(48, 15, 15, 'Kendrick', 'Willa', 'A', NULL, 0, 'F', '1995-05-05', 'Single', 'O+', NULL, 'College', 'Writer', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(49, 15, 15, 'Lozada', 'Xavier', 'B', NULL, 0, 'M', '1993-03-03', 'Single', 'A+', NULL, 'College', 'Engineer', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(50, 15, 15, 'Mata', 'Yolanda', 'C', NULL, 0, 'F', '1987-07-07', 'Married', 'B+', NULL, 'College', 'Administrator', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
+(51, 16, 16, 'Gludo', 'David Alfred', 'Cabali', NULL, 1, 'M', '2004-08-12', 'Single', 'O+', NULL, 'College', 'Student', 'Roman Catholic', NULL, 0, '2025-11-24 18:51:37', '2025-11-24 19:35:26'),
+(52, NULL, NULL, 'Malata', 'Ronel Lance', 'Sumama', NULL, 0, NULL, NULL, 'Single', NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-24 19:03:16', '2025-11-24 19:03:16');
 
 -- --------------------------------------------------------
 
@@ -515,7 +759,7 @@ CREATE TABLE `person_relationships` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `person_id` bigint(20) UNSIGNED NOT NULL,
   `related_person_id` bigint(20) UNSIGNED NOT NULL,
-  `relationship_type` enum('parent','child','spouse','sibling','guardian','ward','grandparent','grandchild','step_parent','step_child','adoptive_parent','adopted_child','other') NOT NULL,
+  `relationship_type` enum('parent','child','spouse','other') NOT NULL,
   `family_id` bigint(20) UNSIGNED DEFAULT NULL,
   `is_inverse` tinyint(1) NOT NULL DEFAULT 0,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
@@ -527,26 +771,116 @@ CREATE TABLE `person_relationships` (
 --
 
 INSERT INTO `person_relationships` (`id`, `person_id`, `related_person_id`, `relationship_type`, `family_id`, `is_inverse`, `created_at`, `updated_at`) VALUES
-(1, 2, 1, 'parent', 1, 0, '2025-11-01 09:45:00', '2025-11-01 09:45:00'),
-(2, 1, 2, 'child', 1, 1, '2025-11-01 09:45:00', '2025-11-01 09:45:00'),
-(3, 3, 1, 'parent', 1, 0, '2025-11-01 09:46:00', '2025-11-01 09:46:00'),
-(4, 1, 3, 'child', 1, 1, '2025-11-01 09:46:00', '2025-11-01 09:46:00'),
-(5, 1, 4, 'spouse', 1, 0, '2025-11-01 09:47:00', '2025-11-01 09:47:00'),
-(6, 4, 1, 'spouse', 1, 1, '2025-11-01 09:47:00', '2025-11-01 09:47:00'),
-(7, 1, 5, 'parent', 1, 0, '2025-11-01 09:48:00', '2025-11-01 09:48:00'),
-(8, 5, 1, 'child', 1, 1, '2025-11-01 09:48:00', '2025-11-01 09:48:00'),
-(9, 1, 8, 'parent', 1, 0, '2025-11-01 09:49:00', '2025-11-01 09:49:00'),
-(10, 8, 1, 'child', 1, 1, '2025-11-01 09:49:00', '2025-11-01 09:49:00'),
-(11, 4, 5, 'parent', 1, 0, '2025-11-01 09:50:00', '2025-11-01 09:50:00'),
-(12, 5, 4, 'child', 1, 1, '2025-11-01 09:50:00', '2025-11-01 09:50:00'),
-(13, 4, 8, 'parent', 1, 0, '2025-11-01 09:51:00', '2025-11-01 09:51:00'),
-(14, 8, 4, 'child', 1, 1, '2025-11-01 09:51:00', '2025-11-01 09:51:00'),
-(15, 5, 8, 'sibling', 1, 0, '2025-11-19 14:08:44', '2025-11-19 14:08:44'),
-(16, 8, 5, 'sibling', 1, 1, '2025-11-19 14:08:44', '2025-11-19 14:08:44'),
-(17, 5, 6, 'parent', 1, 0, '2025-11-19 14:08:44', '2025-11-19 14:08:44'),
-(18, 6, 5, 'child', 1, 1, '2025-11-19 14:08:44', '2025-11-19 14:08:44'),
-(19, 5, 7, 'parent', 1, 0, '2025-11-19 14:08:44', '2025-11-19 14:08:44'),
-(20, 7, 5, 'child', 1, 1, '2025-11-19 14:08:44', '2025-11-19 14:08:44');
+(1, 1, 2, 'spouse', 1, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(2, 2, 1, 'spouse', 1, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(3, 1, 9, 'parent', 1, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(4, 9, 1, 'child', 1, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(5, 2, 9, 'parent', 1, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(6, 9, 2, 'child', 1, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(7, 1, 10, 'parent', 1, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(8, 10, 1, 'child', 1, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(9, 2, 10, 'parent', 1, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(10, 10, 2, 'child', 1, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(11, 9, 13, 'parent', 1, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(12, 13, 9, 'child', 1, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(13, 3, 4, 'spouse', 2, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(14, 4, 3, 'spouse', 2, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(15, 3, 14, 'parent', 2, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(16, 14, 3, 'child', 2, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(17, 4, 14, 'parent', 2, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(18, 14, 4, 'child', 2, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(19, 3, 24, 'parent', 2, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(20, 24, 3, 'child', 2, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(21, 4, 24, 'parent', 2, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(22, 24, 4, 'child', 2, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(23, 5, 6, 'spouse', 3, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(24, 6, 5, 'spouse', 3, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(25, 5, 25, 'parent', 3, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(26, 25, 5, 'child', 3, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(27, 6, 25, 'parent', 3, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(28, 25, 6, 'child', 3, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(29, 7, 8, 'spouse', 4, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(30, 8, 7, 'spouse', 4, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(31, 7, 17, 'parent', 4, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(32, 17, 7, 'child', 4, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(33, 8, 17, 'parent', 4, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(34, 17, 8, 'child', 4, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(35, 11, 12, 'spouse', 5, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(36, 12, 11, 'spouse', 5, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(37, 11, 18, 'parent', 5, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(38, 18, 11, 'child', 5, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(39, 12, 18, 'parent', 5, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(40, 18, 12, 'child', 5, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(41, 15, 19, 'spouse', 6, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(42, 19, 15, 'spouse', 6, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(43, 15, 20, 'parent', 6, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(44, 20, 15, 'child', 6, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(45, 19, 20, 'parent', 6, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(46, 20, 19, 'child', 6, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(47, 16, 21, 'spouse', 7, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(48, 21, 16, 'spouse', 7, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(49, 16, 22, 'parent', 7, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(50, 22, 16, 'child', 7, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(51, 21, 22, 'parent', 7, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(52, 22, 21, 'child', 7, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(53, 23, 28, 'spouse', 8, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(54, 28, 23, 'spouse', 8, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(55, 23, 29, 'parent', 8, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(56, 29, 23, 'child', 8, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(57, 28, 29, 'parent', 8, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(58, 29, 28, 'child', 8, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(59, 27, 30, 'spouse', 9, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(60, 30, 27, 'spouse', 9, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(61, 27, 32, 'parent', 9, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(62, 32, 27, 'child', 9, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(63, 30, 32, 'parent', 9, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(64, 32, 30, 'child', 9, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(65, 27, 26, 'parent', 9, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(66, 26, 27, 'child', 9, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(67, 30, 26, 'parent', 9, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(68, 26, 30, 'child', 9, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(69, 31, 33, 'spouse', 10, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(70, 33, 31, 'spouse', 10, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(71, 31, 35, 'parent', 10, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(72, 35, 31, 'child', 10, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(73, 33, 35, 'parent', 10, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(74, 35, 33, 'child', 10, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(75, 34, 36, 'spouse', 11, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(76, 36, 34, 'spouse', 11, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(77, 34, 37, 'parent', 11, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(78, 37, 34, 'child', 11, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(79, 36, 37, 'parent', 11, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(80, 37, 36, 'child', 11, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(81, 38, 39, 'spouse', 12, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(82, 39, 38, 'spouse', 12, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(83, 38, 40, 'parent', 12, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(84, 40, 38, 'child', 12, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(85, 39, 40, 'parent', 12, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(86, 40, 39, 'child', 12, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(87, 41, 42, 'spouse', 13, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(88, 42, 41, 'spouse', 13, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(89, 41, 44, 'parent', 13, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(90, 44, 41, 'child', 13, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(91, 42, 44, 'parent', 13, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(92, 44, 42, 'child', 13, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(93, 43, 45, 'spouse', 14, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(94, 45, 43, 'spouse', 14, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(95, 43, 47, 'parent', 14, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(96, 47, 43, 'child', 14, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(97, 45, 47, 'parent', 14, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(98, 47, 45, 'child', 14, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(99, 46, 48, 'spouse', 15, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(100, 48, 46, 'spouse', 15, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(101, 46, 49, 'parent', 15, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(102, 49, 46, 'child', 15, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(103, 48, 49, 'parent', 15, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(104, 49, 48, 'child', 15, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(105, 46, 50, 'parent', 15, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(106, 50, 46, 'child', 15, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(107, 48, 50, 'parent', 15, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(108, 50, 48, 'child', 15, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
+(109, 51, 52, 'child', 16, 0, '2025-11-24 19:03:46', '2025-11-24 19:03:46'),
+(110, 52, 51, 'parent', 16, 1, '2025-11-24 19:03:46', '2025-11-24 19:03:46');
 
 -- --------------------------------------------------------
 
@@ -626,6 +960,27 @@ INSERT INTO `site_profile` (`id`, `barangay_name`, `municipality_name`, `provinc
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `statuses`
+--
+
+CREATE TABLE `statuses` (
+  `id` int(11) NOT NULL,
+  `label` varchar(50) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `statuses`
+--
+
+INSERT INTO `statuses` (`id`, `label`, `created_at`) VALUES
+(1, 'Pending', '2025-11-18 18:53:01'),
+(2, 'Investigating', '2025-11-18 18:53:01'),
+(3, 'Resolved', '2025-11-18 18:53:01');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `users`
 --
 
@@ -647,15 +1002,58 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `person_id`, `username`, `email`, `mobile`, `password_hash`, `status`, `last_login_at`, `created_at`, `updated_at`) VALUES
-(1, 1, 'ramon.s', 'ramon.s@example.local', '0917-0002-112', '$2y$10$/1bBfv0yAdk3Y2jHv6xq0eEUPTYH8Do31g71CovKKMprwItmAOCFK', 'active', '2025-11-22 16:16:44', '2025-11-01 09:00:00', '2025-11-22 16:16:44'),
-(2, 2, 'carlos.s', 'carlos.s@example.local', '09170000002', '$2y$10$/1bBfv0yAdk3Y2jHv6xq0eEUPTYH8Do31g71CovKKMprwItmAOCFK', 'active', NULL, '2025-11-01 09:00:00', '2025-11-01 09:00:00'),
-(3, 3, 'lucia.s', 'lucia.s@example.local', '09170000003', '$2y$10$/1bBfv0yAdk3Y2jHv6xq0eEUPTYH8Do31g71CovKKMprwItmAOCFK', 'active', '2025-11-19 14:42:25', '2025-11-01 09:00:00', '2025-11-19 14:42:25'),
-(4, 4, 'maribel.s', 'maribel.s@example.local', '09170000004', '$2y$10$/1bBfv0yAdk3Y2jHv6xq0eEUPTYH8Do31g71CovKKMprwItmAOCFK', 'active', NULL, '2025-11-01 09:00:00', '2025-11-01 09:00:00'),
-(5, 5, 'daniel.s', 'daniel.s@example.local', '09170000005', '$2y$10$/1bBfv0yAdk3Y2jHv6xq0eEUPTYH8Do31g71CovKKMprwItmAOCFK', 'active', '2025-11-19 14:43:31', '2025-11-01 09:00:00', '2025-11-19 14:43:31'),
-(6, 6, 'miguel.s', 'miguel.s@example.local', '09170000006', '$2y$10$/1bBfv0yAdk3Y2jHv6xq0eEUPTYH8Do31g71CovKKMprwItmAOCFK', 'active', NULL, '2025-11-01 09:00:00', '2025-11-01 09:00:00'),
-(7, 7, 'juan.s', 'juan.s@example.local', '09170000007', '$2y$10$/1bBfv0yAdk3Y2jHv6xq0eEUPTYH8Do31g71CovKKMprwItmAOCFK', 'active', NULL, '2025-11-01 09:00:00', '2025-11-01 09:00:00'),
-(8, 8, 'elena.s', 'elena.s@example.local', '09170000008', '$2y$10$/1bBfv0yAdk3Y2jHv6xq0eEUPTYH8Do31g71CovKKMprwItmAOCFK', 'active', NULL, '2025-11-01 09:00:00', '2025-11-01 09:00:00'),
-(9, 9, 'alf_red_c', 'davidgludo@gmail.com', NULL, '$2y$10$F.fyBS.tjU9PN9A5Y1FH4u3wyTL9smL3kYi2rhlQAtDKa9EHcgpma', 'active', '2025-11-22 16:17:36', '2025-11-21 18:40:13', '2025-11-22 16:17:36');
+(1, 1, 'adrian.cruz', 'adrian.cruz01@example.local', '09170000001', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', '2025-11-24 17:28:32', '2025-11-24 09:26:54', '2025-11-24 17:28:32'),
+(2, 2, 'bianca.reyes', 'bianca.reyes02@example.local', '09170000002', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(3, 3, 'carlo.mendoza', 'carlo.mendoza03@example.local', '09170000003', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(4, 4, 'diana.lopez', 'diana.lopez04@example.local', '09170000004', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(5, 5, 'ernesto.garcia', 'ernesto.garcia05@example.local', '09170000005', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(6, 6, 'fiona.ramos', 'fiona.ramos06@example.local', '09170000006', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(7, 7, 'gabriel.aquino', 'gabriel.aquino07@example.local', '09170000007', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(8, 8, 'hannah.castillo', 'hannah.castillo08@example.local', '09170000008', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(9, 9, 'ian.delossantos', 'ian.delossantos09@example.local', '09170000009', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', '2025-11-24 18:25:16', '2025-11-24 09:26:54', '2025-11-24 18:25:16'),
+(10, 10, 'jasmine.flores', 'jasmine.flores10@example.local', '09170000010', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(11, 11, 'kevin.navarro', 'kevin.navarro11@example.local', '09170000011', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(12, 12, 'liza.mercado', 'liza.mercado12@example.local', '09170000012', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(13, 13, 'miguel.domingo', 'miguel.domingo13@example.local', '09170000013', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(14, 14, 'nicole.valdez', 'nicole.valdez14@example.local', '09170000014', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(15, 15, 'oscar.pineda', 'oscar.pineda15@example.local', '09170000015', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(16, 16, 'paula.santos', 'paula.santos16@example.local', '09170000016', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(17, 17, 'quincy.torres', 'quincy.torres17@example.local', '09170000017', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(18, 18, 'rhea.gonzales', 'rhea.gonzales18@example.local', '09170000018', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(19, 19, 'samuel.herrera', 'samuel.herrera19@example.local', '09170000019', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(20, 20, 'teresita.ilagan', 'teresita.ilagan20@example.local', '09170000020', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(21, 21, 'ulysses.jacinto', 'ulysses.jacinto21@example.local', '09170000021', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(22, 22, 'valeria.kahulugan', 'valeria.kahulugan22@example.local', '09170000022', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(23, 23, 'wesley.lorenzo', 'wesley.lorenzo23@example.local', '09170000023', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(24, 24, 'xandra.manalo', 'xandra.manalo24@example.local', '09170000024', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(25, 25, 'yves.noble', 'yves.noble25@example.local', '09170000025', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(26, 26, 'zara.ortega', 'zara.ortega26@example.local', '09170000026', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(27, 27, 'aaron.padilla', 'aaron.padilla27@example.local', '09170000027', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(28, 28, 'bea.quintos', 'bea.quintos28@example.local', '09170000028', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(29, 29, 'cesar.rafael', 'cesar.rafael29@example.local', '09170000029', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(30, 30, 'denise.serrano', 'denise.serrano30@example.local', '09170000030', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(31, 31, 'ethan.taboada', 'ethan.taboada31@example.local', '09170000031', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(32, 32, 'faith.uban', 'faith.uban32@example.local', '09170000032', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(33, 33, 'gabrielle.velez', 'gabrielle.velez33@example.local', '09170000033', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(34, 34, 'hector.wong', 'hector.wong34@example.local', '09170000034', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(35, 35, 'isla.xavier', 'isla.xavier35@example.local', '09170000035', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(36, 36, 'jason.yap', 'jason.yap36@example.local', '09170000036', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(37, 37, 'katrina.zamora', 'katrina.zamora37@example.local', '09170000037', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(38, 38, 'loren.alcantara', 'loren.alcantara38@example.local', '09170000038', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(39, 39, 'maya.barrameda', 'maya.barrameda39@example.local', '09170000039', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(40, 40, 'noel.cabal', 'noel.cabal40@example.local', '09170000040', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(41, 41, 'olivia.dizon', 'olivia.dizon41@example.local', '09170000041', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(42, 42, 'paul.eusebio', 'paul.eusebio42@example.local', '09170000042', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(43, 43, 'rico.floresca', 'rico.floresca43@example.local', '09170000043', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(44, 44, 'sonia.gamboa', 'sonia.gamboa44@example.local', '09170000044', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(45, 45, 'tristan.hidalgo', 'tristan.hidalgo45@example.local', '09170000045', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(46, 46, 'ursula.ibarra', 'ursula.ibarra46@example.local', '09170000046', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(47, 47, 'victor.julian', 'victor.julian47@example.local', '09170000047', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(48, 48, 'willa.kendrick', 'willa.kendrick48@example.local', '09170000048', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(49, 49, 'xavier.lozada', 'xavier.lozada49@example.local', '09170000049', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(50, 50, 'yolanda.mata', 'yolanda.mata50@example.local', '09170000050', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(51, 51, 'alf_red_c', 'davidgludo@gmail.com', '0995-3373-692', '$2y$10$TRFluf/ZAo7NSe1862inK.NJ0dz1ZO986wR7/KGoq7LdgFgMPeWHq', 'active', '2025-11-25 00:54:35', '2025-11-24 18:51:37', '2025-11-25 00:54:35'),
+(52, 52, 'lancey', 'ronel@gmail.com', NULL, '$2y$10$eWxedBtB7eE8QvzqF/cXGOXq0uhLduwvEMZTNGcbgCXgLg1Xh.mSW', 'active', '2025-11-24 20:12:08', '2025-11-24 19:03:16', '2025-11-24 20:12:08');
 
 -- --------------------------------------------------------
 
@@ -687,15 +1085,27 @@ CREATE TABLE `vitals` (
 --
 
 INSERT INTO `vitals` (`id`, `cvd_id`, `height_cm`, `weight_kg`, `bmi`, `central_adiposity`, `raised_bp`, `raised_blood_sugar`, `dyslipidemia`, `waist_circumference_cm`, `bp_systolic`, `bp_diastolic`, `pulse`, `respiratory_rate`, `temperature_c`) VALUES
-(1, 1, 168.00, 70.00, NULL, NULL, NULL, NULL, NULL, 20.00, 110, 80, 74, 20, 36.6),
-(2, 2, 165.00, 68.00, NULL, NULL, NULL, NULL, NULL, 84.00, 122, 80, 70, 16, 36.6),
-(3, 3, 160.00, 60.00, NULL, NULL, NULL, NULL, NULL, 80.00, 120, 78, 68, 16, 36.6),
-(4, 4, 158.00, 62.00, NULL, NULL, NULL, NULL, NULL, 79.00, 118, 76, 69, 16, 36.6),
-(5, 5, 170.00, 78.00, NULL, NULL, NULL, NULL, NULL, 90.00, 130, 85, 75, 16, 36.7),
-(6, 6, 120.00, 25.00, NULL, NULL, NULL, NULL, NULL, 50.00, 95, 60, 100, 20, 36.5),
-(7, 7, 110.00, 22.00, NULL, NULL, NULL, NULL, NULL, 48.00, 90, 58, 98, 20, 36.5),
-(8, 8, 155.00, 55.00, NULL, NULL, NULL, NULL, NULL, 72.00, 115, 75, 66, 16, 36.6),
-(9, 9, 168.00, 78.00, NULL, NULL, NULL, NULL, NULL, 22.00, NULL, NULL, NULL, NULL, NULL);
+(1, 1, 168.00, 70.00, 24.80, 0, 0, 0, 0, 82.00, 110, 75, 74, 16, 36.6),
+(2, 2, 165.00, 95.00, 34.90, 1, 1, 1, 1, 102.00, 150, 95, 88, 18, 37.0),
+(3, 3, 170.00, 75.00, 25.90, 0, 0, 0, 0, 86.00, 118, 78, 72, 16, 36.6),
+(4, 4, 158.00, 60.00, 24.00, 0, 0, 0, 0, 74.00, 115, 76, 70, 16, 36.7),
+(5, 5, 172.00, 80.00, 27.00, 0, 0, 0, 0, 88.00, 120, 80, 76, 16, 36.6),
+(6, 6, 160.00, 62.00, 24.20, 0, 0, 0, 0, 78.00, 112, 72, 70, 16, 36.6),
+(7, 7, 168.00, 90.00, 31.90, 1, 1, 1, 1, 96.00, 138, 90, 86, 18, 36.9),
+(8, 8, 155.00, 50.00, 20.80, 0, 0, 0, 0, 72.00, 108, 70, 68, 16, 36.6),
+(9, 9, 171.00, 82.00, 28.10, 1, 1, 0, 0, 92.00, 125, 82, 78, 16, 36.7),
+(10, 10, 165.00, 68.00, 25.00, 0, 0, 0, 0, 84.00, 116, 76, 74, 16, 36.6),
+(11, 11, 169.00, 74.00, 25.90, 0, 0, 0, 0, 88.00, 118, 78, 75, 16, 36.6),
+(12, 12, 162.00, 58.00, 22.10, 0, 0, 0, 0, 76.00, 110, 70, 72, 16, 36.6),
+(13, 13, 174.00, 95.00, 31.40, 1, 1, 1, 1, 96.00, 145, 92, 90, 18, 37.1),
+(14, 14, 160.00, 65.00, 25.40, 0, 0, 0, 0, 80.00, 120, 80, 78, 16, 36.6),
+(15, 15, 167.00, 72.00, 25.80, 0, 0, 0, 0, 85.00, 118, 78, 74, 16, 36.6),
+(16, 16, 155.00, 96.00, 39.90, 1, 1, 1, 1, 102.00, 160, 100, 92, 18, 37.4),
+(17, 17, 170.00, 68.00, 23.50, 0, 0, 0, 0, 84.00, 112, 74, 72, 16, 36.7),
+(18, 18, 168.00, 88.00, 31.20, 1, 1, 1, 1, 98.00, 140, 94, 88, 18, 37.0),
+(19, 19, 162.00, 70.00, 26.60, 0, 0, 0, 0, 86.00, 120, 80, 76, 16, 36.6),
+(20, 20, 175.00, 78.00, 25.50, 0, 0, 0, 0, 90.00, 122, 82, 76, 16, 36.6),
+(21, 24, 170.00, 70.00, NULL, NULL, NULL, NULL, NULL, 25.00, 120, 80, 72, 16, 37.0);
 
 --
 -- Indexes for dumped tables
@@ -709,16 +1119,17 @@ ALTER TABLE `angina_stroke_screening`
   ADD UNIQUE KEY `uq_angina_cvd` (`cvd_id`);
 
 --
--- Indexes for table `announcements`
---
-ALTER TABLE `announcements`
-  ADD PRIMARY KEY (`id`);
-
---
 -- Indexes for table `births`
 --
 ALTER TABLE `births`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `case_types`
+--
+ALTER TABLE `case_types`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `label` (`label`);
 
 --
 -- Indexes for table `cvd_ncd_risk_assessments`
@@ -790,6 +1201,19 @@ ALTER TABLE `households`
   ADD KEY `idx_households_purok` (`purok_id`);
 
 --
+-- Indexes for table `incidents`
+--
+ALTER TABLE `incidents`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `idx_unique_incident` (`incident_title`(100),`complainant_name`(100),`date_of_incident`,`location`(100)),
+  ADD KEY `idx_incident_status` (`status_id`),
+  ADD KEY `idx_incident_case_type` (`case_type_id`),
+  ADD KEY `idx_incident_date` (`date_of_incident`),
+  ADD KEY `idx_incident_created` (`created_at`),
+  ADD KEY `idx_incident_complainant` (`complainant_name`(100)),
+  ADD KEY `idx_incident_location` (`location`(100));
+
+--
 -- Indexes for table `lifestyle_risk`
 --
 ALTER TABLE `lifestyle_risk`
@@ -828,7 +1252,8 @@ ALTER TABLE `officials`
 ALTER TABLE `persons`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_persons_family` (`family_id`),
-  ADD KEY `idx_persons_name` (`last_name`,`first_name`);
+  ADD KEY `idx_persons_name` (`last_name`,`first_name`),
+  ADD KEY `idx_persons_household` (`household_id`);
 
 --
 -- Indexes for table `person_relationships`
@@ -861,6 +1286,13 @@ ALTER TABLE `site_profile`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `statuses`
+--
+ALTER TABLE `statuses`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `label` (`label`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -885,13 +1317,7 @@ ALTER TABLE `vitals`
 -- AUTO_INCREMENT for table `angina_stroke_screening`
 --
 ALTER TABLE `angina_stroke_screening`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
-
---
--- AUTO_INCREMENT for table `announcements`
---
-ALTER TABLE `announcements`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `births`
@@ -900,10 +1326,16 @@ ALTER TABLE `births`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `case_types`
+--
+ALTER TABLE `case_types`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
 -- AUTO_INCREMENT for table `cvd_ncd_risk_assessments`
 --
 ALTER TABLE `cvd_ncd_risk_assessments`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `deaths`
@@ -915,7 +1347,7 @@ ALTER TABLE `deaths`
 -- AUTO_INCREMENT for table `diabetes_screening`
 --
 ALTER TABLE `diabetes_screening`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `document_requests`
@@ -933,7 +1365,7 @@ ALTER TABLE `document_types`
 -- AUTO_INCREMENT for table `families`
 --
 ALTER TABLE `families`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `gallery`
@@ -945,19 +1377,25 @@ ALTER TABLE `gallery`
 -- AUTO_INCREMENT for table `health_family_history`
 --
 ALTER TABLE `health_family_history`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `households`
 --
 ALTER TABLE `households`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+
+--
+-- AUTO_INCREMENT for table `incidents`
+--
+ALTER TABLE `incidents`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `lifestyle_risk`
 --
 ALTER TABLE `lifestyle_risk`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `migrations`
@@ -975,19 +1413,19 @@ ALTER TABLE `morbidity_logs`
 -- AUTO_INCREMENT for table `officials`
 --
 ALTER TABLE `officials`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT for table `persons`
 --
 ALTER TABLE `persons`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
 
 --
 -- AUTO_INCREMENT for table `person_relationships`
 --
 ALTER TABLE `person_relationships`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=111;
 
 --
 -- AUTO_INCREMENT for table `pregnancies`
@@ -1002,16 +1440,39 @@ ALTER TABLE `puroks`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
+-- AUTO_INCREMENT for table `statuses`
+--
+ALTER TABLE `statuses`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
 
 --
 -- AUTO_INCREMENT for table `vitals`
 --
 ALTER TABLE `vitals`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `incidents`
+--
+ALTER TABLE `incidents`
+  ADD CONSTRAINT `incidents_ibfk_1` FOREIGN KEY (`status_id`) REFERENCES `statuses` (`id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `incidents_ibfk_2` FOREIGN KEY (`case_type_id`) REFERENCES `case_types` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `persons`
+--
+ALTER TABLE `persons`
+  ADD CONSTRAINT `fk_persons_household` FOREIGN KEY (`household_id`) REFERENCES `households` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

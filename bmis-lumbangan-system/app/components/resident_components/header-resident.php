@@ -19,6 +19,7 @@ $hdr_mobile = $_SESSION['mobile'] ?? '';
 
 <?php
 @include_once __DIR__ . '/../../config/config.php';
+render_favicon();
 ?>
 
 <!DOCTYPE html>

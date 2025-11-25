@@ -1,5 +1,4 @@
 (function(){
-  console.log('wizard_personal.js loaded');
   const $ = (s,p=document)=>p.querySelector(s);
   const $$ = (s,p=document)=>Array.from(p.querySelectorAll(s));
 
@@ -135,9 +134,7 @@
   // ========== LANGUAGE TOGGLE ==========
   function setLang(lang){
     // Save language preference to localStorage
-    console.log('setLang called with:', lang);
     localStorage.setItem('survey_language', lang);
-    console.log('Saved to localStorage:', localStorage.getItem('survey_language'));
     
     $$('.i18n').forEach(el=>{
       const txt = el.dataset[lang];
@@ -438,42 +435,6 @@
   `;
   document.head.appendChild(toastStyle);
 
-  // ========== SAVE BUTTON WITH LOADING STATE ==========
-  const btnSave = $('#btn-dummy-save');
-  if (btnSave) {
-    btnSave.addEventListener('click', (e)=>{
-      e.preventDefault();
-
-      if (!validate()){
-        const lang = $('#lang-tl')?.checked ? 'tl' : 'en';
-        // Use canonical survey alert for warnings when available
-        toast(lang==='tl' ? 'Ayusin ang mga may marka.' : 'Please fix highlighted fields.', 'warning');
-        return;
-      }
-
-      // Show loading state and then submit the form so the central save handler takes over
-      const originalText = btnSave.innerHTML;
-      btnSave.disabled = true;
-      const lang = $('#lang-tl')?.checked ? 'tl' : 'en';
-      btnSave.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${lang === 'tl' ? 'Sine-save...' : 'Saving...'}`;
-
-      // Use requestSubmit when available to trigger the form's submit event
-      const f = form || document.getElementById('form-person');
-      try {
-        if (f.requestSubmit) {
-          f.requestSubmit();
-        } else {
-          f.dispatchEvent(new Event('submit', { cancelable: true }));
-        }
-      } catch (err) {
-        console.error('Error submitting form programmatically', err);
-        // restore button state on failure
-        btnSave.disabled = false;
-        btnSave.innerHTML = originalText;
-      }
-    });
-  }
-
   // ========== CANCEL BUTTON WITH CONFIRMATION ==========
   const btnCancel = $('#btn-cancel');
   if (btnCancel) {
@@ -520,7 +481,20 @@
   // ========== FORM PROGRESS TRACKER ==========
   function initProgressTracker() {
     if (!form) return;
-    
+    // Helper: treat "*_other" inputs as conditional — skip them unless their
+    // corresponding base select explicitly has an "Other(s)" value selected.
+    function shouldSkipConditionalOther(el) {
+      try {
+        if (!el || !el.name) return false;
+        if (!/_other$/.test(el.name)) return false;
+        const base = el.name.replace(/_other$/, '');
+        const baseEl = form.querySelector(`[name="${base}"]`) || document.querySelector(`[name="${base}"]`);
+        if (!baseEl) return false;
+        const v = (baseEl.value || '').toString().toLowerCase();
+        return !(v === 'other' || v === 'others' || v.indexOf('other') !== -1);
+      } catch (e) { return false; }
+    }
+
     // Build a de-duplicated list of form "fields" where radio groups count as one field
     const allElements = Array.from(form.elements).filter(el =>
       (el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') &&
@@ -530,6 +504,7 @@
     const seenRadioNames = new Set();
     const allInputs = [];
     allElements.forEach(el => {
+      if (shouldSkipConditionalOther(el)) return;
       if (el.type === 'radio') {
         if (seenRadioNames.has(el.name)) return; // already accounted for this group
         seenRadioNames.add(el.name);
@@ -582,6 +557,7 @@
         const secSeenRadio = new Set();
         const sectionInputs = [];
         secElements.forEach(el => {
+          if (shouldSkipConditionalOther(el)) return;
           if (el.type === 'radio') {
             if (secSeenRadio.has(el.name)) return;
             secSeenRadio.add(el.name);
@@ -702,19 +678,14 @@
     const langTl = $('#lang-tl');
     const savedLang = localStorage.getItem('survey_language');
     
-    console.log('Initialize called. Saved language:', savedLang);
-    console.log('langEn:', langEn, 'langTl:', langTl);
-    
     if (savedLang === 'tl' && langTl) {
-      console.log('Setting to Filipino');
       langTl.checked = true;
       setLang('tl');
     } else if (savedLang === 'en' && langEn) {
-      console.log('Setting to English (saved)');
       langEn.checked = true;
       setLang('en');
     } else {
-      console.log('Setting to English (default)');
+
       // Default to English if no saved preference
       if (langEn) langEn.checked = true;
       setLang('en');
@@ -756,17 +727,12 @@
       }, 100);
     }
   }
-  
-  console.log('Setting up DOMContentLoaded listener');
+
   document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOMContentLoaded fired, calling initialize');
     initialize();
   });
-  
-  // Initialize immediately if DOM already loaded
-  console.log('Document ready state:', document.readyState);
+
   if (document.readyState !== 'loading') {
-    console.log('DOM already loaded, calling initialize immediately');
     initialize();
   }
 })();

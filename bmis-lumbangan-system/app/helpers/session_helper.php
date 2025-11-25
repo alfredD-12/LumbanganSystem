@@ -67,7 +67,8 @@ function getFirstName() {
  */
 function requireUser() {
     if (!isUser()) {
-        header('Location: ../../landing/landing.php');
+        $redirect = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=landing';
+        header('Location: ' . $redirect);
         exit();
     }
 }
@@ -77,7 +78,8 @@ function requireUser() {
  */
 function requireOfficial() {
     if (!isOfficial()) {
-        header('Location: ../../landing/landing.php');
+        $redirect = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=landing';
+        header('Location: ' . $redirect);
         exit();
     }
 }
@@ -87,7 +89,8 @@ function requireOfficial() {
  */
 function requireLogin() {
     if (!isLoggedIn()) {
-        header('Location: ../../landing/landing.php');
+        $redirect = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=landing';
+        header('Location: ' . $redirect);
         exit();
     }
 }

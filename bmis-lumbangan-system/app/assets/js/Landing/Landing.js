@@ -53,8 +53,6 @@ function initLandingUI() {
     if (window.__landingInitialized) return;
     window.__landingInitialized = true;
 
-    console.log('Initializing Landing UI');
-
     const loginModal = document.getElementById('loginModal');
     const loginContainer = document.getElementById('loginContainer');
     const openLoginModalBtn = document.getElementById('openLoginModal');

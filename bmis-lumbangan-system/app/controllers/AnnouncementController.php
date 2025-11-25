@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../models/Announcement.php';
 require_once __DIR__ . '/../config/Database.php';
-require_once __DIR__ . '/../helpers/notification_helper.php';
+//require_once __DIR__ . '/../helpers/notification_helper.php';
 // Ensure config constants (BASE_URL, BASE_PUBLIC) are available
 if (!defined('BASE_URL')) {
     require_once __DIR__ . '/../config/config.php';

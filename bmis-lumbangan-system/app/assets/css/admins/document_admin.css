@@ -1,3 +1,12 @@
+/* --- VARIABLES --- */
+:root {
+  --primary-blue: #1E3A5F;
+  --primary-light: #F4F7FA; /* Very light background for contrast */
+  --text-dark: #2c3e50;
+  --border-color: #747576;
+  --hover-bg: rgba(30, 58, 95, 0.09); /* 9% opacity of your blue */
+}
+
 body {
   background-color: #f9fafb;
 }
@@ -27,12 +36,179 @@ body {
   background-color: #0d6efd;
 }
 
-.table-container {
-  width: 100%;
-  overflow-x: auto !important;
-  overflow-y: hidden;
-  white-space: nowrap;
+/* Button for managing CRUD in document */
+.btn-elegant {
+  background: #1E3A5F;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 50px; /* Pill shape */
+  font-weight: 500;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 10px rgba(30, 58, 95, 0.25);
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 0.5rem;
 }
+
+.btn-elegant:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(30, 58, 95, 0.35);
+  color: #ffffff;
+}
+
+.btn-elegant:active {
+  transform: translateY(0);
+}
+
+/* Request Table Design */
+.table-container {
+      width: 100%;
+      /* Cleaned up redundant overflow properties */
+      overflow-x: auto !important;
+      overflow-y: hidden;
+      white-space: nowrap;
+      padding: 0.7rem;
+      padding-top: 2.5rem;
+      
+      border-radius: 16px; /* Increased slightly for softer glass corners */
+
+      /* 1. Semi-transparent background */
+      /* Instead of solid #ffffff, we use rgba white with low opacity.
+         Adjust the 0.25 (25%) to make it more or less transparent. */
+      background: rgba(255, 255, 255, 0.25);
+
+      /* 2. The Blur (The magic ingredient) */
+      /* This blurs whatever is behind the container. */
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px); /* Essential for Safari support */
+
+      border: 1px solid rgba(255, 255, 255, 0.5);
+
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+}
+
+#requestsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  font-size: 0.9rem; /* Slightly smaller font to fit 15 columns */
+  white-space: nowrap; /* Prevents text wrapping, keeps rows neat */
+  margin-bottom: 0;
+  margin: 1.5rem;
+}
+
+/* --- HEADER STYLING --- */
+    #requestsTable thead th {
+        background-color: var(--primary-blue);
+        color: #ffffff;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        padding: 16px 12px;
+        border: none;
+        position: sticky;
+        
+        
+    }
+
+    /* --- BODY STYLING --- */
+    #requestsTable tbody td {
+        padding: 14px 12px;
+        color: var(--text-dark);
+        border-bottom: 1px solid var(--border-color);
+        vertical-align: middle;
+    }
+
+    /* Remove standard bootstrap borders if they conflict */
+    #requestsTable.table-bordered td {
+        border-left: 0.1px solid var(--border-color);
+        border-right: 0.1px solid var(--border-color);
+      
+    }
+
+    #requestsTable.table-bordered th {
+        border-left: none;
+        border-right: none;
+    }
+
+    /* --- SUBTLE HOVER EFFECT --- */
+    #requestsTable tbody tr {
+        transition: background-color 0.2s ease-in-out;
+        
+    }
+
+    #requestsTable tbody tr:hover {
+        /* This is the subtle hover you requested */
+        background-color: var(--hover-bg); 
+        cursor: default;
+    }
+
+#placeholderDropdownContainer {
+        /* Glassy Look */
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid #1E3A5F; /* Your Theme Blue Border */
+        border-radius: 6px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        padding: 5px;
+        z-index: 9999;
+        min-width: 200px; /* Set a reasonable width */
+    }
+
+    /* Style the select inside to look clean */
+    #placeholderDropdown {
+        border: none;
+        background: transparent;
+        width: 100%;
+        font-size: 14px;
+        color: #1E3A5F;
+        cursor: pointer;
+        outline: none; /* Remove blue glow on focus */
+    }
+
+/* Floating Card Base */
+.floating-card {
+  background: #ffffff;
+  border: none; /* Removes standard Bootstrap border */
+  border-radius: 16px;
+  /* The initial "float" shadow - soft and spread out */
+  box-shadow: 0 10px 25px rgba(30, 58, 95, 0.08);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* The Hover Effect - Lifts up */
+.floating-card:hover {
+  transform: translateY(-8px);
+  /* Shadow grows and darkens slightly to simulate height */
+  box-shadow: 0 20px 40px rgba(30, 58, 95, 0.15);
+}
+
+/* Typography updates */
+.floating-card .card-title {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.floating-card .card-text {
+  font-size: 2.5rem !important; /* Make numbers big */
+  color: #1E3A5F; /* Your theme color */
+  margin-bottom: 0;
+}
+
+/* Optional: Add a colored accent line on the left for visual pop */
+.floating-card.border-primary { border-left: 5px solid #1E3A5F !important; }
+.floating-card.border-success { border-left: 5px solid #198754 !important; }
+.floating-card.border-danger  { border-left: 5px solid #dc3545 !important; }
+.floating-card.border-warning { border-left: 5px solid #ffc107 !important; }
 
 .dataTables_wrapper .dt-buttons {
   margin-right: 10px;
@@ -55,6 +231,10 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+
+.dt-buttons.btn-group {
+    flex-wrap: nowrap !important;
 }
 
 /* Hover effect */
@@ -107,7 +287,9 @@ div.dt-buttons .btn {
 }
 
 #proofModal,
-#statusModal {
+#statusModal, 
+#requestCopyModal,
+#documentTypeModal {
   z-index: 9999 !important;
 }
 
@@ -132,4 +314,69 @@ div.dt-buttons .btn {
 
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, #2c5282, #c53030);
+}
+
+/* Raise TinyMCE dialogs */
+.tox.tox-tinymce-aux,
+.tox-tinymce-aux {
+  z-index: 5000 !important;
+}
+
+#confirmUpdateModal {
+  z-index: 9999 !important;
+}
+
+#createTemplateModal {
+  z-index: 9999 !important;
+}
+
+#templatesModal {
+  z-index: 9999 !important;
+}
+
+#confirmSaveTemplateModal {
+  z-index: 10001 !important;
+}
+
+#dt-search-0 {
+  width: 20rem !important;
+  height: 2.5rem !important;
+  margin-top: 0.2rem !important;
+}
+
+/* Manage Modal Template CSS */
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 15px;
+}
+
+.template-item {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 15px;
+  text-align: center;
+  cursor: pointer;
+  transition: .2s;
+  border: 1px solid transparent;
+}
+
+.template-item:hover {
+  background: #e9ecef;
+  border-color: #ced4da;
+}
+
+.template-icon {
+  font-size: 40px;
+  color: #0d6efd;
+  margin-bottom: 10px;
+}
+
+/* Document Type Modal */
+.type-modal-header {
+  background-color: #1E3A5F !important;
+}
+
+#newRequestModal {
+  z-index: 9999 !important;
 }

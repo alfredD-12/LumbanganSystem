@@ -2,9 +2,11 @@
 // index.php — main entry point (Front Controller)
 
 //  Load configuration and controllers
+require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../app/controllers/DocumentRequestController.php';
 require_once __DIR__ . '/../app/controllers/admins/AdminDocumentController.php';
 @require_once __DIR__ . '/../app/config/config.php';
+require_once __DIR__ . '/../app/controllers/admins/DocumentTemplateController.php';
 
 // Add SurveyController so AJAX survey actions can be routed here
 // Note: Do not auto-include SurveyController here because it contains a file-level
@@ -24,6 +26,7 @@ if ($action) {
     $controller = new DocumentRequestController();
     $adminController = new AdminDocumentController();
     $surveyController = new SurveyController(); // instantiate survey controller for AJAX survey actions
+    $docTemplateController = new DocumentTemplateController();
 
     switch ($action) {
         case 'getRequirements':
@@ -42,11 +45,11 @@ if ($action) {
             $controller->deleteRequest(); // must echo JSON
             break;
 
-        case 'getApprovedRequestsByUser' :
+        case 'getApprovedRequestsByUser':
             $controller->getApprovedRequestsByUser(); // must echo JSON
             break;
 
-        case 'getRequestsHistoryByUser' :
+        case 'getRequestsHistoryByUser':
             $controller->getRequestHistoryByUser(); // must echo JSON
             break;
 
@@ -139,14 +142,14 @@ if ($action) {
             $surveyController->save_family_history_action();
             break;
 
-        case 'save_family':
-            $surveyController->save_family_action ?? $surveyController->save_family(); // fallback if named differently
-            // Note: If your controller has a method for save_family, ensure its name matches; adjust if needed.
-            break;
+        // case 'save_family':
+        //     $surveyController->save_family_action ?? $surveyController->save_family(); // fallback if named differently
+        //     // Note: If your controller has a method for save_family, ensure its name matches; adjust if needed.
+        //     break;
 
-        case 'save_household':
-            $surveyController->save_household_action ?? $surveyController->save_household();
-            break;
+        // case 'save_household':
+        //     $surveyController->save_household_action ?? $surveyController->save_household();
+        //     break;
 
         case 'save_lifestyle':
             $surveyController->save_lifestyle_action();
@@ -177,6 +180,60 @@ if ($action) {
             $admin->updateOfficialProfile();
             break;
 
+        case 'getDocumentTypes':
+            $docTemplateController->getDocumentTypes();
+            break;
+
+        case 'getTemplatePlaceholders':
+            $docTemplateController->getTemplatePlaceholders();
+            break;
+
+        case 'saveTemplate':
+            $docTemplateController->saveTemplate();
+            break;
+
+        case 'getTemplates':
+            $docTemplateController->getTemplates();
+            break;
+
+        case 'loadDocumentTypesView':
+            $adminController->loadDocumentTypesView();
+            break;
+
+        case 'getDocumentTypesData':
+            $adminController->getDocumentTypesData();
+            break;
+
+        case 'getDocumentType':
+            $adminController->getDocumentType();
+            break;
+
+        case 'updateDocumentType':
+            $adminController->updateDocumentType();
+            break;
+
+        case 'deleteDocumentType':
+            $adminController->deleteDocumentType();
+            break;
+
+        case 'getDocumentCategories':
+            $adminController->getDocumentCategories();
+            break;
+
+        case 'addDocumentType':
+            $adminController->addDocumentType();
+            break;
+
+        case "getDocumentTypes":
+            $adminController->getDocumentTypes();
+            break;
+
+        case "addAdminRequest":
+            $adminController->addAdminRequest();
+            break;
+
+
+
         default:
             header('Content-Type: application/json');
             echo json_encode(['error' => 'Invalid action']);
@@ -205,15 +262,21 @@ switch ($page) {
         $_SESSION = [];
         if (ini_get('session.use_cookies')) {
             $params = session_get_cookie_params();
-            setcookie(session_name(), '', time() - 42000,
-                $params['path'], $params['domain'], $params['secure'], $params['httponly']
+            setcookie(
+                session_name(),
+                '',
+                time() - 42000,
+                $params['path'],
+                $params['domain'],
+                $params['secure'],
+                $params['httponly']
             );
         }
         session_unset();
         session_destroy();
 
         $isXhr = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
-                 strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
 
         if ($isXhr) {
             header('Content-Type: application/json');
@@ -314,6 +377,12 @@ switch ($page) {
         require_once __DIR__ . '/../app/controllers/AdminController.php';
         $redController = new AdminController();
         $redController->index();
+
+    case 'document_templates':
+        $docTemplateController = new DocumentTemplateController();
+        $docTemplateController->showDocTemplateView();
+        break;
+
     // Example for future pages
     // case 'resident_list':
     //     $controller = new ResidentController();

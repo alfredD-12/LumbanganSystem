@@ -1,3 +1,18 @@
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-text">
+          © 2024 <strong>Barangay Lumbangan</strong> - Admin Dashboard System
+        </div>
+        <div class="footer-links">
+          <a href="#"><i class="fas fa-info-circle"></i> About</a>
+          <a href="#"><i class="fas fa-life-ring"></i> Support</a>
+          <a href="#"><i class="fas fa-file-contract"></i> Terms</a>
+        </div>
+      </div>
+    </footer>
+
+
     <!-- Combined Admin Header JS (if needed for toggles and modals) -->
     <script defer src="<?php echo BASE_URL . 'assets/js/SecDash/admin-header.js'; ?>"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
@@ -16,6 +31,7 @@
     <script src="<?php echo BASE_URL . 'assets/js/document_admin.js' ?>"></script>
     <script src="<?php echo BASE_URL . 'assets/js/document_request.js'; ?>"></script>
     <script src="<?php echo BASE_URL . 'assets/js/document_template.js'; ?>"></script>
+    <script src="<?php echo BASE_URL . 'assets/js/document_type.js'; ?>"></script>
 
     <script>
       const BASE_URL = "<?php echo BASE_URL; ?>";
@@ -23,6 +39,7 @@
     </script>
     <!-- Admin Complaint Page JavaScript -->
     <script src="<?php echo BASE_URL . 'assets/js/complaint/admin.js'; ?>"></script>
+
     </body>
 
     </html>

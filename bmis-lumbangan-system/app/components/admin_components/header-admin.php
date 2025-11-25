@@ -1,4 +1,4 @@
-<?php 
+<?php
 include_once __DIR__ . '/../../config/config.php';
 
 // Load official profile helper to populate header fields
@@ -44,6 +44,8 @@ if (file_exists(__DIR__ . '/../../helpers/official_profile_helper.php')) {
     <link rel="stylesheet" href="<?php echo BASE_URL . 'assets/css/complaint/admin.css'; ?>">
 
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/announcement/announcements_modern.css?v=<?php echo time(); ?>">
+    <!-- CSS for Document Type Modal -->
+    <link rel="stylesheet" href="<?php echo BASE_URL . 'assets/css/admins/document_type.css' ?>">
 </head>
 
 <body>
@@ -82,7 +84,9 @@ if (file_exists(__DIR__ . '/../../helpers/official_profile_helper.php')) {
             </div>
         </div>
 
-            <?php if (function_exists('render_official_profile_script')) { render_official_profile_script(); } ?>
+        <?php if (function_exists('render_official_profile_script')) {
+            render_official_profile_script();
+        } ?>
 
         <!-- Action Buttons -->
         <div class="top-bar-actions">
@@ -261,5 +265,3 @@ if (file_exists(__DIR__ . '/../../helpers/official_profile_helper.php')) {
             </div>
         </div>
     </div>
-
-    

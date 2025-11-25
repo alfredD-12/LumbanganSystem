@@ -7,6 +7,10 @@ require_once __DIR__ . '/../app/controllers/admins/AdminDocumentController.php';
 @require_once __DIR__ . '/../app/config/config.php';
 
 // Add SurveyController so AJAX survey actions can be routed here
+// Note: Do not auto-include SurveyController here because it contains a file-level
+// action dispatcher that would intercept AJAX `action=` requests before this
+// front-controller can handle them. Include or instantiate SurveyController
+// only when needed in specific routes below.
 require_once __DIR__ . '/../app/controllers/SurveyController.php';
 // Load announcement helpers (provides base_url/assets_url/uploads_url/announcement_image_url)
 require_once __DIR__ . '/../app/helpers/announcement_helper.php';
@@ -163,6 +167,15 @@ if ($action) {
         case 'next_household_no':
             $surveyController->next_household_no_action();
             break;
+        case 'get_official_profile':
+            $admin = new AdminController();
+            $admin->getOfficialProfile();
+            break;
+
+        case 'update_official_profile':
+            $admin = new AdminController();
+            $admin->updateOfficialProfile();
+            break;
 
         default:
             header('Content-Type: application/json');
@@ -242,6 +255,15 @@ switch ($page) {
         require_once __DIR__ . '/../app/controllers/AnnouncementController.php';
         $annController = new AnnouncementController();
         $annController->index();
+        break;
+    case 'dashboard_official':
+        // Only allow access to officials
+        if (!isOfficial()) {
+            $redirect = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=landing';
+            header('Location: ' . $redirect);
+            exit;
+        }
+        include __DIR__ . '/../app/views/admin_Dash/SecDash.php';
         break;
     case 'survey_wizard_personal':
         require_once __DIR__ . '/../app/controllers/SurveyController.php';

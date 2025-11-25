@@ -5,6 +5,8 @@
 $scriptDir   = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
 $projectBase = rtrim(preg_replace('#/app/.*$#', '', $scriptDir), '/');
 $assetBase   = $projectBase . '/app/assets';
+// Try to use configured BASE_URL when available so assets resolve correctly
+$assetBase   = (defined('BASE_URL') ? rtrim(BASE_URL, '/') : $projectBase . '/app') . '/assets';
 
 // Load assets only once
 if (!defined('ADMIN_SIDEBAR_ASSETS_LOADED')) {
@@ -21,7 +23,7 @@ if (!defined('ADMIN_SIDEBAR_ASSETS_LOADED')) {
     addOnce('admin-sidebar-fonts','<link id="admin-sidebar-fonts" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">');
     addOnce('admin-sidebar-fa','<link id="admin-sidebar-fa" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">');
     addOnce('admin-sidebar-bs','<link id="admin-sidebar-bs" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">');
-    addOnce('admin-sidebar-css','<link id="admin-sidebar-css" rel="stylesheet" href="{$assetBase}/css/SecDash/sidebar-admin.css">');
+        addOnce('admin-sidebar-css','<link id="admin-sidebar-css" rel="stylesheet" href="{$assetBase}/css/SecDash/sidebar-admin.css">');
     
     // Bootstrap JS
     if(!('bootstrap' in window) && !d.getElementById('admin-sidebar-bs-js')){
@@ -32,7 +34,7 @@ if (!defined('ADMIN_SIDEBAR_ASSETS_LOADED')) {
         h.appendChild(s);
     }
     
-    addOnce('admin-sidebar-js','<script id="admin-sidebar-js" defer src="{$assetBase}/js/SecDash/sidebar-admin.js"><\\/script>');
+        addOnce('admin-sidebar-js','<script id="admin-sidebar-js" defer src="{$assetBase}/js/SecDash/sidebar-admin.js"><\/script>');
 })(document);</script>
 HTML;
 }

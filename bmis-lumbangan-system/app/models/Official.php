@@ -59,4 +59,36 @@ class Official {
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * Update official profile fields (full_name, email, contact_no)
+     */
+    public function updateProfile($id, $data) {
+        $fields = [];
+        $params = [':id' => $id];
+
+        if (isset($data['full_name'])) {
+            $fields[] = 'full_name = :full_name';
+            $params[':full_name'] = $data['full_name'];
+        }
+        if (isset($data['email'])) {
+            $fields[] = 'email = :email';
+            $params[':email'] = $data['email'];
+        }
+        if (isset($data['contact_no'])) {
+            $fields[] = 'contact_no = :contact_no';
+            $params[':contact_no'] = $data['contact_no'];
+        }
+
+        if (empty($fields)) return false;
+
+        $query = "UPDATE " . $this->table . " SET " . implode(', ', $fields) . " WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+
+        foreach ($params as $p => $v) {
+            $stmt->bindValue($p, $v);
+        }
+
+        return $stmt->execute();
+    }
 }

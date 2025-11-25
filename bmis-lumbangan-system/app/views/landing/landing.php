@@ -19,8 +19,10 @@ if (isLoggedIn()) {
           header('Location: ' . $redirect);
         exit();
     } elseif (isOfficial()) {
-        header('Location: ../Admin/admin_dashboard.php'); // Create this later
-        exit();
+      // Redirect officials to the routed official dashboard handled by the front controller
+      $redirect = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=dashboard_official';
+      header('Location: ' . $redirect);
+      exit();
     }
 }
 ?>

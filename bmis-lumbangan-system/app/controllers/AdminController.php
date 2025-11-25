@@ -9,6 +9,83 @@ class AdminController {
     }
 
     /**
+     * AJAX: Get currently logged-in official profile
+     */
+    public function getOfficialProfile() {
+        header('Content-Type: application/json');
+
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        if (empty($_SESSION['official_id'])) {
+            echo json_encode(['success' => false, 'message' => 'Not logged in as official']);
+            return;
+        }
+
+        require_once __DIR__ . '/../config/Database.php';
+        require_once __DIR__ . '/../models/Official.php';
+
+        $db = (new Database())->getConnection();
+        $official = (new Official($db))->getById($_SESSION['official_id']);
+
+        if ($official) echo json_encode(['success' => true, 'data' => $official]);
+        else echo json_encode(['success' => false, 'message' => 'Official not found']);
+    }
+
+    /**
+     * AJAX: Update official profile
+     */
+    public function updateOfficialProfile() {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            return;
+        }
+
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        $official_id = $_SESSION['official_id'] ?? ($_POST['official_id'] ?? null);
+        if (!$official_id) {
+            echo json_encode(['success' => false, 'message' => 'Not logged in']);
+            return;
+        }
+
+        $full_name = trim($_POST['full_name'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $contact_no = trim($_POST['contact_no'] ?? '');
+
+        // Basic validation
+        if ($full_name === '') {
+            echo json_encode(['success' => false, 'message' => 'Full name is required']);
+            return;
+        }
+
+        require_once __DIR__ . '/../config/Database.php';
+        require_once __DIR__ . '/../models/Official.php';
+
+        $db = (new Database())->getConnection();
+        $officialModel = new Official($db);
+
+        try {
+            $ok = $officialModel->updateProfile($official_id, [
+                'full_name' => $full_name,
+                'email' => $email,
+                'contact_no' => $contact_no
+            ]);
+
+            if ($ok) {
+                // Update session full name if exists
+                $_SESSION['full_name'] = $full_name;
+                echo json_encode(['success' => true, 'message' => 'Profile updated']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'No changes made or update failed']);
+            }
+        } catch (Exception $e) {
+            error_log('Error updating official profile: ' . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Server error']);
+        }
+    }
+
+    /**
      * AJAX: Get single complaint by id
      */
     public function getComplaint() {

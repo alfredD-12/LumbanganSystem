@@ -23,7 +23,8 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/modal-items.php
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../../assets/css/SecDash/secDash.css?v=<?php echo time(); ?>">
+    <?php if (!defined('BASE_URL')) { require_once dirname(__DIR__, 2) . '/config/config.php'; } ?>
+    <link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/SecDash/secDash.css?v=<?php echo time(); ?>">
 </head>
 <body>
     <!-- Floating Background Shapes -->
@@ -38,7 +39,7 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/modal-items.php
     <!-- Sidebar Component -->
     <?php 
         $currentPage = 'admin_dashboard'; // Set current page for active menu highlighting
-        include '../../components/admin_components/sidebar-admin.php'; 
+        require_once dirname(__DIR__, 2) . '/components/admin_components/sidebar-admin.php'; 
     ?>
 
     <!-- Main Content -->
@@ -48,7 +49,7 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/modal-items.php
             $pageTitle = 'Barangay Lumbangan Analytics Dashboard';
             $pageSubtitle = 'Monitoring and managing barangay operations and resident services';
             // $adminName and $adminRole already set from session at top
-            include '../../components/admin_components/topbar-admin.php'; 
+            require_once dirname(__DIR__, 2) . '/components/admin_components/topbar-admin.php'; 
         ?>
 
         <!-- Content Section -->
@@ -511,17 +512,17 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/modal-items.php
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                             <div>
                                 <label for="editAdminName" style="color: #999; font-weight: 500; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.3px; display: block; margin-bottom: 0.5rem;">Full Name</label>
-                                <input type="text" class="form-control" id="editAdminName" value="Admin Secretary" placeholder="Enter your full name" style="border-radius: 6px; padding: 0.6rem 0.8rem; border: 1px solid #e0e0e0; font-size: 0.95rem;">
+                                <input type="text" name="full_name" class="form-control" id="editAdminName" value="Admin Secretary" placeholder="Enter your full name" style="border-radius: 6px; padding: 0.6rem 0.8rem; border: 1px solid #e0e0e0; font-size: 0.95rem;">
                             </div>
 
                             <div>
                                 <label for="editAdminEmail" style="color: #999; font-weight: 500; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.3px; display: block; margin-bottom: 0.5rem;">Email Address</label>
-                                <input type="email" class="form-control" id="editAdminEmail" value="admin.secretary@lumbangan.gov.ph" placeholder="Enter your email" style="border-radius: 6px; padding: 0.6rem 0.8rem; border: 1px solid #e0e0e0; font-size: 0.95rem;">
+                                <input type="email" name="email" class="form-control" id="editAdminEmail" value="admin.secretary@lumbangan.gov.ph" placeholder="Enter your email" style="border-radius: 6px; padding: 0.6rem 0.8rem; border: 1px solid #e0e0e0; font-size: 0.95rem;">
                             </div>
 
                             <div style="grid-column: 1 / -1;">
                                 <label for="editAdminContact" style="color: #999; font-weight: 500; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.3px; display: block; margin-bottom: 0.5rem;">Contact Number</label>
-                                <input type="tel" class="form-control" id="editAdminContact" value="+63 912-345-6789" placeholder="Enter your contact number" style="border-radius: 6px; padding: 0.6rem 0.8rem; border: 1px solid #e0e0e0; font-size: 0.95rem;">
+                                <input type="tel" name="contact_no" class="form-control" id="editAdminContact" value="+63 912-345-6789" placeholder="Enter your contact number" style="border-radius: 6px; padding: 0.6rem 0.8rem; border: 1px solid #e0e0e0; font-size: 0.95rem;">
                             </div>
                         </div>
                     </form>
@@ -539,7 +540,7 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/modal-items.php
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../../assets/js/SecDash/SecDash.js"></script>
+    <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/SecDash/SecDash.js"></script>
     
     <!-- Initialize Bootstrap Dropdowns -->
     <script>
@@ -603,7 +604,7 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/modal-items.php
     </script>
 
     <!--  Include Topbar Modals Component (Notifications & Messages) -->
-    <?php include '../../components/admin_components/topbar-modals.php'; ?>
+    <?php require_once dirname(__DIR__, 2) . '/components/admin_components/topbar-modals.php'; ?>
 
 </body>
 </html>

@@ -21,15 +21,72 @@ if (!isset($pageSubtitle)) {
 if (!isset($adminName)) {
     $adminName = 'Admin Secretary';
 }
+?>
+<!-- Dropdown fallback: ensure admin profile dropdown opens/closes even if Bootstrap JS is missing or conflicting -->
+<script>
+    (function() {
+        var profile = document.querySelector('.admin-profile');
+        if (!profile) return;
+        var toggle = profile.querySelector('.dropdown-toggle');
+        var menu = profile.querySelector('.dropdown-menu');
+
+        function closeProfile(e) {
+            if (!profile.contains(e.target)) {
+                profile.classList.remove('show');
+                if (menu) menu.classList.remove('show');
+                if (toggle) toggle.setAttribute('aria-expanded', 'false');
+                document.removeEventListener('click', closeProfile);
+            }
+        }
+
+        if (toggle) {
+            toggle.addEventListener('click', function(ev) {
+                ev = ev || window.event;
+                if (ev && ev.preventDefault) ev.preventDefault();
+                var shown = menu && menu.classList.contains('show');
+                if (shown) {
+                    profile.classList.remove('show');
+                    menu.classList.remove('show');
+                    toggle.setAttribute('aria-expanded', 'false');
+                    document.removeEventListener('click', closeProfile);
+                } else {
+                    profile.classList.add('show');
+                    if (menu) menu.classList.add('show');
+                    toggle.setAttribute('aria-expanded', 'true');
+                    // Close when clicking outside
+                    setTimeout(function() { document.addEventListener('click', closeProfile); }, 0);
+                }
+            });
+        }
+    })();
+</script>
+
+<?php
 if (!isset($adminRole)) {
     $adminRole = 'Barangay Administrator';
 }
 
-// Auto-load CSS and JS assets (prevents duplicate loading)
-$assetBase = '../..';
-if (strpos($_SERVER['SCRIPT_NAME'], '/views/') !== false) {
-    $assetBase = '../..';
+// Load official profile helper to populate fields when an official is logged in
+if (file_exists(__DIR__ . '/../../helpers/official_profile_helper.php')) {
+    require_once __DIR__ . '/../../helpers/official_profile_helper.php';
+    $_official_profile = get_official_profile();
+    if ($_official_profile) {
+        $adminName = $_official_profile['full_name'] ?? $adminName; // fallback
+        $adminRole = $_official_profile['role'] ?? $adminRole;
+        $adminEmail = $_official_profile['email'] ?? '';
+        $adminContact = $_official_profile['contact_no'] ?? '';
+    }
 }
+
+// Auto-load CSS and JS assets (prevents duplicate loading)
+// Prefer BASE_URL when configured so asset paths are absolute and correct
+$assetBase = defined('BASE_URL') ? rtrim(BASE_URL, '/') : '..';
+
+// Ensure BASE_PUBLIC is available for logout URL
+if (!defined('BASE_PUBLIC')) {
+    @require_once dirname(__DIR__, 2) . '/config/config.php';
+}
+$logoutUrl = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=logout';
 ?>
 
 <script>
@@ -55,6 +112,8 @@ if (strpos($_SERVER['SCRIPT_NAME'], '/views/') !== false) {
     }
 })();
 </script>
+
+<?php if (function_exists('render_official_profile_script')) { render_official_profile_script(); } ?>
 
 <!-- Admin Top Bar -->
 <div class="top-bar">
@@ -99,17 +158,17 @@ if (strpos($_SERVER['SCRIPT_NAME'], '/views/') !== false) {
     <!-- Admin Profile Dropdown -->
     <div class="admin-profile dropdown">
         <div class="admin-info">
-            <div class="name"><?= htmlspecialchars($adminName) ?></div>
-            <div class="role"><?= htmlspecialchars($adminRole) ?></div>
-        </div>
+                <div id="adminDisplayName" class="name"><?= htmlspecialchars($adminName) ?></div>
+                <div id="adminDisplayRole" class="role"><?= htmlspecialchars($adminRole) ?></div>
+            </div>
         <div class="admin-avatar dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;" title="Admin Profile">
             <i class="fas fa-user"></i>
         </div>
         <ul class="dropdown-menu dropdown-menu-end" style="min-width: 200px;">
             <li>
                 <div class="dropdown-item-text" style="border-bottom: 1px solid #e9ecef; padding-bottom: 10px; margin-bottom: 5px;">
-                    <strong><?= htmlspecialchars($adminName) ?></strong><br>
-                    <small class="text-muted"><?= htmlspecialchars($adminRole) ?></small>
+                    <strong id="adminDisplayNameDropdown"><?= htmlspecialchars($adminName) ?></strong><br>
+                    <small id="adminDisplayRoleDropdown" class="text-muted"><?= htmlspecialchars($adminRole) ?></small>
                 </div>
             </li>
             <li>
@@ -147,7 +206,7 @@ if (strpos($_SERVER['SCRIPT_NAME'], '/views/') !== false) {
                     if (k && k.indexOf && k.indexOf('survey_') === 0) localStorage.removeItem(k);
                 });
             } catch (e) {}
-            window.location.href = '../../controllers/AuthController.php?action=logout';
+            window.location.href = '<?php echo $logoutUrl; ?>';
         };
     }
 </script>

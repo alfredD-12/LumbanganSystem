@@ -114,7 +114,8 @@ class AuthController {
                 // Update last login
                 $this->officialModel->updateLastLogin($official['id']);
 
-                $redirectUrl = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=admin_announcements';
+                // Redirect officials to the official dashboard route handled by the front controller
+                $redirectUrl = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=dashboard_official';
                 echo json_encode([
                     'success' => true,
                     'message' => 'Login successful',

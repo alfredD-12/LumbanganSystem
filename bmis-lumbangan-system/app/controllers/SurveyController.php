@@ -3,32 +3,10 @@
 // Controller: validation, session checks and orchestration. Calls SurveyModel for DB SQL.
 // This class performs no top-level action dispatch; call its methods from your router.
 
-// Action dispatcher
-if (isset($_GET['action']) || isset($_POST['action'])) {
-    $action = $_GET['action'] ?? $_POST['action'];
-    
-    // Ensure session is started
-    if (session_status() === PHP_SESSION_NONE) {
-        session_start();
-    }
-
-    require_once __DIR__ . '/../config/Database.php';
-    require_once __DIR__ . '/../models/SurveyModel.php';
-    require_once __DIR__ . '/../helpers/session_helper.php';
-
-    $controller = new SurveyController();
-    $methodName = $action . '_action';
-
-    if (method_exists($controller, $methodName)) {
-        $controller->$methodName();
-        exit;
-    } else {
-        http_response_code(404);
-        echo json_encode(['success' => false, 'message' => 'Action not found']);
-        exit;
-    }
-}
-
+// Note: This file defines the SurveyController class and its methods only.
+// Any routing/dispatching for `action=` requests is handled centrally by
+// `public/index.php` (the front controller). Removing file-level side-effects
+// prevents this controller from intercepting AJAX requests when included.
 
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/SurveyModel.php';

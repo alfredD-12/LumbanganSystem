@@ -5,18 +5,18 @@
 
 /* Clean Single Color Cards */
 .gradient-card-blue {
-    background: #3b82f6;
+    background: #1e3a5f;
     color: white;
     border: none;
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+    box-shadow: 0 2px 8px rgba(30, 58, 95, 0.2);
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
 }
 .gradient-card-blue:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-    background: #2563eb;
+    box-shadow: 0 4px 12px rgba(30, 58, 95, 0.3);
+    background: #162881;
 }
 .gradient-card-yellow {
     background: #f59e0b;
@@ -106,7 +106,7 @@
 }
 
 .status-investigating {
-    background: #3b82f6;
+    background: #1e3a5f;
     color: white;
     border: none;
 }
@@ -118,7 +118,7 @@
 }
 
 .case-civil {
-    background: #3b82f6;
+    background: #1e3a5f;
     color: white;
     border: none;
 }
@@ -145,7 +145,7 @@
     left: 0;
     width: 4px;
     height: 100%;
-    background: #3b82f6;
+    background: #1e3a5f;
     border-radius: 8px 0 0 8px;
     opacity: 0;
     transition: opacity 0.2s ease;
@@ -153,7 +153,7 @@
 .incident-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    border-color: #3b82f6;
+    border-color: #1e3a5f;
 }
 .incident-card:hover::before {
     opacity: 1;
@@ -194,25 +194,25 @@ body {
 }
 
 .btn-primary {
-    background: #3b82f6;
+    background: #1e3a5f;
     color: white;
 }
 
 .btn-primary:hover {
-    background: #2563eb;
+    background: #162881;
     transform: translateY(-1px);
 }
 
 .btn-outline-primary {
-    border: 2px solid #3b82f6;
-    color: #3b82f6;
+    border: 2px solid #1e3a5f;
+    color: #1e3a5f;
     background: white;
 }
 
 .btn-outline-primary:hover {
-    background: #3b82f6;
+    background: #1e3a5f;
     color: white;
-    border-color: #3b82f6;
+    border-color: #1e3a5f;
 }
 
 .btn-warning {
@@ -359,7 +359,7 @@ body {
 }
 
 .input-group:focus-within {
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1);
 }
 
 /* Filter Dropdowns Enhancement */
@@ -372,7 +372,7 @@ body {
 }
 
 .form-select:hover {
-    border-color: #3b82f6;
+    border-color: #1e3a5f;
 }
 
 /* Ensure modals appear above everything */
@@ -391,7 +391,7 @@ body {
 }
 
 .modal-header {
-    background: #3b82f6;
+    background: linear-gradient(135deg, #1e3a5f 0%, #162881 100%);
     color: white;
     border-radius: 8px 8px 0 0;
     padding: 1.25rem 1.5rem;
@@ -439,8 +439,8 @@ body {
 
 .modal .form-control:focus,
 .modal .form-select:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: #1e3a5f;
+    box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1);
 }
 
 .modal .card.bg-light {
@@ -466,14 +466,14 @@ body {
 
 .form-control:focus,
 .form-select:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: #1e3a5f;
+    box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1);
     outline: none;
 }
 
 /* Input Group Enhancements */
 .input-group-text {
-    background: #3b82f6;
+    background: #1e3a5f;
     color: white;
     border: none;
     border-radius: 8px 0 0 8px;
@@ -515,14 +515,14 @@ body {
 }
 
 .alert-info {
-    background: #3b82f6;
+    background: #1e3a5f;
     color: white;
-    border-left: 4px solid #2563eb;
+    border-left: 4px solid #162881;
 }
 
 /* Details Modal Section Styling */
 #detailsModal .modal-body .card {
-    border-left: 4px solid #3b82f6;
+    border-left: 4px solid #1e3a5f;
     transition: all 0.3s ease;
 }
 
@@ -536,7 +536,7 @@ body {
 }
 
 #detailsModal .modal-body .card:nth-child(2) {
-    border-left-color: #3b82f6;
+    border-left-color: #1e3a5f;
 }
 
 #detailsModal .modal-body .card:nth-child(3) {
@@ -574,7 +574,7 @@ body {
 }
 
 #detailsModal .modal-header {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    background: linear-gradient(135deg, #1e3a5f 0%, #162881 100%);
     border-bottom: none;
 }
 
@@ -586,7 +586,7 @@ body {
 
 /* Section Icons Color */
 #detailsModal .text-primary i {
-    color: #3b82f6;
+    color: #1e3a5f;
 }
 
 #detailsModal .text-danger i {
@@ -599,7 +599,7 @@ body {
 
 /* Complainant Section Accent */
 #detailsModal .modal-body > div:nth-child(2) .card {
-    background: linear-gradient(to right, rgba(59, 130, 246, 0.02) 0%, transparent 100%);
+    background: linear-gradient(to right, rgba(30, 58, 95, 0.02) 0%, transparent 100%);
 }
 
 /* Offender Section Accent */
@@ -717,28 +717,28 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #3b82f6;
+    background: #1e3a5f;
     border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #2563eb;
+    background: #162881;
 }
 
 /* Selection Styling */
 ::selection {
-    background: #3b82f6;
+    background: #1e3a5f;
     color: white;
 }
 
 ::-moz-selection {
-    background: #3b82f6;
+    background: #1e3a5f;
     color: white;
 }
 
 /* Focus Visible for Accessibility */
 *:focus-visible {
-    outline: 3px solid #3b82f6;
+    outline: 3px solid #1e3a5f;
     outline-offset: 2px;
 }
 

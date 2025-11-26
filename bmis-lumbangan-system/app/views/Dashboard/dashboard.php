@@ -894,7 +894,7 @@ render_favicon();
                         </div>
                         <div style="margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
                             <span style="background: linear-gradient(135deg, #22863a, #2ea043); color: white; padding: 0.6rem 1.2rem; border-radius: 12px; font-size: 0.8rem; font-weight: 700; box-shadow: 0 4px 12px rgba(34, 134, 58, 0.3);">✓ Approved</span>
-                            <button style="background: transparent; border: 2px solid #22863a; color: #22863a; padding: 0.6rem 1.2rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">View Details</button>
+                            <button style="background: transparent; border: 2px solid #22863a; color: #22863a; padding: 0.6rem 1.2rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" data-bs-toggle="modal" data-bs-target="#documentRequestDetailsModal">View Details</button>
                         </div>
                     </div>
 
@@ -911,8 +911,8 @@ render_favicon();
                             </div>
                         </div>
                         <div style="margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-                            <span style="background: linear-gradient(135deg, #f57c00, #ff9800); color: white; padding: 0.6rem 1.2rem; border-radius: 12px; font-size: 0.8rem; font-weight: 700; box-shadow: 0 4px 12px rgba(245, 124, 0, 0.3);">⟳ Processing</span>
-                            <button style="background: transparent; border: 2px solid #f57c00; color: #f57c00; padding: 0.6rem 1.2rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">View Details</button>
+                            <a href="<?php echo htmlspecialchars((defined('BASE_PUBLIC') ? BASE_PUBLIC : '') . 'index.php?page=resident_complaints', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" style="background: linear-gradient(135deg, #f57c00, #ff9800); color: white; padding: 0.6rem 1.2rem; border-radius: 12px; font-size: 0.8rem; font-weight: 700; box-shadow: 0 4px 12px rgba(245, 124, 0, 0.3); text-decoration: none; display: inline-block; cursor: pointer;">⟳ Processing</a>
+                            <button style="background: transparent; border: 2px solid #f57c00; color: #f57c00; padding: 0.6rem 1.2rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" data-bs-toggle="modal" data-bs-target="#complaintDetailsModal">View Details</button>
                         </div>
                     </div>
 
@@ -956,7 +956,7 @@ render_favicon();
                         </div>
                         <div style="margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
                             <span style="background: linear-gradient(135deg, #c53030, #e53e3e); color: white; padding: 0.6rem 1.2rem; border-radius: 12px; font-size: 0.8rem; font-weight: 700; box-shadow: 0 4px 12px rgba(197, 48, 48, 0.3);">📄 Requested</span>
-                            <button style="background: transparent; border: 2px solid #c53030; color: #c53030; padding: 0.6rem 1.2rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">View Details</button>
+                            <button data-bs-toggle="modal" data-bs-target="#documentRequestedDetailsModal" style="background: transparent; border: 2px solid #c53030; color: #c53030; padding: 0.6rem 1.2rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">View Details</button>
                         </div>
                     </div>
 
@@ -1507,9 +1507,96 @@ render_favicon();
                         The monthly assessment survey is a vital tool for our barangay. Your participation helps us gather essential data to monitor the well-being of our community, identify emerging needs, and make informed decisions for future projects and services.
                     </p>
                     <hr style="margin: 1.5rem 0;">
-                    <div style="background: #f8fafc; padding: 1rem; border-radius: 8px;">
+                    <div style="background: #dbeafe; padding: 1rem; border-radius: 8px;">
                         <p style="font-size: 1rem; color: #333; line-height: 1.6; font-style: italic;">
                             Ang buwanang assessment survey ay isang mahalagang kasangkapan para sa ating barangay. Ang iyong pakikilahok ay tumutulong sa amin na makakalap ng mahahalagang datos upang masubaybayan ang kapakanan ng ating komunidad, matukoy ang mga pangangailangan, at makagawa ng mga desisyon para sa mga proyekto at serbisyo sa hinaharap.
+                        </p>
+                    </div>
+                    <p class="mt-4" style="font-size: 0.9rem; color: #666;">
+                        Thank you for your cooperation!
+                    </p>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #e9ecef;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Complaint Details Modal -->
+    <div class="modal fade" id="complaintDetailsModal" tabindex="-1" aria-labelledby="complaintDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 12px; border: none;">
+                <div class="modal-header" style="background: linear-gradient(135deg, #f57c00, #ff9800); color: white; border-bottom: none;">
+                    <h5 class="modal-title" id="complaintDetailsModalLabel" style="font-weight: 600;"><i class="fas fa-exclamation-circle" style="margin-right: 0.5rem;"></i>About Complaint Submission</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="padding: 1.5rem 2rem;">
+                    <p style="font-size: 1rem; color: #333; line-height: 1.6;">
+                        Thank you for submitting your complaint to Barangay Lumbangan. Your concern has been received and is being reviewed by our team. We take all complaints seriously and will investigate the matter thoroughly. You will be notified of any updates or actions taken regarding your complaint through this portal.
+                    </p>
+                    <hr style="margin: 1.5rem 0;">
+                    <div style="background: #fff7ed; padding: 1rem; border-radius: 8px;">
+                        <p style="font-size: 1rem; color: #333; line-height: 1.6; font-style: italic;">
+                            Salamat sa iyong pagsusumite ng reklamo sa Barangay Lumbangan. Ang iyong alalahanin ay natanggap na at sinusuri ng aming koponan. Sineseryoso namin ang lahat ng mga reklamo at masusing iimbestigahan ang bagay na ito. Ikaw ay aabisuhan ng anumang mga update o hakbang na ginawa tungkol sa iyong reklamo sa pamamagitan ng portal na ito.
+                        </p>
+                    </div>
+                    <p class="mt-4" style="font-size: 0.9rem; color: #666;">
+                        Thank you for your cooperation!
+                    </p>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #e9ecef;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Request Details Modal -->
+    <div class="modal fade" id="documentRequestDetailsModal" tabindex="-1" aria-labelledby="documentRequestDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 12px; border: none;">
+                <div class="modal-header" style="background: linear-gradient(135deg, #22863a, #2ea043); color: white; border-bottom: none;">
+                    <h5 class="modal-title" id="documentRequestDetailsModalLabel" style="font-weight: 600;"><i class="fas fa-file-check" style="margin-right: 0.5rem;"></i>Document Request Approved</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="padding: 1.5rem 2rem;">
+                    <p style="font-size: 1rem; color: #333; line-height: 1.6;">
+                        Congratulations! Your document request has been approved. You can now download your Barangay Clearance from the "My Documents" section of your dashboard. The document is valid and ready for use. If you need additional copies or have any questions, please contact the Barangay Hall during office hours.
+                    </p>
+                    <hr style="margin: 1.5rem 0;">
+                    <div style="background: #d1fae5; padding: 1rem; border-radius: 8px;">
+                        <p style="font-size: 1rem; color: #333; line-height: 1.6; font-style: italic;">
+                            Binabati kita! Ang iyong kahilingan para sa dokumento ay naaprubahan na. Maaari mo nang i-download ang iyong Barangay Clearance mula sa seksyon ng "My Documents" sa iyong dashboard. Ang dokumento ay valid at handa nang gamitin. Kung kailangan mo ng karagdagang kopya o may mga katanungan, mangyaring makipag-ugnayan sa Barangay Hall sa oras ng opisina.
+                        </p>
+                    </div>
+                    <p class="mt-4" style="font-size: 0.9rem; color: #666;">
+                        Thank you for your cooperation!
+                    </p>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #e9ecef;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Requested Details Modal -->
+    <div class="modal fade" id="documentRequestedDetailsModal" tabindex="-1" aria-labelledby="documentRequestedDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 12px; border: none;">
+                <div class="modal-header" style="background: linear-gradient(135deg, #c53030, #e53e3e); color: white; border-bottom: none;">
+                    <h5 class="modal-title" id="documentRequestedDetailsModalLabel" style="font-weight: 600;"><i class="fas fa-file-alt" style="margin-right: 0.5rem;"></i>Document Requested</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="padding: 1.5rem 2rem;">
+                    <p style="font-size: 1rem; color: #333; line-height: 1.6;">
+                        Your document request has been successfully submitted and is currently being processed by the Barangay office. Our staff will review your request and prepare the document according to standard procedures. You will receive a notification once your document is ready for approval or pickup. Please allow 3-5 business days for processing.
+                    </p>
+                    <hr style="margin: 1.5rem 0;">
+                    <div style="background: #fee2e2; padding: 1rem; border-radius: 8px;">
+                        <p style="font-size: 1rem; color: #333; line-height: 1.6; font-style: italic;">
+                            Ang iyong kahilingan para sa dokumento ay matagumpay nang naisumite at kasalukuyang pinoproseso ng opisina ng Barangay. Susuriin ng aming staff ang iyong kahilingan at ihahanda ang dokumento ayon sa karaniwang pamamaraan. Makakatanggap ka ng notipikasyon kapag handa na ang iyong dokumento para sa pag-apruba o pagtanggap. Mangyaring magbigay ng 3-5 araw ng negosyo para sa pagproseso.
                         </p>
                     </div>
                     <p class="mt-4" style="font-size: 0.9rem; color: #666;">

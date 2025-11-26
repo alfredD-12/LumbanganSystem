@@ -364,10 +364,10 @@ include_once __DIR__ . '/../../components/admin_components/header-admin.php'
                                             <a href="index.php?page=admin_announcements&edit=<?php echo $a['id']; ?>" class="btn-action btn-edit" onclick="event.stopPropagation();" title="Edit">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>
-                                            <form method="post" style="display:inline" onsubmit="event.stopPropagation(); return confirm('Delete this announcement?');">
+                                            <form method="post" class="delete-form" style="display:inline" data-announcement-title="<?php echo htmlspecialchars($a['title'], ENT_QUOTES); ?>">
                                                 <input type="hidden" name="action" value="delete">
                                                 <input type="hidden" name="id" value="<?php echo $a['id']; ?>">
-                                                <button class="btn-action btn-delete" onclick="event.stopPropagation();" title="Delete">
+                                                <button type="button" class="btn-action btn-delete" onclick="event.stopPropagation();" title="Delete">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </form>
@@ -472,6 +472,79 @@ document.addEventListener('DOMContentLoaded', function(){
         <div class="modal-content bg-transparent border-0">
             <div class="modal-body p-0">
                 <img id="imageModalImg" src="" alt="full image" class="w-100 rounded">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Confirm Action</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmActionBtn">
+                    <i class="bi bi-check-circle me-2"></i>Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-trash me-2"></i>Confirm Delete</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="deleteMessage">Are you sure you want to delete this announcement?</p>
+                <p class="text-danger"><strong>This action cannot be undone!</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-danger" id="deleteActionBtn">
+                    <i class="bi bi-trash me-2"></i>Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Notification Modal -->
+<div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+                <h5 class="mt-3 mb-2">Success!</h5>
+                <p class="mb-0 text-muted" id="successMessage"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error Notification Modal -->
+<div class="modal fade" id="errorModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-exclamation-circle-fill text-danger" style="font-size: 3rem;"></i>
+                <h5 class="mt-3 mb-2">Error!</h5>
+                <p class="mb-0 text-muted" id="errorMessage"></p>
             </div>
         </div>
     </div>

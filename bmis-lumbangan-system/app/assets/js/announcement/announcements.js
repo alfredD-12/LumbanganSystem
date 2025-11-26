@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function(){
             const message = msgEl ? msgEl.value.trim() : '';
             if (!title || !message) {
                 e.preventDefault();
-                alert('Please fill in both Title and Message before continuing.');
+                showErrorModal('Please fill in both Title and Message before continuing.');
                 if (titleEl && !title) titleEl.focus();
                 else if (msgEl) msgEl.focus();
                 return;
@@ -120,52 +120,57 @@ document.addEventListener('DOMContentLoaded', function(){
             const confirmMsg = annForm.dataset.confirm || (action === 'create' ? 'Are you sure you want to create this announcement?' : 'Are you sure you want to update this announcement?');
 
             if (action !== 'create') {
-                // update: validate then confirm, allow default submit if confirmed
-                if (!confirm(confirmMsg)) {
-                    e.preventDefault();
-                    return;
-                }
-                // mark as submitting and allow normal submission to proceed
-                annForm.dataset.submitting = '1';
+                // update: validate then confirm using custom modal
+                e.preventDefault();
+                showConfirmModal(confirmMsg, function() {
+                    annForm.dataset.submitting = '1';
+                    annForm.submit();
+                });
                 return;
             }
 
             // create: intercept and submit via AJAX after confirmation
             e.preventDefault();
             annForm.dataset.submitting = '1';
-            if (!confirm(confirmMsg)) return;
-
-            const btn = annForm.querySelector('button[type="submit"]');
-            const originalHTML = btn ? btn.innerHTML : null;
-            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Saving...'; }
-
-            const formData = new FormData(annForm);
-            formData.set('ajax', '1');
-
-            fetch(window.location.pathname + window.location.search, {
-                method: 'POST',
-                body: formData
-            }).then(r => r.json())
-            .then(data => {
-                if (data && data.success) {
-                    if (data.reload) {
-                        window.location.reload();
-                        return;
-                    }
-                } else {
-                    console.error('Create failed', data);
-                    alert('Failed to create announcement.');
-                }
-            }).catch(err => {
-                console.error(err);
-                // On error, show message instead of automatically re-submitting
-                alert('Network error while creating announcement. Please try again.');
-                // Do not auto-submit to avoid duplicate inserts
-            }).finally(() => {
-                if (btn) { btn.disabled = false; if (originalHTML) btn.innerHTML = originalHTML; }
-                // clear submitting flag
-                delete annForm.dataset.submitting;
+            showConfirmModal(confirmMsg, function() {
+                submitCreateAnnouncement();
             });
+            return;
+
+            function submitCreateAnnouncement() {
+
+                const btn = annForm.querySelector('button[type="submit"]');
+                const originalHTML = btn ? btn.innerHTML : null;
+                if (btn) { btn.disabled = true; btn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Saving...'; }
+
+                const formData = new FormData(annForm);
+                formData.set('ajax', '1');
+
+                fetch(window.location.pathname + window.location.search, {
+                    method: 'POST',
+                    body: formData
+                }).then(r => r.json())
+                .then(data => {
+                    if (data && data.success) {
+                        if (data.reload) {
+                            window.location.reload();
+                            return;
+                        }
+                    } else {
+                        console.error('Create failed', data);
+                        showErrorModal('Failed to create announcement.');
+                    }
+                }).catch(err => {
+                    console.error(err);
+                    // On error, show message instead of automatically re-submitting
+                    showErrorModal('Network error while creating announcement. Please try again.');
+                    // Do not auto-submit to avoid duplicate inserts
+                }).finally(() => {
+                    if (btn) { btn.disabled = false; if (originalHTML) btn.innerHTML = originalHTML; }
+                    // clear submitting flag
+                    delete annForm.dataset.submitting;
+                });
+            }
         });
     }
 
@@ -274,6 +279,8 @@ document.addEventListener('DOMContentLoaded', function(){
                         initCardClicks(gridContainer);
                         // detect overflow for new cards
                         detectOverflow(gridContainer);
+                        // re-init delete handlers for new cards
+                        initDeleteHandlers();
 
                         viewMoreBtn.dataset.nextOffset = data.next_offset;
 
@@ -303,12 +310,12 @@ document.addEventListener('DOMContentLoaded', function(){
                             }
 
                             console.error('Invalid response data:', data);
-                            alert('Failed to load more announcements.');
+                            showErrorModal('Failed to load more announcements.');
                     }
                 })
                 .catch(err => {
                     console.error('View more error:', err);
-                    alert('Error loading more announcements. Please try again.');
+                    showErrorModal('Error loading more announcements. Please try again.');
                 })
                 .finally(() => {
                     // Re-enable button
@@ -368,4 +375,119 @@ document.addEventListener('DOMContentLoaded', function(){
             viewMoreBtn.innerHTML = originalLabel;
         });
     }
+
+    // Delete form handler - using delegation on document
+    function initDeleteHandlers() {
+        const deleteForms = document.querySelectorAll('.delete-form');
+        deleteForms.forEach(function(form) {
+            const deleteBtn = form.querySelector('.btn-delete');
+            if (!deleteBtn || deleteBtn.dataset.listenerAdded) return;
+            
+            deleteBtn.dataset.listenerAdded = 'true';
+            deleteBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const title = form.dataset.announcementTitle || 'this announcement';
+                showDeleteModal(title, function() {
+                    form.submit();
+                });
+            });
+        });
+    }
+    
+    // Initialize delete handlers on page load
+    initDeleteHandlers();
+
+    // Helper functions for custom modals
+    window.showConfirmModal = function(message, onConfirm) {
+        const modal = document.getElementById('confirmModal');
+        const messageEl = document.getElementById('confirmMessage');
+        const confirmBtn = document.getElementById('confirmActionBtn');
+        
+        if (!modal || !messageEl || !confirmBtn) {
+            // Fallback to browser confirm if modal not found
+            if (confirm(message)) onConfirm();
+            return;
+        }
+        
+        messageEl.textContent = message;
+        
+        const bsModal = new bootstrap.Modal(modal);
+        
+        // Remove old listeners
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+        
+        newConfirmBtn.addEventListener('click', function() {
+            bsModal.hide();
+            onConfirm();
+        });
+        
+        bsModal.show();
+    };
+
+    window.showErrorModal = function(message) {
+        const modal = document.getElementById('errorModal');
+        const messageEl = document.getElementById('errorMessage');
+        
+        if (!modal || !messageEl) {
+            alert(message);
+            return;
+        }
+        
+        messageEl.textContent = message;
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        // Auto-hide after 3 seconds
+        setTimeout(function() {
+            bsModal.hide();
+        }, 3000);
+    };
+
+    window.showSuccessModal = function(message) {
+        const modal = document.getElementById('successModal');
+        const messageEl = document.getElementById('successMessage');
+        
+        if (!modal || !messageEl) {
+            return;
+        }
+        
+        messageEl.textContent = message;
+        const bsModal = new bootstrap.Modal(modal);
+        bsModal.show();
+        
+        // Auto-hide after 2 seconds
+        setTimeout(function() {
+            bsModal.hide();
+        }, 2000);
+    };
+
+    window.showDeleteModal = function(announcementTitle, onConfirm) {
+        const modal = document.getElementById('deleteModal');
+        const messageEl = document.getElementById('deleteMessage');
+        const deleteBtn = document.getElementById('deleteActionBtn');
+        
+        if (!modal || !messageEl || !deleteBtn) {
+            // Fallback to browser confirm if modal not found
+            if (confirm('Delete this announcement?')) onConfirm();
+            return;
+        }
+        
+        messageEl.innerHTML = 'Are you sure you want to delete <strong>"' + announcementTitle + '"</strong>?';
+        
+        const bsModal = new bootstrap.Modal(modal);
+        
+        // Remove old listeners
+        const newDeleteBtn = deleteBtn.cloneNode(true);
+        deleteBtn.parentNode.replaceChild(newDeleteBtn, deleteBtn);
+        
+        newDeleteBtn.addEventListener('click', function() {
+            bsModal.hide();
+            onConfirm();
+        });
+        
+        bsModal.show();
+    };
 });

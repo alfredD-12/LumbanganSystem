@@ -7,6 +7,7 @@ require_once __DIR__ . '/../app/controllers/DocumentRequestController.php';
 require_once __DIR__ . '/../app/controllers/admins/AdminDocumentController.php';
 @require_once __DIR__ . '/../app/config/config.php';
 require_once __DIR__ . '/../app/controllers/admins/DocumentTemplateController.php';
+require_once __DIR__ . '/../app/controllers/PasswordResetController.php';
 
 // Add SurveyController so AJAX survey actions can be routed here
 // Note: Do not auto-include SurveyController here because it contains a file-level
@@ -250,6 +251,22 @@ if ($action) {
 
         case "addAdminRequest":
             $adminController->addAdminRequest();
+            break;
+
+            // Password Reset Actions
+        case 'request_reset':
+            $resetController = new PasswordResetController();
+            $resetController->requestReset();
+            break;
+
+        case 'verify_code':
+            $resetController = new PasswordResetController();
+            $resetController->verifyCode();
+            break;
+
+        case 'reset_password':
+            $resetController = new PasswordResetController();
+            $resetController->resetPassword();
             break;
 
 

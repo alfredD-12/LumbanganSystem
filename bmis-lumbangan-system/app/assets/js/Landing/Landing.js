@@ -67,6 +67,8 @@ function initLandingUI() {
         openLoginModalBtn.addEventListener('click', function(e) {
             e.preventDefault();
             loginModal.classList.add('show');
+            loginModal.style.display = 'flex';
+            loginModal.style.pointerEvents = 'auto';
             document.body.style.overflow = 'hidden';
             initTypewriter();
         });
@@ -76,7 +78,9 @@ function initLandingUI() {
     if (closeLoginModalBtn) {
         closeLoginModalBtn.addEventListener('click', function() {
             loginModal.classList.remove('show');
-            document.body.style.overflow = '';
+            loginModal.style.display = 'none';
+            loginModal.style.pointerEvents = 'none';
+            document.body.style.overflow = 'auto'; // Allow scrolling again
         });
     }
 
@@ -85,7 +89,9 @@ function initLandingUI() {
         loginModal.addEventListener('click', function(e) {
             if (e.target === loginModal) {
                 loginModal.classList.remove('show');
-                document.body.style.overflow = '';
+                loginModal.style.display = 'none';
+                loginModal.style.pointerEvents = 'none';
+                document.body.style.overflow = 'auto'; // Allow scrolling again
             }
         });
     }

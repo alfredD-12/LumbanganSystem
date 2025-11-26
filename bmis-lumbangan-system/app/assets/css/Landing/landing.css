@@ -1268,6 +1268,16 @@
     animation: modalSlideIn 0.5s ease;
 }
 
+/* Forget Password Modal - Higher z-index to appear on top */
+#forgetPasswordModal {
+    z-index: 99999 !important;
+    display: flex !important;
+}
+
+#forgetPasswordModal[style*="display: none"] {
+    display: none !important;
+}
+
 @keyframes modalSlideIn {
     from {
         transform: scale(0.8) translateY(-50px);

@@ -218,7 +218,8 @@ document.addEventListener('DOMContentLoaded', function(){
                     return r.json();
                 })
                 .then(data => {
-                    if (data && data.html) {
+                    // Accept responses that either include HTML columns or indicate 0 results
+                    if (data && data.html && data.html.trim() !== '') {
                         // target the announcements grid container
                         const gridContainer = document.querySelector('.announcements-grid');
                         const viewMoreWrap = document.getElementById('viewMoreWrap');
@@ -289,8 +290,20 @@ document.addEventListener('DOMContentLoaded', function(){
                             viewLessBtn.style.display = 'inline-block';
                         }
                     } else {
-                        console.error('Invalid response data:', data);
-                        alert('Failed to load more announcements.');
+                            // If the server returned a valid JSON with no rows, treat it as "no more results" rather than an error.
+                            if (data && typeof data.count !== 'undefined' && data.count === 0) {
+                                // Update next offset so further clicks (if any) remain consistent
+                                if (viewMoreBtn) viewMoreBtn.dataset.nextOffset = data.next_offset;
+                                if (data.has_more === false && viewMoreBtn) {
+                                    viewMoreBtn.style.display = 'none';
+                                    viewMoreBtn.dataset.hiddenWhenExhausted = 'true';
+                                }
+                                // Nothing to append; silently return
+                                return;
+                            }
+
+                            console.error('Invalid response data:', data);
+                            alert('Failed to load more announcements.');
                     }
                 })
                 .catch(err => {

@@ -31,6 +31,36 @@ include_once __DIR__ . '/../../components/admin_components/header-admin.php'
         <!-- Modern Filters Bar -->
         <div class="filters-bar">
             <div class="filters-compact">
+                <?php if (!empty($stats)): ?>
+                <div class="stats-grid" aria-hidden="false">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Announcements</div>
+                        <div class="stat-value"><?php echo intval($stats['total'] ?? 0); ?></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Published</div>
+                        <div class="stat-value text-success"><?php echo intval($stats['published'] ?? 0); ?></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Drafts</div>
+                        <div class="stat-value text-warning"><?php echo intval($stats['draft'] ?? 0); ?></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Archived</div>
+                        <div class="stat-value text-muted"><?php echo intval($stats['archived'] ?? 0); ?></div>
+                    </div>
+                    <?php if (!empty($stats['types'])): ?>
+                        <div class="stat-card stat-types">
+                            <div class="stat-label">By Type</div>
+                            <div class="stat-value types-list">
+                                <?php foreach ($stats['types'] as $t => $c): ?>
+                                    <span class="type-pill"><?php echo htmlspecialchars(ucfirst($t)); ?>: <?php echo $c; ?></span>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <?php endif; ?>
                 <!-- Status Filter Pills -->
                 <div class="status-filters">
                           <a href="index.php?page=admin_announcements<?php echo $start_date || $end_date || $q ? '&' . http_build_query(array_filter(['start_date' => $start_date, 'end_date' => $end_date, 'q' => $q])) : ''; ?>" 
@@ -65,6 +95,18 @@ include_once __DIR__ . '/../../components/admin_components/header-admin.php'
                     <div class="filter-input-group">
                         <i class="bi bi-search"></i>
                         <input name="search" id="search" type="text" placeholder="Search announcements..." value="<?php echo htmlspecialchars($q ?? ''); ?>">
+                    </div>
+                    <div class="filter-input-group">
+                        <i class="bi bi-tag"></i>
+                        <select name="type" id="filterType" class="form-select">
+                            <option value="">All Types</option>
+                            <?php
+                            $typeOptions = ['general' => 'General', 'event' => 'Event', 'project' => 'Project', 'notice' => 'Notice', 'workshop' => 'Workshop', 'meeting' => 'Meeting', 'emergency' => 'Emergency', 'other' => 'Other'];
+                            $typeSel = isset($type_filter) ? $type_filter : null;
+                            foreach ($typeOptions as $k => $v): ?>
+                                <option value="<?php echo htmlspecialchars($k); ?>" <?php echo ($typeSel === $k) ? 'selected' : ''; ?>><?php echo htmlspecialchars($v); ?></option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                     
                     <div class="filter-input-group">

@@ -64,13 +64,15 @@ class AnnouncementController {
         $end_date = isset($_GET['end_date']) && $_GET['end_date'] !== '' ? $_GET['end_date'] : null;
         $q = isset($_GET['search']) && trim($_GET['search']) !== '' ? trim($_GET['search']) : '';
         $status_filter = isset($_GET['status']) && in_array($_GET['status'], ['draft','published','archived']) ? $_GET['status'] : null;
+        $type_filter = isset($_GET['type']) && trim($_GET['type']) !== '' ? trim($_GET['type']) : null;
         
         // Build filters array for model
         $filters = [
             'start_date' => $start_date,
             'end_date' => $end_date,
             'search' => $q,
-            'status' => $status_filter
+            'status' => $status_filter,
+            'type' => $type_filter
         ];
         
         // Get edit data if editing
@@ -90,6 +92,9 @@ class AnnouncementController {
         // Calculate has_more and next_offset for view
         $has_more = count($announcements) >= $limit;
         $next_offset = $offset + $limit;
+
+        // Get statistics for the current filter set
+        $stats = $this->model->getStats($filters);
         
     // Load view (renamed to announcement.php)
     include __DIR__ . '/../views/announcement/announcement.php';
@@ -100,7 +105,8 @@ class AnnouncementController {
             'start_date' => isset($_GET['start_date']) && $_GET['start_date'] !== '' ? $_GET['start_date'] : null,
             'end_date' => isset($_GET['end_date']) && $_GET['end_date'] !== '' ? $_GET['end_date'] : null,
             'search' => isset($_GET['search']) && trim($_GET['search']) !== '' ? trim($_GET['search']) : '',
-            'status' => isset($_GET['status']) && in_array($_GET['status'], ['draft','published','archived']) ? $_GET['status'] : null
+            'status' => isset($_GET['status']) && in_array($_GET['status'], ['draft','published','archived']) ? $_GET['status'] : null,
+            'type' => isset($_GET['type']) && trim($_GET['type']) !== '' ? trim($_GET['type']) : null
         ];
     }
     
@@ -121,9 +127,11 @@ class AnnouncementController {
             
             $announcementId = $this->model->create($data);
             
-            // Send notification if announcement is published
+            // Send notification if announcement is published (only if helper is available)
             if ($announcementId && $data['status'] === 'published') {
-                notifyNewAnnouncement($announcementId, $data['title'], $data['audience']);
+                if (function_exists('notifyNewAnnouncement')) {
+                    notifyNewAnnouncement($announcementId, $data['title'], $data['audience']);
+                }
             }
             
             if (isset($_POST['ajax']) && $_POST['ajax'] == '1') {

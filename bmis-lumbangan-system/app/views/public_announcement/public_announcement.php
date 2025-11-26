@@ -52,7 +52,7 @@ include __DIR__ . '/../../components/resident_components/header-resident.php';
                 <div class="filter-group">
                     <div class="filter-item">
                         <i class="fas fa-search filter-icon"></i>
-                        <input name="q" type="text" class="filter-input" placeholder="Search announcements..." value="<?php echo htmlspecialchars($q ?? ''); ?>">
+                        <input name="q" type="text" class="filter-input" placeholder="Search announcements...and types" value="<?php echo htmlspecialchars($q ?? ''); ?>">
                     </div>
                     
                     <div class="filter-item">
@@ -64,6 +64,7 @@ include __DIR__ . '/../../components/resident_components/header-resident.php';
                         <i class="fas fa-calendar-check filter-icon"></i>
                         <input id="end_date" name="end_date" type="date" class="filter-input" placeholder="To date" value="<?php echo htmlspecialchars($end_date ?? ''); ?>">
                     </div>
+                    <!-- type filter removed per request -->
                     
                     <button type="submit" class="btn-filter">
                         <i class="fas fa-filter"></i> Filter

@@ -179,7 +179,8 @@ body {
 .filters-bar {
     background: var(--white);
     padding: 1.5rem;
-    margin: -2rem auto 2rem;
+    /* reduce upward overlap with hero so stats row has room */
+    margin: -1.25rem auto 2rem;
     max-width: 1400px;
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-lg);
@@ -248,6 +249,54 @@ body {
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
+}
+
+/* Announcement stats grid */
+.stats-grid {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    margin: 0 auto 0.75rem auto;
+}
+
+.stat-card {
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 0.75rem 1rem;
+    min-width: 140px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.stat-card .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+.stat-card .stat-value {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--dark-gray);
+    margin-top: 0.35rem;
+}
+.stat-card .types-list {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+}
+.type-pill {
+    background: rgba(30,58,95,0.06);
+    color: var(--dark-gray);
+    padding: 0.25rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
 }
 
 .filter-input-group {

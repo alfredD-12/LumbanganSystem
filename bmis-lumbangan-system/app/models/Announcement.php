@@ -37,6 +37,11 @@ class Announcement {
             $params[] = $search;
             $params[] = $search;
         }
+
+        if (!empty($filters['type'])) {
+            $where[] = "`type` = ?";
+            $params[] = $filters['type'];
+        }
         
         if (!empty($filters['start_date'])) {
             $where[] = "DATE(created_at) >= ?";
@@ -74,8 +79,10 @@ class Announcement {
         $params = [$role];
         
         if (!empty($filters['q'])) {
-            $where[] = "(title LIKE ? OR message LIKE ?)";
+            // Allow searching by title, message, or type (so users can type a type name)
+            $where[] = "(title LIKE ? OR message LIKE ? OR `type` LIKE ?)";
             $search = '%' . $filters['q'] . '%';
+            $params[] = $search;
             $params[] = $search;
             $params[] = $search;
         }
@@ -156,5 +163,76 @@ class Announcement {
         $sql = "SELECT image FROM {$this->table} WHERE image IS NOT NULL AND image != ''";
         $stmt = $this->conn->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Get statistics for announcements (totals and counts by status/type)
+    public function getStats($filters = []) {
+        $where = [];
+        $params = [];
+
+        if (!empty($filters['status'])) {
+            $where[] = "status = ?";
+            $params[] = $filters['status'];
+        }
+
+        if (!empty($filters['search']) || !empty($filters['q'])) {
+            $searchVal = '';
+            if (!empty($filters['search'])) $searchVal = $filters['search'];
+            if (!empty($filters['q'])) $searchVal = $filters['q'];
+            $where[] = "(title LIKE ? OR message LIKE ? OR author LIKE ?)";
+            $search = '%' . $searchVal . '%';
+            $params[] = $search;
+            $params[] = $search;
+            $params[] = $search;
+        }
+
+        if (!empty($filters['start_date'])) {
+            // allow both date-only or datetime strings
+            $where[] = "DATE(created_at) >= ?";
+            $params[] = $filters['start_date'];
+        }
+
+        if (!empty($filters['end_date'])) {
+            $where[] = "DATE(created_at) <= ?";
+            $params[] = $filters['end_date'];
+        }
+
+        if (!empty($filters['type'])) {
+            $where[] = "`type` = ?";
+            $params[] = $filters['type'];
+        }
+
+        $whereSql = '';
+        if ($where) {
+            $whereSql = ' WHERE ' . implode(' AND ', $where);
+        }
+
+        // Totals and status breakdown
+        $sql = "SELECT 
+                    COUNT(*) AS total,
+                    SUM(status = 'published') AS published,
+                    SUM(status = 'draft') AS draft,
+                    SUM(status = 'archived') AS archived
+                FROM {$this->table}" . $whereSql;
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute($params);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        // Counts by type
+        $typesSql = "SELECT `type`, COUNT(*) AS cnt FROM {$this->table}" . $whereSql . " GROUP BY `type` ORDER BY cnt DESC";
+        $tstmt = $this->conn->prepare($typesSql);
+        $tstmt->execute($params);
+        $types = [];
+        while ($r = $tstmt->fetch(PDO::FETCH_ASSOC)) {
+            $types[$r['type']] = intval($r['cnt']);
+        }
+
+        return [
+            'total' => intval($row['total'] ?? 0),
+            'published' => intval($row['published'] ?? 0),
+            'draft' => intval($row['draft'] ?? 0),
+            'archived' => intval($row['archived'] ?? 0),
+            'types' => $types
+        ];
     }
 }

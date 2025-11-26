@@ -18,3 +18,5 @@ bmis-lumbangan-system/public/uploads/generated_pdfs/
 # Ignore API folder with sensitive data (API keys, credentials)
 bmis-lumbangan-system/api/
 bmis-lumbangan-system/api/*.php
+
+bmis-lumbangan-system/.github/

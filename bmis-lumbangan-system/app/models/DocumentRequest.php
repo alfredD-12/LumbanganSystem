@@ -93,6 +93,56 @@ class DocumentRequest
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // Fetch requests with status = 'Released' for a specific user
+    public function getReleasedRequestsByUser($userId)
+    {
+        $sql = "SELECT 
+                        dr.request_id, 
+                        dr.document_type_id, 
+                        dr.request_date, 
+                        dr.status, 
+                        dr.requested_for, 
+                        dr.relation_to_requestee,
+                        dr.release_date,
+                        dt.document_name
+                    FROM document_requests dr
+                    INNER JOIN document_types dt 
+                        ON dr.document_type_id = dt.document_type_id
+                    WHERE dr.user_id = ? 
+                      AND dr.status = 'Released' AND dr.release_date IS NOT NULL
+                    ORDER BY dr.request_date DESC";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(1, $userId, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Fetch requests with status = 'Rejected' for a specific user
+    public function getRejectedRequestsByUser($userId)
+    {
+        $sql = "SELECT 
+                        dr.request_id, 
+                        dr.document_type_id, 
+                        dr.request_date, 
+                        dr.status, 
+                        dr.requested_for, 
+                        dr.relation_to_requestee,
+                        dr.remarks,
+                        dt.document_name
+                    FROM document_requests dr
+                    INNER JOIN document_types dt 
+                        ON dr.document_type_id = dt.document_type_id
+                    WHERE dr.user_id = ? 
+                      AND dr.status = 'Rejected'
+                    ORDER BY dr.request_date DESC";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(1, $userId, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     //Fetch users whose request are rejected or released
     public function getHistoryRequestsByUser($userId)
     {
@@ -309,5 +359,58 @@ class DocumentRequest
             ':document_type_id' => $data['document_type_id'],
             ':purpose' => $data['purpose'],
         ]);
+    }
+
+    // Update request details (user editable fields)
+    public function updateDetails($requestId, $data)
+    {
+        $sql = "UPDATE document_requests SET
+                    document_type_id = :document_type_id,
+                    purpose = :purpose,
+                    proof_upload = :proof_upload,
+                    requested_for = :requested_for,
+                    relation_to_requestee = :relation
+                WHERE request_id = :id";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':document_type_id', $data['document_type_id'], PDO::PARAM_INT);
+        $stmt->bindParam(':purpose', $data['purpose']);
+        $stmt->bindParam(':proof_upload', $data['proof_upload']);
+        $stmt->bindParam(':requested_for', $data['requested_for']);
+        $stmt->bindParam(':relation', $data['relation_to_requestee']);
+        $stmt->bindParam(':id', $requestId, PDO::PARAM_INT);
+
+        return $stmt->execute();
+    }
+
+    // Remove a proof file path from the request's proof_upload column
+    public function removeProofFromRequest($requestId, $filePath)
+    {
+        // Fetch current files
+        $stmt = $this->conn->prepare("SELECT proof_upload FROM document_requests WHERE request_id = :id");
+        $stmt->execute([':id' => $requestId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        $existing = [];
+        if ($row && !empty($row['proof_upload'])) {
+            $existing = array_filter(array_map('trim', explode(',', $row['proof_upload'])));
+        }
+
+        if (empty($existing)) {
+            // nothing to remove
+            return true;
+        }
+
+        // Remove any entries that match exact path or matching filename
+        $targetBase = basename($filePath);
+        $updated = array_values(array_filter($existing, function ($p) use ($filePath, $targetBase) {
+            if ($p === $filePath) return false;
+            if (basename($p) === $targetBase) return false;
+            return true;
+        }));
+
+        $newStr = implode(',', $updated);
+        $upd = $this->conn->prepare("UPDATE document_requests SET proof_upload = :proof WHERE request_id = :id");
+        return $upd->execute([':proof' => $newStr, ':id' => $requestId]);
     }
 }

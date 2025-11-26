@@ -1,6 +1,8 @@
 <!-- Google Font: Inter -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/announcement/announcements_modern.css?v=<?php echo time(); ?>">
 <!-- Modern announcements styles -->
 <?php
 $pageTitle = 'Barangay Lumbangan - Announcement';

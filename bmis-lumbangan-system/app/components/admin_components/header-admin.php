@@ -38,12 +38,6 @@ if (file_exists(__DIR__ . '/../../helpers/official_profile_helper.php')) {
     <!-- Tiny MCE Links -->
     <script src="https://cdn.tiny.cloud/1/hunfvs9zjm4i9ph6m4ls99rumaquw91oqwz981hcx0er0xsp/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
     <script src="<?php echo BASE_URL . 'assets/js/tinymce.js'; ?>"> </script>
-    <!-- Admin Complaint Page CSS -->
-    <link rel="stylesheet" href="<?php echo BASE_URL . 'assets/css/complaint/admin.css'; ?>">
-    <!-- Admin Complaint Page CSS -->
-    <link rel="stylesheet" href="<?php echo BASE_URL . 'assets/css/complaint/admin.css'; ?>">
-
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>assets/css/announcement/announcements_modern.css?v=<?php echo time(); ?>">
     <!-- CSS for Document Type Modal -->
     <link rel="stylesheet" href="<?php echo BASE_URL . 'assets/css/admins/document_type.css' ?>">
 </head>

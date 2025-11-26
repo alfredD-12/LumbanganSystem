@@ -5,8 +5,12 @@ $pageSubtitle = 'Manage and monitor barangay complaints and incidents';
 $currentPage = 'admin_complaints';
 
 include __DIR__ . '/../../components/admin_components/header-admin.php'; 
+
 ?>
+<!-- Admin Complaint Page CSS -->
+<link rel="stylesheet" href="<?php echo BASE_URL . 'assets/css/complaint/admin.css'; ?>">
 <?php
+
 /**
  * Complaint Index View (Admin)
  * Display list of all complaints with filters and statistics

@@ -142,14 +142,13 @@ if ($action) {
             $surveyController->save_family_history_action();
             break;
 
-        // case 'save_family':
-        //     $surveyController->save_family_action ?? $surveyController->save_family(); // fallback if named differently
-        //     // Note: If your controller has a method for save_family, ensure its name matches; adjust if needed.
-        //     break;
+        case 'save_family':
+            $surveyController->save_family_action();
+            break;
 
-        // case 'save_household':
-        //     $surveyController->save_household_action ?? $surveyController->save_household();
-        //     break;
+        case 'save_household':
+            $surveyController->save_household_action ?? $surveyController->save_household();
+            break;
 
         case 'save_lifestyle':
             $surveyController->save_lifestyle_action();
@@ -178,6 +177,27 @@ if ($action) {
         case 'update_official_profile':
             $admin = new AdminController();
             $admin->updateOfficialProfile();
+            break;
+
+        case 'list_officials':
+            $admin = new AdminController();
+            $admin->listOfficials();
+            break;
+        case 'get_official':
+            $admin = new AdminController();
+            $admin->getOfficial();
+            break;
+        case 'create_official':
+            $admin = new AdminController();
+            $admin->createOfficial();
+            break;
+        case 'admin_update_official':
+            $admin = new AdminController();
+            $admin->updateOfficialAdmin();
+            break;
+        case 'delete_official':
+            $admin = new AdminController();
+            $admin->deleteOfficial();
             break;
 
         case 'getDocumentTypes':
@@ -309,19 +329,25 @@ switch ($page) {
         $adminController = new AdminDocumentController();
         $adminController->showAdminDocumentRequestsPage();
         break;
-
     case 'public_announcement':
         require_once __DIR__ . '/../app/controllers/PublicAnnouncementController.php';
         $pubController = new PublicAnnouncementController();
         $pubController->index();
         break;
-
     case 'admin_announcements':
         require_once __DIR__ . '/../app/controllers/AnnouncementController.php';
         $annController = new AnnouncementController();
         $annController->index();
         break;
-
+    case 'admin_officials':
+        // Only allow access to officials/admins
+        if (!isOfficial()) {
+            $redirect = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=landing';
+            header('Location: ' . $redirect);
+            exit;
+        }
+        include __DIR__ . '/../app/views/admins/officials.php';
+        break;
     case 'dashboard_official':
         // Only allow access to officials
         if (!isOfficial()) {
@@ -331,66 +357,55 @@ switch ($page) {
         }
         include __DIR__ . '/../app/views/admin_Dash/SecDash.php';
         break;
-
     case 'survey_wizard_personal':
         require_once __DIR__ . '/../app/controllers/SurveyController.php';
         $surveyController = new SurveyController();
         $surveyController->wizard_personal();
         break;
-
     case 'survey_wizard_vitals':
         require_once __DIR__ . '/../app/controllers/SurveyController.php';
         $surveyController = new SurveyController();
         $surveyController->wizard_vitals();
         break;
-
     case 'survey_wizard_family_history':
         require_once __DIR__ . '/../app/controllers/SurveyController.php';
         $surveyController = new SurveyController();
         $surveyController->wizard_family_history();
         break;
-
     case 'survey_wizard_family':
         require_once __DIR__ . '/../app/controllers/SurveyController.php';
         $surveyController = new SurveyController();
         $surveyController->wizard_family();
         break;
-
     case 'survey_wizard_lifestyle':
         require_once __DIR__ . '/../app/controllers/SurveyController.php';
         $surveyController = new SurveyController();
         $surveyController->wizard_lifestyle();
         break;
-
     case 'survey_wizard_angina':
         require_once __DIR__ . '/../app/controllers/SurveyController.php';
         $surveyController = new SurveyController();
         $surveyController->wizard_angina();
         break;
-
     case 'survey_wizard_diabetes':
         require_once __DIR__ . '/../app/controllers/SurveyController.php';
         $surveyController = new SurveyController();
         $surveyController->wizard_diabetes();
         break;
-
     case 'survey_wizard_household':
         require_once __DIR__ . '/../app/controllers/SurveyController.php';
         $surveyController = new SurveyController();
         $surveyController->wizard_household();
         break;
-
     case 'resident_complaints':
         require_once __DIR__ . '/../app/controllers/ResidentController.php';
         $comController = new ResidentController();
         $comController->index();
         break;
-
     case 'admin_complaints':
         require_once __DIR__ . '/../app/controllers/AdminController.php';
         $redController = new AdminController();
         $redController->index();
-        break;
 
     case 'document_templates':
         $docTemplateController = new DocumentTemplateController();

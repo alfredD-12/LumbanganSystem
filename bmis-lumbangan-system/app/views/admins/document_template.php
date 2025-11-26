@@ -4,7 +4,7 @@
 <div class="container py-4">
 
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1 class="fw-bold h1">Document Template Editor <?= $typeId ?></h1>
+        <h1 class="fw-bold h1">Document Template Editor <?= isset($typeId) ? $typeId : '' ?></h1>
 
         <div>
             <!-- Create Template Button -->

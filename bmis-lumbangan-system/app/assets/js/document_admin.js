@@ -366,6 +366,8 @@ $(document).ready(function () {
         .then((res) => res.json())
         .then((result) => {
           if (result.success) {
+            updateSummaryCards();
+
             alert("Request added successfully!");
 
             $("#newRequestModal").modal("hide");

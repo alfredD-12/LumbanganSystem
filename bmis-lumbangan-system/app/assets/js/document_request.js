@@ -485,7 +485,8 @@ document.addEventListener("DOMContentLoaded", function () {
       col.className = "col-sm-4 mb-sm-0 mt-2 position-relative";
 
       const card = document.createElement("div");
-      card.className = "card shadow-md shadow-sm position-relative w-100 h-100";
+      card.className =
+        "card resident-card shadow-md shadow-sm position-relative w-100 h-100";
 
       const cardBody = document.createElement("div");
       cardBody.className = "card-body";
@@ -652,7 +653,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const card = document.createElement("div");
         card.className =
-          "card shadow-md shadow-sm position-relative w-100 h-100";
+          "card resident-card shadow-md shadow-sm position-relative w-100 h-100";
 
         // 🔹 Delete badge button
         const deleteBtn = document.createElement("span");
@@ -966,7 +967,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const card = document.createElement("div");
         card.className =
-          "card shadow-md shadow-sm position-relative w-100 h-100";
+          "card resident-card shadow-md shadow-sm position-relative w-100 h-100";
 
         const cardBody = document.createElement("div");
         cardBody.className = "card-body";
@@ -1233,7 +1234,7 @@ document.addEventListener("DOMContentLoaded", function () {
         col.className = "col-sm-4 mb-sm-0 mt-2 position-relative";
         const card = document.createElement("div");
         card.className =
-          "card shadow-md shadow-sm position-relative w-100 h-100";
+          "card resident-card shadow-md shadow-sm position-relative w-100 h-100";
 
         const cardBody = document.createElement("div");
         cardBody.className = "card-body";
@@ -1352,7 +1353,7 @@ document.addEventListener("DOMContentLoaded", function () {
         col.className = "col-sm-4 mb-sm-0 mt-2 position-relative";
         const card = document.createElement("div");
         card.className =
-          "card shadow-md shadow-sm position-relative w-100 h-100";
+          "card resident-card shadow-md shadow-sm position-relative w-100 h-100";
 
         const cardBody = document.createElement("div");
         cardBody.className = "card-body";
@@ -1437,8 +1438,163 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         });
 
-        // Only allow viewing rejected requests (no edit button)
+        // Allow editing rejected requests so user can resubmit
         cardFooter.appendChild(viewBtn);
+
+        // Edit button for rejected requests (resubmit / update documents)
+        const editBtn = document.createElement("button");
+        editBtn.type = "button";
+        editBtn.className = "btn btn-sm btn-primary";
+        editBtn.innerHTML = '<i class="fa fa-pen me-1"></i> Edit';
+        editBtn.addEventListener("click", async () => {
+          try {
+            const resp = await fetch(
+              `index.php?action=getRequestById&request_id=${row.request_id}`
+            );
+            const data = await resp.json();
+            if (!data) {
+              alert("Request not found");
+              return;
+            }
+
+            // Populate edit form fields (same flow as other edit handlers)
+            document.getElementById("edit_request_id").value = data.request_id;
+            document.getElementById("edit_document_type_id").value =
+              data.document_type_id;
+            document.getElementById("edit_purpose").value = data.purpose || "";
+            document.getElementById("edit_requested_for").value =
+              data.requested_for || "";
+            document.getElementById("edit_relation_to_requestee").value =
+              data.relation_to_requestee || "";
+
+            // Show/hide someone fields
+            const editChk = document.getElementById("edit_forSomeone");
+            const editSomeoneFields =
+              document.getElementById("editSomeoneFields");
+            if (data.requested_for && data.requested_for !== "") {
+              editChk.checked = true;
+              editSomeoneFields.classList.remove("d-none");
+            } else {
+              editChk.checked = false;
+              editSomeoneFields.classList.add("d-none");
+            }
+
+            // Requirements for selected document type
+            try {
+              const reqResp = await fetch(
+                `index.php?action=getRequirements&document_type_id=${data.document_type_id}`
+              );
+              const reqData = await reqResp.json();
+              const editReqList = document.getElementById(
+                "editRequirementList"
+              );
+              editReqList.innerHTML = "";
+              if (
+                reqData &&
+                reqData.requirements &&
+                reqData.requirements.length
+              ) {
+                reqData.requirements.forEach((r) => {
+                  const li = document.createElement("li");
+                  li.textContent = r;
+                  editReqList.appendChild(li);
+                });
+              } else {
+                editReqList.innerHTML =
+                  '<li class="text-muted">No requirements.</li>';
+              }
+            } catch (e) {
+              console.error(
+                "Error loading requirements for edit (rejected)",
+                e
+              );
+            }
+
+            // Existing proof files (with remove button) - reuse editFileList logic
+            const editFileList = document.getElementById("editFileList");
+            // reset captured files for this edit session
+            editSelectedFiles = [];
+            editFileList.innerHTML = "";
+            if (data.proof_upload) {
+              const files = data.proof_upload
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean);
+              if (files.length) {
+                files.forEach((f) => {
+                  const li = document.createElement("li");
+                  li.className =
+                    "list-group-item d-flex justify-content-between align-items-center";
+
+                  const left = document.createElement("div");
+                  const link = document.createElement("a");
+                  link.href = buildFileUrl(f);
+                  link.target = "_blank";
+                  link.textContent = f.split("/").pop();
+                  left.appendChild(link);
+
+                  const rmBtn = document.createElement("button");
+                  rmBtn.type = "button";
+                  rmBtn.className = "btn btn-sm btn-outline-danger ms-2";
+                  rmBtn.innerHTML = '<i class="fa fa-trash"></i>';
+                  rmBtn.addEventListener("click", async (evt) => {
+                    evt.preventDefault();
+                    if (!confirm("Remove this file?")) return;
+                    try {
+                      const resp = await fetch(
+                        "index.php?action=removeProofFile",
+                        {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            request_id: data.request_id,
+                            file_path: f,
+                          }),
+                        }
+                      );
+                      const j = await resp.json();
+                      if (j.success) {
+                        li.remove();
+                      } else {
+                        alert(
+                          "Error: " + (j.message || "Failed to remove file")
+                        );
+                      }
+                    } catch (e) {
+                      console.error("Remove file error", e);
+                      alert("Failed to remove file");
+                    }
+                  });
+
+                  li.appendChild(left);
+                  li.appendChild(rmBtn);
+                  editFileList.appendChild(li);
+                });
+              } else {
+                const li = document.createElement("li");
+                li.className = "list-group-item text-muted";
+                li.textContent = "No existing files.";
+                editFileList.appendChild(li);
+              }
+            } else {
+              const li = document.createElement("li");
+              li.className = "list-group-item text-muted";
+              li.textContent = "No existing files.";
+              editFileList.appendChild(li);
+            }
+
+            // Show modal
+            const em = new bootstrap.Modal(
+              document.getElementById("editRequestModal")
+            );
+            em.show();
+          } catch (e) {
+            console.error(e);
+            alert("Failed to load for edit");
+          }
+        });
+
+        cardFooter.appendChild(editBtn);
         card.appendChild(cardFooter);
         col.appendChild(card);
         container.appendChild(col);

@@ -252,6 +252,11 @@
 </style><script>
 let deleteGalleryId = null;
 
+// Setup base URL for API calls
+const BASE_URL = "<?php echo (defined('BASE_URL') ? rtrim(BASE_URL, '/') : '/Lumbangan_BMIS/bmis-lumbangan-system/app'); ?>";
+const CONTROLLER_PATH = BASE_URL + '/controllers/GalleryController.php';
+const UPLOADS_PATH = BASE_URL + '/uploads/gallery/';
+
 // Show success notification
 function showSuccess(message) {
     document.getElementById('successMessage').textContent = message;
@@ -270,7 +275,7 @@ function showError(message) {
 
 // Load gallery items
 function loadGallery() {
-    fetch('../../controllers/GalleryController.php?action=fetch&active_only=false')
+    fetch(CONTROLLER_PATH + '?action=fetch&active_only=false')
         .then(res => res.json())
         .then(data => {
             if (data.success) {
@@ -301,7 +306,7 @@ function displayGallery(items) {
         col.innerHTML = `
             <div class="gallery-card" data-id="${item.id}">
                 <div class="gallery-card-img">
-                    ${item.image_path ? `<img src="../../uploads/gallery/${item.image_path}" alt="${item.title}">` : '<i class="fas fa-image"></i>'}
+                    ${item.image_path ? `<img src="${UPLOADS_PATH}${item.image_path}" alt="${item.title}">` : '<i class="fas fa-image"></i>'}
                 </div>
                 <div class="gallery-card-body">
                     <h5 class="gallery-card-title">${item.title}</h5>
@@ -340,7 +345,7 @@ function openAddModal() {
 
 // Open edit modal
 function openEditModal(id) {
-    fetch(`../../controllers/GalleryController.php?action=fetch_one&id=${id}`)
+    fetch(CONTROLLER_PATH + `?action=fetch_one&id=${id}`)
         .then(res => res.json())
         .then(data => {
             if (data.success) {
@@ -353,7 +358,7 @@ function openEditModal(id) {
                 document.getElementById('image').required = false;
                 
                 if (item.image_path) {
-                    document.getElementById('imagePreview').src = `../../uploads/gallery/${item.image_path}`;
+                    document.getElementById('imagePreview').src = UPLOADS_PATH + item.image_path;
                     document.getElementById('imagePreviewContainer').style.display = 'block';
                 } else {
                     document.getElementById('imagePreview').src = '';
@@ -388,7 +393,7 @@ document.getElementById('galleryForm').addEventListener('submit', function(e) {
     const id = document.getElementById('galleryId').value;
     formData.append('action', id ? 'update' : 'create');
     
-    fetch('../../controllers/GalleryController.php', {
+    fetch(CONTROLLER_PATH, {
         method: 'POST',
         body: formData
     })
@@ -414,7 +419,7 @@ function toggleStatus(id) {
     formData.append('action', 'toggle');
     formData.append('id', id);
     
-    fetch('../../controllers/GalleryController.php', {
+    fetch(CONTROLLER_PATH, {
         method: 'POST',
         body: formData
     })
@@ -448,7 +453,7 @@ function confirmDelete() {
     formData.append('action', 'delete');
     formData.append('id', deleteGalleryId);
     
-    fetch('../../controllers/GalleryController.php', {
+    fetch(CONTROLLER_PATH, {
         method: 'POST',
         body: formData
     })
@@ -522,7 +527,7 @@ function updateOrder() {
     formData.append('action', 'update_order');
     formData.append('ordered_ids', JSON.stringify(orderedIds));
 
-    fetch('../../controllers/GalleryController.php', {
+    fetch(CONTROLLER_PATH, {
         method: 'POST',
         body: formData
     })

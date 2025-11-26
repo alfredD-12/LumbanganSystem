@@ -50,6 +50,14 @@ if ($action) {
             $controller->getApprovedRequestsByUser(); // must echo JSON
             break;
 
+        case 'getReleasedRequestsByUser':
+            $controller->getReleasedRequestsByUser();
+            break;
+
+        case 'getRejectedRequestsByUser':
+            $controller->getRejectedRequestsByUser();
+            break;
+
         case 'getRequestsHistoryByUser':
             $controller->getRequestHistoryByUser(); // must echo JSON
             break;
@@ -253,7 +261,7 @@ if ($action) {
             $adminController->addAdminRequest();
             break;
 
-            // Password Reset Actions
+        // Password Reset Actions
         case 'request_reset':
             $resetController = new PasswordResetController();
             $resetController->requestReset();
@@ -267,6 +275,22 @@ if ($action) {
         case 'reset_password':
             $resetController = new PasswordResetController();
             $resetController->resetPassword();
+            break;
+
+        case 'getRequestById':
+            $controller->getRequestById();
+            break;
+
+        case 'getRequirements':
+            $controller->getRequirements();
+            break;
+
+        case 'updateRequest':
+            $controller->updateRequest();
+            break;
+
+        case 'removeProofFile':
+            $controller->removeProofFile();
             break;
 
 

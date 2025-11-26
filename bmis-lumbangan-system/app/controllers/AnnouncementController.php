@@ -130,7 +130,7 @@ class AnnouncementController {
             // Send notification if announcement is published (only if helper is available)
             if ($announcementId && $data['status'] === 'published') {
                 if (function_exists('notifyNewAnnouncement')) {
-                    notifyNewAnnouncement($announcementId, $data['title'], $data['audience']);
+                    //notifyNewAnnouncement($announcementId, $data['title'], $data['audience']);
                 }
             }
             

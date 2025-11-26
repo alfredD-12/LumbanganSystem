@@ -406,6 +406,12 @@ switch ($page) {
         require_once __DIR__ . '/../app/controllers/AdminController.php';
         $redController = new AdminController();
         $redController->index();
+        break;
+
+    case 'admin_settings':
+        $currentPage = 'admin_settings';
+        include __DIR__ . '/../app/views/admins/gallery_admin.php';
+        break;
 
     case 'document_templates':
         $docTemplateController = new DocumentTemplateController();

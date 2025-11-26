@@ -599,7 +599,7 @@ if (isLoggedIn()) {
               <span id="loginErrorMessage" style="color: #d32f2f;"></span>
             </div>
             
-            <a href="#">Forget Your Password?</a>
+            <a href="#" onclick="openForgetPasswordModal(); return false;">Forget Your Password?</a>
             <button type="submit">Sign In</button>
           </form>
           <div class="mobile-toggle-link" id="mobileToSignUp" style="display: none;">Don't have an account? <strong>Sign Up</strong></div>
@@ -632,6 +632,271 @@ if (isLoggedIn()) {
 
   <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Forget Password Script (Load BEFORE login.js) -->
+  <script>
+    let forgetPasswordEmailNew = '';
+    let forgetPasswordTokenNew = '';
+
+
+    function openForgetPasswordModal() {
+      const modal = document.getElementById('forgetPasswordModal');
+      const loginModal = document.getElementById('loginModal');
+      
+      // Hide login modal
+      if (loginModal) {
+        loginModal.style.display = 'none';
+        loginModal.classList.remove('show');
+        loginModal.style.pointerEvents = 'none'; // Disable login modal interaction
+      }
+      
+      // Show forget password modal
+      if (modal) {
+        modal.style.display = 'flex';
+        modal.style.zIndex = '99999';
+        modal.style.pointerEvents = 'auto'; // Enable interaction
+        showForgetStep(1);
+      }
+
+      // Prevent scrolling
+      document.body.style.overflow = 'hidden';
+
+      // Clear form
+      document.getElementById('forgetEmail').value = '';
+      document.getElementById('forgetCode').value = '';
+      document.getElementById('forgetNewPassword').value = '';
+      document.getElementById('forgetConfirmPassword').value = '';
+      
+      console.log('Forget modal opened');
+    }
+
+    function closeForgetModal() {
+      const modal = document.getElementById('forgetPasswordModal');
+      const loginModal = document.getElementById('loginModal');
+      
+      if (modal) {
+        modal.style.display = 'none';
+        modal.style.zIndex = '9999';
+        modal.style.pointerEvents = 'none'; // Prevent interaction with hidden modal
+      }
+      
+      // Don't show login modal - just close forget modal
+      if (loginModal) {
+        loginModal.style.pointerEvents = 'none'; // Also disable login modal
+        loginModal.style.display = 'none';
+      }
+      
+      // Allow scrolling again
+      document.body.style.overflow = 'auto';
+      
+      // Reset all form fields
+      document.getElementById('forgetEmail').value = '';
+      document.getElementById('forgetCode').value = '';
+      document.getElementById('forgetNewPassword').value = '';
+      document.getElementById('forgetConfirmPassword').value = '';
+      
+      // Reset errors
+      const errorDiv1 = document.getElementById('forgetStep1Error');
+      const errorDiv2 = document.getElementById('forgetStep2Error');
+      const errorDiv3 = document.getElementById('forgetStep3Error');
+      
+      if (errorDiv1) errorDiv1.style.display = 'none';
+      if (errorDiv2) errorDiv2.style.display = 'none';
+      if (errorDiv3) errorDiv3.style.display = 'none';
+      document.getElementById('forgetStep3Success').style.display = 'none';
+    }
+
+    function backToLoginModal() {
+      const forgetModal = document.getElementById('forgetPasswordModal');
+      const loginModal = document.getElementById('loginModal');
+      
+      console.log('Back to login clicked');
+      
+      // Close forget password modal
+      if (forgetModal) {
+        forgetModal.style.display = 'none';
+        forgetModal.style.pointerEvents = 'none';
+        forgetModal.style.zIndex = '9999';
+      }
+      
+      // Open login modal
+      if (loginModal) {
+        loginModal.style.display = 'flex';
+        loginModal.style.pointerEvents = 'auto';
+        loginModal.style.zIndex = '9999';
+        loginModal.classList.add('show');
+        document.body.style.overflow = 'hidden'; // Keep scroll hidden while login modal is open
+      }
+      
+      // Reset forget form
+      document.getElementById('forgetEmail').value = '';
+      document.getElementById('forgetCode').value = '';
+      document.getElementById('forgetNewPassword').value = '';
+      document.getElementById('forgetConfirmPassword').value = '';
+      
+      // Reset forget errors
+      const errorDiv1 = document.getElementById('forgetStep1Error');
+      const errorDiv2 = document.getElementById('forgetStep2Error');
+      const errorDiv3 = document.getElementById('forgetStep3Error');
+      
+      if (errorDiv1) errorDiv1.style.display = 'none';
+      if (errorDiv2) errorDiv2.style.display = 'none';
+      if (errorDiv3) errorDiv3.style.display = 'none';
+      document.getElementById('forgetStep3Success').style.display = 'none';
+      
+      // Show step 1
+      showForgetStep(1);
+      
+      console.log('Back to login done');
+    }
+
+    function showForgetStep(step) {
+      document.getElementById('forgetStep1').style.display = step === 1 ? 'block' : 'none';
+      document.getElementById('forgetStep2').style.display = step === 2 ? 'block' : 'none';
+      document.getElementById('forgetStep3').style.display = step === 3 ? 'block' : 'none';
+    }
+
+    function submitForgetEmailNew(e) {
+      e.preventDefault();
+      const email = document.getElementById('forgetEmail').value.trim();
+      const errorDiv = document.getElementById('forgetStep1Error');
+      const errorMsg = errorDiv ? errorDiv.querySelector('span') : null;
+
+      if (!email) {
+        if (errorMsg) errorMsg.textContent = 'Please enter your email';
+        if (errorDiv) errorDiv.style.display = 'block';
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('email', email);
+
+      fetch('<?php echo (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php'; ?>?action=request_reset', {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          forgetPasswordEmailNew = email;
+          document.getElementById('forgetEmailDisplay').textContent = email;
+          showForgetStep(2);
+          if (errorDiv) errorDiv.style.display = 'none';
+        } else {
+          if (errorMsg) errorMsg.textContent = data.message || 'Failed to send code';
+          if (errorDiv) errorDiv.style.display = 'block';
+        }
+      })
+      .catch(err => {
+        if (errorMsg) errorMsg.textContent = 'An error occurred. Please try again.';
+        if (errorDiv) errorDiv.style.display = 'block';
+        console.error('Error:', err);
+      });
+    }
+
+    function submitForgetCodeNew(e) {
+      e.preventDefault();
+      const code = document.getElementById('forgetCode').value.trim();
+      const errorDiv = document.getElementById('forgetStep2Error');
+      const errorMsg = errorDiv ? errorDiv.querySelector('span') : null;
+
+      if (!code || code.length !== 6) {
+        if (errorMsg) errorMsg.textContent = 'Please enter a valid 6-digit code';
+        if (errorDiv) errorDiv.style.display = 'block';
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('email', forgetPasswordEmailNew);
+      formData.append('code', code);
+
+      fetch('<?php echo (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php'; ?>?action=verify_code', {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          forgetPasswordTokenNew = data.token;
+          showForgetStep(3);
+          if (errorDiv) errorDiv.style.display = 'none';
+        } else {
+          if (errorMsg) errorMsg.textContent = data.message || 'Invalid or expired code';
+          if (errorDiv) errorDiv.style.display = 'block';
+        }
+      })
+      .catch(err => {
+        if (errorMsg) errorMsg.textContent = 'An error occurred. Please try again.';
+        if (errorDiv) errorDiv.style.display = 'block';
+        console.error('Error:', err);
+      });
+    }
+
+    function submitResetPasswordNew(e) {
+      e.preventDefault();
+      const password = document.getElementById('forgetNewPassword').value;
+      const confirmPassword = document.getElementById('forgetConfirmPassword').value;
+      const errorDiv = document.getElementById('forgetStep3Error');
+      const successDiv = document.getElementById('forgetStep3Success');
+      const errorMsg = errorDiv ? errorDiv.querySelector('span') : null;
+      const successMsg = successDiv ? successDiv.querySelector('span') : null;
+
+      if (errorDiv) errorDiv.style.display = 'none';
+      if (successDiv) successDiv.style.display = 'none';
+
+      if (!password || !confirmPassword) {
+        if (errorMsg) errorMsg.textContent = 'Please enter both passwords';
+        if (errorDiv) errorDiv.style.display = 'block';
+        return;
+      }
+
+      if (password.length < 6) {
+        if (errorMsg) errorMsg.textContent = 'Password must be at least 6 characters';
+        if (errorDiv) errorDiv.style.display = 'block';
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        if (errorMsg) errorMsg.textContent = 'Passwords do not match';
+        if (errorDiv) errorDiv.style.display = 'block';
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('token', forgetPasswordTokenNew);
+      formData.append('password', password);
+      formData.append('confirm_password', confirmPassword);
+
+      fetch('<?php echo (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php'; ?>?action=reset_password', {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          if (successMsg) successMsg.textContent = data.message || 'Password reset successfully!';
+          if (successDiv) successDiv.style.display = 'block';
+          
+          setTimeout(() => {
+            closeForgetModal();
+            document.getElementById('forgetEmail').value = '';
+            document.getElementById('forgetCode').value = '';
+            document.getElementById('forgetNewPassword').value = '';
+            document.getElementById('forgetConfirmPassword').value = '';
+          }, 2000);
+        } else {
+          if (errorMsg) errorMsg.textContent = data.message || 'Failed to reset password';
+          if (errorDiv) errorDiv.style.display = 'block';
+        }
+      })
+      .catch(err => {
+        if (errorMsg) errorMsg.textContent = 'An error occurred. Please try again.';
+        if (errorDiv) errorDiv.style.display = 'block';
+        console.error('Error:', err);
+      });
+    }
+  </script>
+  
   <script src="<?php echo BASE_URL; ?>/assets/js/Landing/Landing.js?v=2"></script>
   <script src="<?php echo BASE_URL; ?>/assets/js/Landing/login.js?v=2"></script>
   
@@ -807,9 +1072,232 @@ if (isLoggedIn()) {
     });
   </script>
 
+  <!-- Forget Password Modal (Simple Approach) -->
+  <!-- Forget Password Modal (Similar design to login, no conflicts) -->
+  <div id="forgetPasswordModal" style="
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    z-index: 99999;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  ">
+    <div style="
+      position: relative;
+      animation: modalSlideIn 0.5s ease;
+    ">
+      <!-- Close Button -->
+      <button onclick="closeForgetModal()" style="
+        position: absolute;
+        top: -50px;
+        right: 0;
+        background: white;
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 20px;
+        color: #667eea;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        z-index: 10001;
+      " onmouseover="this.style.background='#d32f2f'; this.style.color='white';" onmouseout="this.style.background='white'; this.style.color='#667eea';">×</button>
+
+      <!-- Logo -->
+      <img src="https://portal.batangas.gov.ph/wp-content/uploads/2025/06/batangaslogo2025.png" alt="batangas-logo" style="
+        position: absolute;
+        top: -80px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 200px;
+        filter: drop-shadow(0 0 20px rgba(0,0,0,0.3));
+        z-index: 10000;
+      ">
+
+      <!-- Main Container -->
+      <div style="
+        background-color: #fff;
+        border-radius: 100px;
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5);
+        max-width: 500px;
+        width: 100%;
+        padding: 60px 40px 40px;
+        overflow-y: auto;
+        max-height: 85vh;
+      ">
+        <!-- Step 1: Email -->
+        <div id="forgetStep1" style="display: block;">
+          <h1 style="color: #333; text-align: center; margin-bottom: 10px; font-size: 24px;">Reset Password</h1>
+          <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 20px;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/0/0c/Seal_of_Batangas.png" alt="Batangas" style="width: 40px;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Seal_of_Nasugbu.png/599px-Seal_of_Nasugbu.png" style="width: 39px;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Bagong_Pilipinas_logo.png" style="width: 41px;">
+          </div>
+          <p style="color: #666; text-align: center; margin-bottom: 30px; font-size: 0.95rem;">Enter your email and we'll send you a reset code</p>
+          
+          <form onsubmit="submitForgetEmailNew(event)" style="display: flex; flex-direction: column;">
+            <input type="email" placeholder="Email address" id="forgetEmail" required style="
+              padding: 12px 15px;
+              margin-bottom: 15px;
+              border: 1px solid #ddd;
+              border-radius: 8px;
+              font-size: 14px;
+              width: 100%;
+            ">
+            <div id="forgetStep1Error" style="display: none; color: #d32f2f; margin-bottom: 15px; font-size: 13px; font-weight: 500;">
+              <i class="fas fa-exclamation-circle" style="margin-right: 6px;"></i>
+              <span></span>
+            </div>
+            <button type="submit" style="
+              padding: 10px 45px;
+              background-color: #2600ff;
+              color: white;
+              border: 1px solid transparent;
+              border-radius: 8px;
+              font-weight: 600;
+              cursor: pointer;
+              font-size: 12px;
+              letter-spacing: 0.5px;
+              text-transform: uppercase;
+              transition: all 0.3s ease-in-out;
+            " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 5px 15px rgba(0, 0, 0, 0.2)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none'">Send Reset Code</button>
+          </form>
+          <button type="button" onclick="backToLoginModal()" style="
+            background: transparent;
+            color: #667eea;
+            margin-top: 15px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            text-decoration: underline;
+            width: 100%;
+          ">Back to Login</button>
+        </div>
+
+        <!-- Step 2: Code Verification -->
+        <div id="forgetStep2" style="display: none;">
+          <h1 style="color: #333; text-align: center; margin-bottom: 20px; font-size: 24px;">Verify Code</h1>
+          <p style="color: #666; text-align: center; margin-bottom: 30px; font-size: 0.95rem;">Enter the 6-digit code sent to<br><strong id="forgetEmailDisplay" style="color: #333;"></strong></p>
+          
+          <form onsubmit="submitForgetCodeNew(event)" style="display: flex; flex-direction: column;">
+            <input type="text" placeholder="000000" maxlength="6" id="forgetCode" required style="
+              padding: 12px 15px;
+              margin-bottom: 15px;
+              border: 1px solid #ddd;
+              border-radius: 8px;
+              text-align: center;
+              font-size: 24px;
+              letter-spacing: 5px;
+              font-weight: bold;
+              width: 100%;
+            ">
+            <div id="forgetStep2Error" style="display: none; color: #d32f2f; margin-bottom: 15px; font-size: 13px; font-weight: 500;">
+              <i class="fas fa-exclamation-circle" style="margin-right: 6px;"></i>
+              <span></span>
+            </div>
+            <button type="submit" style="
+              padding: 10px 45px;
+              background-color: #2600ff;
+              color: white;
+              border: 1px solid transparent;
+              border-radius: 8px;
+              font-weight: 600;
+              cursor: pointer;
+              font-size: 12px;
+              letter-spacing: 0.5px;
+              text-transform: uppercase;
+              transition: all 0.3s ease-in-out;
+            " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 5px 15px rgba(0, 0, 0, 0.2)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none'">Verify Code</button>
+          </form>
+          <button type="button" onclick="showForgetStep(1)" style="
+            background: transparent;
+            color: #667eea;
+            margin-top: 15px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            text-decoration: underline;
+            width: 100%;
+          ">Back</button>
+        </div>
+
+        <!-- Step 3: New Password -->
+        <div id="forgetStep3" style="display: none;">
+          <h1 style="color: #333; text-align: center; margin-bottom: 20px; font-size: 24px;">Create New Password</h1>
+          <p style="color: #666; text-align: center; margin-bottom: 30px; font-size: 0.95rem;">Password must be at least 6 characters</p>
+          
+          <form onsubmit="submitResetPasswordNew(event)" style="display: flex; flex-direction: column;">
+            <input type="password" placeholder="New Password" id="forgetNewPassword" required style="
+              padding: 12px 15px;
+              margin-bottom: 15px;
+              border: 1px solid #ddd;
+              border-radius: 8px;
+              font-size: 14px;
+              width: 100%;
+            ">
+            <input type="password" placeholder="Confirm Password" id="forgetConfirmPassword" required style="
+              padding: 12px 15px;
+              margin-bottom: 15px;
+              border: 1px solid #ddd;
+              border-radius: 8px;
+              font-size: 14px;
+              width: 100%;
+            ">
+            <div id="forgetStep3Error" style="display: none; color: #d32f2f; margin-bottom: 15px; font-size: 13px; font-weight: 500;">
+              <i class="fas fa-exclamation-circle" style="margin-right: 6px;"></i>
+              <span></span>
+            </div>
+            <div id="forgetStep3Success" style="display: none; color: #28a745; margin-bottom: 15px; font-size: 13px; font-weight: 500;">
+              <i class="fas fa-check-circle" style="margin-right: 6px;"></i>
+              <span></span>
+            </div>
+            <button type="submit" style="
+              padding: 10px 45px;
+              background-color: #2600ff;
+              color: white;
+              border: 1px solid transparent;
+              border-radius: 8px;
+              font-weight: 600;
+              cursor: pointer;
+              font-size: 12px;
+              letter-spacing: 0.5px;
+              text-transform: uppercase;
+              transition: all 0.3s ease-in-out;
+            " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 5px 15px rgba(0, 0, 0, 0.2)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none'">Reset Password</button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <style>
+  </style>
+
+  <style>
+    @media (max-width: 768px) {
+      #forgetPasswordModal {
+        padding: 10px !important;
+      }
+      #forgetPasswordModal > div {
+        padding: 20px !important;
+      }
+    }
+  </style>
+
   <?php include dirname(__DIR__, 2) . '/components/ai_chatbot.php'; ?>
 
   <script src="<?php echo BASE_URL; ?>assets/js/ai_chatbot.js"></script>
+  
   
 </body>
 </html>

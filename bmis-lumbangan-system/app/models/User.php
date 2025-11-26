@@ -95,63 +95,30 @@ class User {
         try {
             $this->conn->beginTransaction();
 
-            // 1. First, create or get a household and family
-            // For registration, we'll create a temporary household/family
-            $household_query = "INSERT INTO households (purok_id, household_no, address, created_at, updated_at) 
-                               VALUES (NULL, NULL, :address, NOW(), NOW())";
-            $household_stmt = $this->conn->prepare($household_query);
-            $temp_address = 'Pending - To be updated';
-            $household_stmt->bindParam(':address', $temp_address);
-            $household_stmt->execute();
-            $household_id = $this->conn->lastInsertId();
-
-            // 2. Create family
-            $family_query = "INSERT INTO families (household_id, family_number, residency_status, created_at, updated_at) 
-                            VALUES (:household_id, NULL, 'Permanent', NOW(), NOW())";
-            $family_stmt = $this->conn->prepare($family_query);
-            $family_stmt->bindParam(':household_id', $household_id);
-            $family_stmt->execute();
-            $family_id = $this->conn->lastInsertId();
-
-            // 3. Create person
+            // 1. Create person record.
+            // household_id is NULL and family_id is 0 (or a designated 'unassigned' ID)
+            // as the user is not yet part of a household/family.
+            // is_head is 0 by default.
             $person_query = "INSERT INTO persons 
-                            (family_id, last_name, first_name, middle_name, suffix, sex, birthdate, 
-                             marital_status, family_position, created_at, updated_at) 
+                            (family_id, household_id, last_name, first_name, middle_name, suffix, sex, birthdate, 
+                             marital_status, is_head, created_at, updated_at) 
                             VALUES 
-                            (:family_id, :last_name, :first_name, :middle_name, :suffix, :sex, :birthdate, 
-                             :marital_status, 'Head', NOW(), NOW())";
+                            (0, NULL, :last_name, :first_name, :middle_name, :suffix, :sex, :birthdate, 
+                             :marital_status, 0, NOW(), NOW())";
             
             $person_stmt = $this->conn->prepare($person_query);
-            $person_stmt->bindParam(':family_id', $family_id);
             $person_stmt->bindParam(':last_name', $personData['last_name']);
             $person_stmt->bindParam(':first_name', $personData['first_name']);
             $person_stmt->bindParam(':middle_name', $personData['middle_name']);
             $person_stmt->bindParam(':suffix', $personData['suffix']);
-            // Allow NULL for sex and birthdate (will be filled in survey)
-            $sex_value = $personData['sex'] ?? null;
-            $birthdate_value = $personData['birthdate'] ?? null;
-            if ($sex_value === null) {
-                $person_stmt->bindValue(':sex', null, \PDO::PARAM_NULL);
-            } else {
-                $person_stmt->bindValue(':sex', $sex_value, \PDO::PARAM_STR);
-            }
-            if ($birthdate_value === null) {
-                $person_stmt->bindValue(':birthdate', null, \PDO::PARAM_NULL);
-            } else {
-                $person_stmt->bindValue(':birthdate', $birthdate_value, \PDO::PARAM_STR);
-            }
+            
+            $person_stmt->bindValue(':sex', $personData['sex'] ?? null, $personData['sex'] ? PDO::PARAM_STR : PDO::PARAM_NULL);
+            $person_stmt->bindValue(':birthdate', $personData['birthdate'] ?? null, $personData['birthdate'] ? PDO::PARAM_STR : PDO::PARAM_NULL);
             $person_stmt->bindParam(':marital_status', $personData['marital_status']);
             $person_stmt->execute();
             $person_id = $this->conn->lastInsertId();
 
-            // 4. Update family to set head_person_id
-            $update_family_query = "UPDATE families SET head_person_id = :person_id WHERE id = :family_id";
-            $update_family_stmt = $this->conn->prepare($update_family_query);
-            $update_family_stmt->bindParam(':person_id', $person_id);
-            $update_family_stmt->bindParam(':family_id', $family_id);
-            $update_family_stmt->execute();
-
-            // 5. Create user account
+            // 2. Create user account
             $user_query = "INSERT INTO users 
                           (person_id, username, email, mobile, password_hash, status, created_at, updated_at) 
                           VALUES 

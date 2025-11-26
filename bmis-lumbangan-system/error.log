@@ -1,0 +1,2 @@
+[24-Nov-2025 12:16:42 Europe/Berlin] PHP Warning:  Undefined array key "pageName" in C:\xampp\htdocs\Lumbangan_BMIS\bmis-lumbangan-system\api\ai_chatbot_gemini.php on line 46
+[24-Nov-2025 12:16:42 Europe/Berlin] PHP Warning:  Undefined array key "context" in C:\xampp\htdocs\Lumbangan_BMIS\bmis-lumbangan-system\api\ai_chatbot_gemini.php on line 47

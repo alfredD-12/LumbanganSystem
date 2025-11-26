@@ -7,3 +7,14 @@ bmis-lumbangan-system/vendor/
 
 #ignore generated  pdfs
 bmis-lumbangan-system/public/uploads/generated_pdfs/
+
+# Environment variables - DO NOT COMMIT
+.env
+.env.local
+.env.*.local
+# But DO commit .env.example as template for team members
+!.env.example
+
+# Ignore API folder with sensitive data (API keys, credentials)
+bmis-lumbangan-system/api/
+bmis-lumbangan-system/api/*.php

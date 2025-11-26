@@ -45,6 +45,184 @@ render_favicon();
     <link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/Survey/bhw-float.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/announcement/public_announcements_modern.css?v=<?php echo time(); ?>">
 
+    <style>
+        /* Fix dropdown animation positioning */
+        .dashboard-header .dropdown-menu {
+            transform-origin: top center !important;
+            opacity: 0;
+            transform: translateY(-15px) !important;
+            transition: none !important;
+        }
+        .dashboard-header .dropdown-menu.show {
+            opacity: 1;
+            transform: translateY(0) !important;
+            animation: slideDown 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        }
+        
+        /* Mobile responsive styles to match dashboard */
+        @media (max-width: 991px) {
+            .dashboard-header .navbar-collapse {
+                background: transparent;
+                padding: 0.5rem 0.25rem;
+                border-radius: 12px;
+                margin-top: 0.25rem;
+                opacity: 0;
+                transform: translateY(-6px);
+                transition: opacity 220ms ease, transform 220ms ease;
+            }
+            
+            .dashboard-header .navbar-collapse.show {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            
+            .dashboard-header .navbar-nav .nav-link {
+                display: block;
+                width: 100%;
+                padding: 0.75rem 1rem;
+                margin: 0.25rem 0;
+                border-radius: 8px;
+                font-size: 0.95rem;
+            }
+            
+            .dashboard-header .nav-link::before {
+                display: none;
+            }
+            
+            /* Dropdown accordion style for mobile */
+            .dashboard-header .dropdown-menu {
+                position: static !important;
+                float: none !important;
+                box-shadow: none !important;
+                border-radius: 10px !important;
+                margin-top: 0.25rem !important;
+                background: rgba(255, 255, 255, 0.95) !important;
+                max-height: 0 !important;
+                overflow: hidden !important;
+                opacity: 0 !important;
+                padding: 0 !important;
+                transition: max-height 280ms ease, opacity 220ms ease, padding 220ms ease !important;
+                animation: none !important;
+                transform: none !important;
+                border: none !important;
+                pointer-events: auto !important;
+            }
+            
+            /* Show dropdown when clicked - Bootstrap adds .show class */
+            .dashboard-header .nav-item.show > .dropdown-menu,
+            .dashboard-header .dropdown.show > .dropdown-menu,
+            .dashboard-header .dropdown-menu.show {
+                max-height: 500px !important;
+                opacity: 1 !important;
+                padding: 0.5rem !important;
+                pointer-events: auto !important;
+            }
+            
+            .dashboard-header .dropdown-item {
+                padding: 0.75rem 1rem !important;
+                margin: 0.15rem 0 !important;
+                border-radius: 6px !important;
+                font-size: 0.9rem !important;
+                display: flex !important;
+                align-items: center !important;
+                gap: 0.5rem !important;
+            }
+            
+            .dashboard-header .dropdown-item:hover {
+                background: rgba(30, 58, 95, 0.1) !important;
+            }
+            
+            /* Profile button full width in mobile */
+            .dashboard-header .user-profile-btn {
+                width: 100% !important;
+                justify-content: flex-start !important;
+                margin-top: 0.5rem !important;
+            }
+            
+            .dashboard-header .user-navbar {
+                padding: 0.8rem 0;
+            }
+            
+            .dashboard-header .logo-circle {
+                width: 40px;
+                height: 40px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-header .user-navbar {
+                padding: 0.6rem 0;
+            }
+            
+            .dashboard-header .navbar-brand h6 {
+                font-size: 0.9rem;
+            }
+            
+            .dashboard-header .navbar-brand small {
+                font-size: 0.65rem;
+            }
+            
+            .dashboard-header .navbar-icon-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 0.95rem;
+                margin: 0 0.25rem;
+            }
+            
+            .dashboard-header .user-profile-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .dashboard-header .user-avatar {
+                width: 32px;
+                height: 32px;
+                font-size: 0.85rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .dashboard-header .user-navbar {
+                padding: 0.5rem 0;
+            }
+            
+            .dashboard-header .logo-circle {
+                width: 35px;
+                height: 35px;
+                font-size: 0.8rem;
+            }
+            
+            .dashboard-header .navbar-brand {
+                gap: 8px;
+            }
+            
+            .dashboard-header .navbar-brand h6 {
+                font-size: 0.8rem;
+            }
+            
+            .dashboard-header .navbar-brand small {
+                font-size: 0.6rem;
+            }
+            
+            .dashboard-header .user-profile-btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+            }
+            
+            .dashboard-header .navbar-icon-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 0.85rem;
+            }
+            
+            .dashboard-header .user-avatar {
+                width: 28px;
+                height: 28px;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
 </head>
 <body>
 
@@ -70,7 +248,7 @@ render_favicon();
 
         <!-- Services -->
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="fas fa-concierge-bell"></i> Services
           </a>
           <ul class="dropdown-menu">

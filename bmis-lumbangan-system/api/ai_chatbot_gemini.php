@@ -20,7 +20,19 @@ if ($userMessage === '') {
     exit;
 }
 
-$apiKey = 'AIzaSyAlBtdrPu-BmLP1D5gAcjAmSqGoaniOnPc';
+// Load API key from environment variable or shared config
+if (file_exists(__DIR__ . '/../../.env')) {
+    $env = parse_ini_file(__DIR__ . '/../../.env');
+    $apiKey = $env['GEMINI_API_KEY'] ?? '';
+} else {
+    $apiKey = getenv('GEMINI_API_KEY') ?: '';
+}
+
+if (!$apiKey) {
+    http_response_code(500);
+    echo json_encode(['error' => 'API key not configured']);
+    exit;
+}
 
 
 $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' . urlencode($apiKey);

@@ -76,8 +76,11 @@
         };
     }
 
-    // Optional: expose a small helper path for Survey controller endpoints
-    window.SURVEY_API = window.BASE_URL + '/controllers/SurveyController.php';
+    // Expose the public front-controller URL so AJAX `action=` requests route correctly.
+    // Use the server-side `BASE_PUBLIC` PHP constant to compute the exact public path.
+    window.SURVEY_API = '<?php echo rtrim(BASE_PUBLIC, "/"); ?>/index.php';
+    // Log the runtime value to help debug incorrect base URLs during development.
+    try { console.debug('SURVEY_API =', window.SURVEY_API); } catch(e) {}
 </script>
 
 <!-- 1) Core dependencies -->

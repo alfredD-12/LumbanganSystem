@@ -200,6 +200,10 @@ if ($action) {
             $admin = new AdminController();
             $admin->createOfficial();
             break;
+        case 'check_availability':
+            $admin = new AdminController();
+            $admin->checkAvailability();
+            break;
         case 'admin_update_official':
             $admin = new AdminController();
             $admin->updateOfficialAdmin();

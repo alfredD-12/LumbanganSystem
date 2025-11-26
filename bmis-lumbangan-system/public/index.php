@@ -147,7 +147,7 @@ if ($action) {
             break;
 
         case 'save_household':
-            $surveyController->save_household_action ?? $surveyController->save_household();
+            $surveyController->save_household_action ?? $surveyController->save_household_action();
             break;
 
         case 'save_lifestyle':

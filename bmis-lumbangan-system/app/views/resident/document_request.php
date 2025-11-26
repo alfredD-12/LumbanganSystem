@@ -7,7 +7,8 @@ include __DIR__ . '/../../components/resident_components/header-resident.php';
 
 <main>
     <div class="container-fluid mt-4">
-        <h1 class="h1 header-color fw-semibold pb-2">Document Request</h1>
+        <h1 class="h1 header-color fs-1 fw-semibold">Document Request</h1>
+        <h5 class="h5 mb-3">Welcome, <span id="loggedInUser"><?php echo h($hdr_first ?: $hdr_full_name); ?></span>! Make a request.</h5>
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane" type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">Requests</button>
@@ -117,7 +118,7 @@ include __DIR__ . '/../../components/resident_components/header-resident.php';
                             </div>
 
                             <div class="modal-body">
-                                <h3 class="h3">Name: Name of the user requesting based on user_id</h3>
+                                <h3 class="h3" id="loggedInUserModal"><?php echo h($hdr_full_name); ?></h3>
                                 <!--  your form fields are all here -->
                                 <div class="mb-3">
                                     <label for="document_type_id" class="form-label">Document Type</label>

@@ -46,25 +46,26 @@ body{background: linear-gradient(180deg, var(--page-bg) 0%, #ffffff 100%);font-f
 
 /* If the tab contains a top-level card already, avoid double padding by reducing inner padding */
 .tab-pane > .card{margin: 0; box-shadow: none; border: none; padding: 0}
+.tab-pane > .card.resident-card{margin: 0; box-shadow: none; border: none; padding: 0}
 
 /* Primary buttons */
 .btn-primary{background:var(--accent);border-color:var(--accent);box-shadow:none}
 .btn-primary:focus,.btn-primary:active{box-shadow:0 6px 18px rgba(30,58,95,0.12)}
 
-/* Card base (applies to cards created by JS which use .card.shadow-md .shadow-sm) */
-.card.shadow-md, .card.shadow-sm{background:var(--card-bg);border-radius:12px;border:2px solid rgba(16,24,40,0.09);box-shadow:0 22px 60px rgba(16,24,40,0.50), 0 6px 14px rgba(16,24,40,0.40);overflow:visible}
-.card .card-body{padding:1.5rem 1.25rem}
+/* Resident-scoped card base (applies to cards created by JS which use .card + .resident-card) */
+.card.resident-card.shadow-md, .card.resident-card.shadow-sm{background:var(--card-bg);border-radius:12px;border:2px solid rgba(16,24,40,0.09);box-shadow:0 22px 60px rgba(16,24,40,0.50), 0 6px 14px rgba(16,24,40,0.40);overflow:visible}
+.card.resident-card .card-body{padding:1.5rem 1.25rem}
 
-/* Document type title */
-.card .card-title.document-type{display:flex;align-items:center;gap:0.8rem;color:var(--accent);font-size:1.15rem;font-weight:800}
-.card .card-title.document-type i.fa-file{font-size:1.5rem;padding:0.45rem;border-radius:8px;background:rgba(30,58,95,0.06);color:var(--accent)}
+/* Document type title (scoped) */
+.card.resident-card .card-title.document-type{display:flex;align-items:center;gap:0.8rem;color:var(--accent);font-size:1.15rem;font-weight:800}
+.card.resident-card .card-title.document-type i.fa-file{font-size:1.5rem;padding:0.45rem;border-radius:8px;background:rgba(30,58,95,0.06);color:var(--accent)}
 
-/* Card paragraphs */
-.card p{color:#334155;margin-bottom:0.55rem}
-.card hr{border-top:1px solid rgba(16,24,40,0.06);margin:0.85rem 0}
+/* Card paragraphs (scoped) */
+.card.resident-card p{color:#334155;margin-bottom:0.55rem}
+.card.resident-card hr{border-top:1px solid rgba(16,24,40,0.06);margin:0.85rem 0}
 
-/* Requested-for lines */
-.card .fa-user, .card .fa-people-arrows, .card .fa-calendar, .card .fa-bars-progress{color:var(--accent);margin-right:0.5rem}
+/* Requested-for lines (scoped) */
+.card.resident-card .fa-user, .card.resident-card .fa-people-arrows, .card.resident-card .fa-calendar, .card.resident-card .fa-bars-progress{color:var(--accent);margin-right:0.5rem}
 
 /* File list inside modal */
 #fileList .list-group-item{display:flex;align-items:center;justify-content:space-between;padding:0.45rem 0.6rem;border-radius:8px;background:transparent;border:1px dashed rgba(16,24,40,0.03)}
@@ -83,22 +84,22 @@ body{background: linear-gradient(180deg, var(--page-bg) 0%, #ffffff 100%);font-f
 .badge.bg-danger.position-absolute i{color:#fff}
 
 /* Ensure the badge remains clickable and visible on light backgrounds */
-.card{position:relative}
+.card.resident-card{position:relative}
 
 /* Responsive tweaks */
 @media (max-width:991px){
-  .card .card-title.document-type{font-size:1.05rem}
+  .card.resident-card .card-title.document-type{font-size:1.05rem}
   .badge.bg-danger.position-absolute{width:34px;height:34px}
 }
 
 /* Hover / interactive effects */
-.card{transition:transform 220ms cubic-bezier(.2,.9,.2,1), box-shadow 220ms ease, border-color 220ms ease}
-.card:hover, .card:focus-within{transform:translateY(-6px);box-shadow:0 20px 45px rgba(16,24,40,0.12);border-color:rgba(30,58,95,0.08)}
-.card:active{transform:translateY(-2px)}
+.card.resident-card{transition:transform 220ms cubic-bezier(.2,.9,.2,1), box-shadow 220ms ease, border-color 220ms ease}
+.card.resident-card:hover, .card.resident-card:focus-within{transform:translateY(-6px);box-shadow:0 20px 45px rgba(16,24,40,0.12);border-color:rgba(30,58,95,0.08)}
+.card.resident-card:active{transform:translateY(-1px)}
 
 /* Decorative accent stripe that appears on hover (keeps delete badge positioning intact) */
-.card::before{content:'';position:absolute;left:12px;top:16px;bottom:16px;width:4px;border-radius:6px;background:transparent;transition:background 220ms ease, opacity 220ms ease}
-.card:hover::before{background:var(--accent);opacity:1}
+.card.resident-card::before{content:'';position:absolute;left:12px;top:16px;bottom:16px;width:4px;border-radius:6px;background:transparent;transition:background 220ms ease, opacity 220ms ease}
+.card.resident-card:hover::before{background:var(--accent);opacity:1}
 
 /* Slightly lift delete badge above new shadow for clarity */
 .badge.bg-danger.position-absolute{z-index:6}
@@ -111,17 +112,17 @@ body{background: linear-gradient(180deg, var(--page-bg) 0%, #ffffff 100%);font-f
 .text-muted{color:var(--muted)!important}
 
 /* Fallback: style any plain .card-title strong occurrences */
-.card .card-title{color:var(--accent);font-weight:700}
+.card.resident-card .card-title{color:var(--accent);font-weight:700}
 
 /* Keep forms consistent */
 .form-label{font-weight:600;color:#0b2540}
 .form-control:focus{box-shadow:0 6px 18px rgba(30,58,95,0.08);border-color:var(--accent)}
 
 /* make sure the generated icon sizes inside card are balanced */
-.card .fa-file{font-size:1.5rem}
+.card.resident-card .fa-file{font-size:1.5rem}
 
 /* small helper to ensure long titles wrap nicely */
-.card .card-title, .card .card-body{word-break:break-word}
+.card.resident-card .card-title, .card.resident-card .card-body{word-break:break-word}
 
 .header-color {
     color: var(--accent);

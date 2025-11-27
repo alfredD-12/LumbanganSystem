@@ -46,6 +46,7 @@ render_favicon();
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/Dashboard/dashboard.css?v=2">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/notifications.css?v=1">
 </head>
 <body>
     <!-- Floating Background Shapes -->
@@ -139,7 +140,7 @@ render_favicon();
                     <!-- Notifications Button -->
                     <button class="navbar-icon-btn" type="button" data-bs-toggle="modal" data-bs-target="#notificationsModal" title="Notifications" aria-label="Notifications">
                         <i class="fas fa-bell"></i>
-                        <span class="badge">3</span>
+                        <span class="badge notification-badge" id="notificationBadge">0</span>
                     </button>
 
                     <!-- Inbox Button -->
@@ -551,6 +552,21 @@ render_favicon();
                 $complaintModel = new Complaint();
                 $complaintStats = $complaintModel->getStatistics();
                 $pendingComplaints = isset($complaintStats['pending']) ? (int)$complaintStats['pending'] : 0;
+
+                // Document requests count
+                require_once dirname(__DIR__, 2) . '/config/Database.php';
+                require_once dirname(__DIR__, 2) . '/models/DocumentRequest.php';
+                $database = new Database();
+                $db = $database->getConnection();
+                $documentRequestModel = new DocumentRequest($db);
+                
+                // Get total document requests for this user
+                $allDocRequests = $documentRequestModel->getOngoingRequestsByUser($userId);
+                $approvedDocRequests = $documentRequestModel->getApprovedRequestsByUser($userId);
+                $releasedDocRequests = $documentRequestModel->getReleasedRequestsByUser($userId);
+                
+                $totalDocRequests = count($allDocRequests);
+                $readyDocRequests = count($approvedDocRequests) + count($releasedDocRequests);
         ?>
         <div class="stats-grid">
             <div class="stat-card" tabindex="0">
@@ -573,11 +589,11 @@ render_favicon();
                     <div class="stat-icon">
                         <i class="fas fa-file-alt"></i>
                     </div>
-                    <div class="stat-number">5</div>
+                    <div class="stat-number"><?php echo htmlspecialchars($totalDocRequests, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></div>
                     <div class="stat-label">Document Requests</div>
                 </div>
                 <div class="stat-foot">
-                    <span class="stat-badge badge-completed">3 Ready</span>
+                    <span class="stat-badge badge-completed"><?php echo htmlspecialchars($readyDocRequests, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?> Ready</span>
                     <div class="stat-extra">
                     </div>
                 </div>
@@ -1611,58 +1627,26 @@ render_favicon();
     </div>
 
     <!-- Notifications Modal -->
+    <!-- Notifications Modal -->
     <div class="modal fade" id="notificationsModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content" style="border: none; border-radius: 16px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.12);">
-                <div class="modal-header" style="background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%); color: white; border: none; padding: 1rem 1.5rem;">
-                    <h5 class="modal-title" style="font-weight: 600; font-size: 1rem; display: flex; align-items: center; gap: 0.6rem;">
-                        <div style="width: 32px; height: 32px; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
-                            <i class="fas fa-bell"></i>
-                        </div>
-                        Notifications
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-bell me-2"></i>Notifications
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" style="font-size: 0.8rem;"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body" style="padding: 1.25rem 1.5rem; background: #f8fafc;">
-                    <div style="background: white; border-radius: 12px; padding: 1rem; margin-bottom: 0.8rem; border-left: 3px solid #10b981; box-shadow: 0 2px 6px rgba(0,0,0,0.04); transition: all 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateX(4px)'; this.style.boxShadow='0 3px 12px rgba(0,0,0,0.08)';" onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='0 2px 6px rgba(0,0,0,0.04)';">
-                        <div style="display: flex; gap: 0.85rem; align-items: start;">
-                            <div style="width: 38px; height: 38px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; font-size: 0.95rem;">
-                                <i class="fas fa-check-circle"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <div style="font-weight: 700; color: #1e3a5f; margin-bottom: 0.3rem; font-size: 0.9rem;">Document Ready for Pickup</div>
-                                <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.4rem; line-height: 1.4;">Your Barangay Clearance is ready. Collect it at the Barangay Hall.</div>
-                                <div style="font-size: 0.7rem; color: #94a3b8; display: flex; align-items: center; gap: 0.3rem;">
-                                    <i class="fas fa-clock"></i> 2 hours ago
-                                </div>
-                            </div>
-                        </div>
+                <div class="modal-body">
+                    <div class="notification-controls mb-3">
+                        <button class="btn btn-sm btn-outline-primary" id="markAllReadBtn">
+                            <i class="fas fa-check-double"></i> Mark All as Read
+                        </button>
                     </div>
-                    <div style="background: white; border-radius: 12px; padding: 1rem; margin-bottom: 0.8rem; border-left: 3px solid #f59e0b; box-shadow: 0 2px 6px rgba(0,0,0,0.04); transition: all 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateX(4px)'; this.style.boxShadow='0 3px 12px rgba(0,0,0,0.08)';" onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='0 2px 6px rgba(0,0,0,0.04)';">
-                        <div style="display: flex; gap: 0.85rem; align-items: start;">
-                            <div style="width: 38px; height: 38px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; font-size: 0.95rem;">
-                                <i class="fas fa-exclamation-triangle"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <div style="font-weight: 700; color: #1e3a5f; margin-bottom: 0.3rem; font-size: 0.9rem;">Scheduled Maintenance Tomorrow</div>
-                                <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.4rem; line-height: 1.4;">There will be network maintenance from 10 PM to 2 AM.</div>
-                                <div style="font-size: 0.7rem; color: #94a3b8; display: flex; align-items: center; gap: 0.3rem;">
-                                    <i class="fas fa-clock"></i> 5 hours ago
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div style="background: white; border-radius: 12px; padding: 1rem; border-left: 3px solid #3b82f6; box-shadow: 0 2px 6px rgba(0,0,0,0.04); transition: all 0.3s; cursor: pointer;" onmouseover="this.style.transform='translateX(4px)'; this.style.boxShadow='0 3px 12px rgba(0,0,0,0.08)';" onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='0 2px 6px rgba(0,0,0,0.04)';">
-                        <div style="display: flex; gap: 0.85rem; align-items: start;">
-                            <div style="width: 38px; height: 38px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0; font-size: 0.95rem;">
-                                <i class="fas fa-info-circle"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <div style="font-weight: 700; color: #1e3a5f; margin-bottom: 0.3rem; font-size: 0.9rem;">New Survey Available</div>
-                                <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.4rem; line-height: 1.4;">Help us improve! A new community survey is now open.</div>
-                                <div style="font-size: 0.7rem; color: #94a3b8; display: flex; align-items: center; gap: 0.3rem;">
-                                    <i class="fas fa-clock"></i> 1 day ago
-                                </div>
+                    <div id="notificationsList">
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
                             </div>
                         </div>
                     </div>
@@ -3030,6 +3014,7 @@ render_favicon();
   <?php include dirname(__DIR__, 2) . '/components/ai_chatbot.php'; ?>
 
   <script src="<?php echo BASE_URL; ?>assets/js/ai_chatbot.js"></script>
+  <script src="<?php echo BASE_URL; ?>assets/js/notifications.js"></script>
 
 </body>
 </html>

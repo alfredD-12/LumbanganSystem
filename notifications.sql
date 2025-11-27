@@ -99,7 +99,71 @@ BEGIN
 END$$
 
 -- --------------------------------------------------------
--- Trigger 2: New Complaint/Incident Notification
+-- Trigger 2: Announcement Update Notification
+-- When announcement audience changes, delete old notifications and create new ones
+-- --------------------------------------------------------
+DROP TRIGGER IF EXISTS `notify_announcement_update`$$
+CREATE TRIGGER `notify_announcement_update`
+AFTER UPDATE ON `announcements`
+FOR EACH ROW
+BEGIN
+    DECLARE target_type VARCHAR(10);
+    DECLARE old_target_type VARCHAR(10);
+    
+    -- Only process if announcement is published
+    IF NEW.status = 'published' THEN
+        -- Map NEW audience to notification user_type
+        SET target_type = CASE NEW.audience
+            WHEN 'residents' THEN 'user'
+            WHEN 'officials' THEN 'official'
+            ELSE 'all'
+        END;
+        
+        -- Map OLD audience to notification user_type
+        SET old_target_type = CASE OLD.audience
+            WHEN 'residents' THEN 'user'
+            WHEN 'officials' THEN 'official'
+            ELSE 'all'
+        END;
+        
+        -- If audience changed, delete old notifications and create new ones
+        IF OLD.audience <> NEW.audience THEN
+            -- Delete old notifications for the previous audience
+            DELETE FROM `notifications` 
+            WHERE notification_type = 'announcement' 
+            AND reference_id = NEW.id 
+            AND user_type = old_target_type;
+            
+            -- Create new notification for the new audience
+            INSERT INTO `notifications` 
+            (`user_id`, `user_type`, `notification_type`, `title`, `message`, `link`, `reference_id`)
+            VALUES 
+            (NULL, target_type, 'announcement', 
+             CONCAT('New Announcement: ', NEW.title),
+             LEFT(NEW.message, 150),
+             CONCAT('?page=public_announcement#announcement-', NEW.id),
+             NEW.id);
+        
+        -- If audience didn't change but title or message changed, update existing notification
+        ELSEIF OLD.title <> NEW.title OR OLD.message <> NEW.message THEN
+            UPDATE `notifications` 
+            SET title = CONCAT('Updated Announcement: ', NEW.title),
+                message = LEFT(NEW.message, 150)
+            WHERE notification_type = 'announcement' 
+            AND reference_id = NEW.id 
+            AND user_type = target_type;
+        END IF;
+    
+    -- If status changed from published to draft/archived, delete all notifications
+    ELSEIF OLD.status = 'published' AND NEW.status <> 'published' THEN
+        DELETE FROM `notifications` 
+        WHERE notification_type = 'announcement' 
+        AND reference_id = NEW.id;
+    END IF;
+END$$
+
+-- --------------------------------------------------------
+-- Trigger 3: New Complaint/Incident Notification
 -- Notifies officials when a new complaint is filed
 -- --------------------------------------------------------
 DROP TRIGGER IF EXISTS `notify_new_complaint`$$
@@ -119,7 +183,7 @@ BEGIN
 END$$
 
 -- --------------------------------------------------------
--- Trigger 3: Complaint Status Update Notification
+-- Trigger 4: Complaint Status Update Notification
 -- Notifies residents when their complaint status changes
 -- --------------------------------------------------------
 DROP TRIGGER IF EXISTS `notify_complaint_update`$$
@@ -153,7 +217,7 @@ BEGIN
 END$$
 
 -- --------------------------------------------------------
--- Trigger 4: New Document Request Notification
+-- Trigger 5: New Document Request Notification
 -- Notifies officials when a resident requests a document
 -- --------------------------------------------------------
 DROP TRIGGER IF EXISTS `notify_new_document_request`$$
@@ -190,7 +254,7 @@ BEGIN
 END$$
 
 -- --------------------------------------------------------
--- Trigger 5: Document Request Status Update Notification
+-- Trigger 6: Document Request Status Update Notification
 -- Notifies residents when their document request status changes
 -- --------------------------------------------------------
 DROP TRIGGER IF EXISTS `notify_document_status`$$

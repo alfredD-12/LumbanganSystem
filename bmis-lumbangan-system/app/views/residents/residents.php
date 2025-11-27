@@ -321,7 +321,12 @@ if (!isset($complaints) || !isset($statistics) || !isset($statuses) || !isset($c
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="form-label">Gender <span class="text-danger">*</span></label>
-                                                <input type="text" name="complainant_gender" id="complainant_gender" class="form-control" required placeholder="Enter your gender">
+                                                 <select name="complainant_gender" id="complainant_gender" class="form-select" required>
+                                                    <option value="">Select Gender</option>
+                                                    <option value="male">Male</option>
+                                                    <option value="female">Female</option>
+                                                    <option value="other">Prefer Not to Say</option>
+                                                </select>
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="form-label">Birthday</label>

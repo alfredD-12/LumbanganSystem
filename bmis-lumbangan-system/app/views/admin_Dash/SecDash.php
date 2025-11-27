@@ -13,9 +13,62 @@ $dashboardData = require_once dirname(__DIR__, 2) . '/config/dashboard_data.php'
 require_once dirname(__DIR__, 2) . '/components/admin_components/stat-card.php';
 require_once dirname(__DIR__, 2) . '/components/admin_components/activity-item.php';
 require_once dirname(__DIR__, 2) . '/components/admin_components/modal-items.php';
+
+// Load predictive analytics data
+require_once dirname(__DIR__, 2) . '/controllers/PredictiveAnalyticsController.php';
+$predictiveController = new PredictiveAnalyticsController();
+require_once dirname(__DIR__, 2) . '/models/MigrationModel.php';
+$migrationModel = new MigrationModel();
+
+// Get prediction statistics and chart data
+$predictionStats = $migrationModel->getDashboardStats();
+$monthlyPredictions = $migrationModel->getPredictionsByMonth();
+$topPuroks = $migrationModel->getTopPuroksByPredictedMigration();
+$probabilityDist = $migrationModel->getProbabilityDistribution();
+
+// Prepare chart data for JavaScript
+$predictionChartData = [
+    'monthly' => [
+        'labels' => array_map(fn($d) => date('M Y', strtotime($d['month'] . '-01')), $monthlyPredictions),
+        'moveouts' => array_map(fn($d) => intval($d['predicted_moveouts']), $monthlyPredictions),
+        'stayins' => array_map(fn($d) => intval($d['predicted_stayins']), $monthlyPredictions)
+    ],
+    'puroks' => [
+        'labels' => array_map(fn($p) => 'Purok ' . $p['purok_id'], $topPuroks),
+        'migrations' => array_map(fn($p) => intval($p['predicted_migrations']), $topPuroks)
+    ],
+    'histogram' => []
+];
+
+// Build histogram data
+$histogramBins = [
+    '0-0.1' => 0,
+    '0.1-0.2' => 0,
+    '0.2-0.3' => 0,
+    '0.3-0.4' => 0,
+    '0.4-0.5' => 0,
+    '0.5-0.6' => 0,
+    '0.6-0.7' => 0,
+    '0.7-0.8' => 0,
+    '0.8-0.9' => 0,
+    '0.9-1.0' => 0
+];
+foreach ($probabilityDist as $prob) {
+    $value = floatval($prob['migration_probability']);
+    $bin = min(floor($value * 10) / 10, 0.9);
+    $binKey = number_format($bin, 1) . '-' . number_format($bin + 0.1, 1);
+    if (isset($histogramBins[$binKey])) {
+        $histogramBins[$binKey]++;
+    }
+}
+$predictionChartData['histogram'] = [
+    'labels' => array_keys($histogramBins),
+    'values' => array_values($histogramBins)
+];
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,9 +76,13 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/modal-items.php
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <?php if (!defined('BASE_URL')) { require_once dirname(__DIR__, 2) . '/config/config.php'; } ?>
+    <?php if (!defined('BASE_URL')) {
+        require_once dirname(__DIR__, 2) . '/config/config.php';
+    } ?>
     <link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/SecDash/secDash.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/predictions_dashboard.css?v=<?php echo time(); ?>">
 </head>
+
 <body>
     <!-- Floating Background Shapes -->
     <div class="floating-shapes">
@@ -37,19 +94,19 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/modal-items.php
     </div>
 
     <!-- Sidebar Component -->
-    <?php 
-        $currentPage = 'admin_dashboard'; // Set current page for active menu highlighting
-        require_once dirname(__DIR__, 2) . '/components/admin_components/sidebar-admin.php'; 
+    <?php
+    $currentPage = 'admin_dashboard'; // Set current page for active menu highlighting
+    require_once dirname(__DIR__, 2) . '/components/admin_components/sidebar-admin.php';
     ?>
 
     <!-- Main Content -->
     <main class="main-content" id="mainContent">
         <!-- Top Bar Component -->
-        <?php 
-            $pageTitle = 'Barangay Lumbangan Analytics Dashboard';
-            $pageSubtitle = 'Monitoring and managing barangay operations and resident services';
-            // $adminName and $adminRole already set from session at top
-            require_once dirname(__DIR__, 2) . '/components/admin_components/topbar-admin.php'; 
+        <?php
+        $pageTitle = 'Barangay Lumbangan Analytics Dashboard';
+        $pageSubtitle = 'Monitoring and managing barangay operations and resident services';
+        // $adminName and $adminRole already set from session at top
+        require_once dirname(__DIR__, 2) . '/components/admin_components/topbar-admin.php';
         ?>
 
         <!-- Content Section -->
@@ -93,20 +150,20 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/modal-items.php
                                         <stop offset="100%" style="stop-color:#1e3a5f;stop-opacity:0.05" />
                                     </linearGradient>
                                 </defs>
-                                
+
                                 <!-- Grid lines -->
                                 <line x1="50" y1="40" x2="550" y2="40" class="chart-grid-line" />
                                 <line x1="50" y1="90" x2="550" y2="90" class="chart-grid-line" />
                                 <line x1="50" y1="140" x2="550" y2="140" class="chart-grid-line" />
                                 <line x1="50" y1="190" x2="550" y2="190" class="chart-grid-line" />
-                                
+
                                 <!-- Area under the line -->
                                 <path class="chart-area" d="M 70,110 L 150,90 L 230,130 L 310,70 L 390,100 L 470,50 L 550,80 L 550,200 L 70,200 Z" />
-                                
+
                                 <!-- Line path -->
-                                <path class="chart-line" d="M 70,110 L 150,90 L 230,130 L 310,70 L 390,100 L 470,50 L 550,80" 
-                                      style="stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: drawLine 2s ease-out forwards;" />
-                                
+                                <path class="chart-line" d="M 70,110 L 150,90 L 230,130 L 310,70 L 390,100 L 470,50 L 550,80"
+                                    style="stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: drawLine 2s ease-out forwards;" />
+
                                 <!-- Data points -->
                                 <circle class="chart-point" cx="70" cy="110" r="6" />
                                 <circle class="chart-point" cx="150" cy="90" r="6" />
@@ -115,7 +172,7 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/modal-items.php
                                 <circle class="chart-point" cx="390" cy="100" r="6" />
                                 <circle class="chart-point" cx="470" cy="50" r="6" />
                                 <circle class="chart-point" cx="550" cy="80" r="6" />
-                                
+
                                 <!-- Value labels -->
                                 <text x="70" y="100" class="chart-value-label" text-anchor="middle">215</text>
                                 <text x="150" y="80" class="chart-value-label" text-anchor="middle">248</text>
@@ -124,7 +181,7 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/modal-items.php
                                 <text x="390" y="90" class="chart-value-label" text-anchor="middle">231</text>
                                 <text x="470" y="40" class="chart-value-label" text-anchor="middle">298</text>
                                 <text x="550" y="70" class="chart-value-label" text-anchor="middle">254</text>
-                                
+
                                 <!-- X-axis labels -->
                                 <text x="70" y="220" class="chart-label" text-anchor="middle">Mon</text>
                                 <text x="150" y="220" class="chart-label" text-anchor="middle">Tue</text>
@@ -136,34 +193,56 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/modal-items.php
                             </svg>
                         </div>
                     </div>
-                    
+
                     <style>
                         @keyframes drawLine {
                             to {
                                 stroke-dashoffset: 0;
                             }
                         }
-                        
+
                         .chart-point {
                             animation: popIn 0.5s ease-out backwards;
                         }
-                        
-                        .chart-point:nth-child(5) { animation-delay: 0.3s; }
-                        .chart-point:nth-child(6) { animation-delay: 0.4s; }
-                        .chart-point:nth-child(7) { animation-delay: 0.5s; }
-                        .chart-point:nth-child(8) { animation-delay: 0.6s; }
-                        .chart-point:nth-child(9) { animation-delay: 0.7s; }
-                        .chart-point:nth-child(10) { animation-delay: 0.8s; }
-                        .chart-point:nth-child(11) { animation-delay: 0.9s; }
-                        
+
+                        .chart-point:nth-child(5) {
+                            animation-delay: 0.3s;
+                        }
+
+                        .chart-point:nth-child(6) {
+                            animation-delay: 0.4s;
+                        }
+
+                        .chart-point:nth-child(7) {
+                            animation-delay: 0.5s;
+                        }
+
+                        .chart-point:nth-child(8) {
+                            animation-delay: 0.6s;
+                        }
+
+                        .chart-point:nth-child(9) {
+                            animation-delay: 0.7s;
+                        }
+
+                        .chart-point:nth-child(10) {
+                            animation-delay: 0.8s;
+                        }
+
+                        .chart-point:nth-child(11) {
+                            animation-delay: 0.9s;
+                        }
+
                         @keyframes popIn {
                             0% {
                                 r: 0;
                                 opacity: 0;
                             }
+
                             50% {
                                 r: 8;
                             }
+
                             100% {
                                 r: 6;
                                 opacity: 1;
@@ -197,7 +276,7 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/modal-items.php
                         <i class="fas fa-exclamation-triangle"></i>
                         Recent Complaints
                     </h3>
-                    
+
                     <?php foreach ($dashboardData['complaints'] as $complaint): ?>
                         <?php renderActivityItem($complaint); ?>
                     <?php endforeach; ?>
@@ -222,10 +301,10 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/modal-items.php
                         </div>
                         <div class="doc-items">
                             <?php foreach ($dashboardData['documents']['pending_approvals'] as $doc): ?>
-                            <div class="doc-mini-item">
-                                <span><?php echo htmlspecialchars($doc['name']); ?></span>
-                                <span class="doc-badge"><?php echo $doc['count']; ?></span>
-                            </div>
+                                <div class="doc-mini-item">
+                                    <span><?php echo htmlspecialchars($doc['name']); ?></span>
+                                    <span class="doc-badge"><?php echo $doc['count']; ?></span>
+                                </div>
                             <?php endforeach; ?>
                         </div>
                     </div>
@@ -238,10 +317,10 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/modal-items.php
                         </div>
                         <div class="doc-stats-grid">
                             <?php foreach ($dashboardData['documents']['today_released'] as $doc): ?>
-                            <div class="doc-stat-item">
-                                <div class="doc-stat-num"><?php echo $doc['num']; ?></div>
-                                <div class="doc-stat-label"><?php echo htmlspecialchars($doc['label']); ?></div>
-                            </div>
+                                <div class="doc-stat-item">
+                                    <div class="doc-stat-num"><?php echo $doc['num']; ?></div>
+                                    <div class="doc-stat-label"><?php echo htmlspecialchars($doc['label']); ?></div>
+                                </div>
                             <?php endforeach; ?>
                         </div>
                     </div>
@@ -254,12 +333,12 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/modal-items.php
                         </div>
                         <div class="doc-queue-list">
                             <?php foreach ($dashboardData['documents']['queue'] as $queue): ?>
-                            <div class="queue-item">
-                                <div class="queue-bar" style="width: <?php echo $queue['width']; ?>;">
-                                    <span class="queue-label"><?php echo htmlspecialchars($queue['label']); ?></span>
+                                <div class="queue-item">
+                                    <div class="queue-bar" style="width: <?php echo $queue['width']; ?>;">
+                                        <span class="queue-label"><?php echo htmlspecialchars($queue['label']); ?></span>
+                                    </div>
+                                    <span class="queue-count"><?php echo $queue['count']; ?></span>
                                 </div>
-                                <span class="queue-count"><?php echo $queue['count']; ?></span>
-                            </div>
                             <?php endforeach; ?>
                         </div>
                     </div>
@@ -291,7 +370,7 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/modal-items.php
                         <i class="fas fa-calendar-alt"></i>
                         Upcoming Events
                     </h3>
-                    
+
                     <!-- Events List -->
                     <div class="events-list">
                         <div class="event-item event-meeting">
@@ -343,6 +422,107 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/modal-items.php
                                 </div>
                             </div>
                             <div class="event-badge event-badge-important">Important</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Migration Predictions Analytics Section -->
+            <div class="dashboard-grid" style="margin-top: 2rem;">
+                <div class="chart-card" style="grid-column: 1 / -1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem; border-radius: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 2px solid rgba(255, 255, 255, 0.2);">
+                        <h3 style="color: white; font-size: 1.75rem; font-weight: 700; display: flex; align-items: center; gap: 1rem; margin: 0;">
+                            <i class="fas fa-brain" style="font-size: 2rem;"></i>
+                            Migration Predictions Analytics
+                        </h3>
+                        <button class="btn" id="generatePredictionsBtn" style="background: white; color: #667eea; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease;">
+                            <i class="fas fa-magic"></i>
+                            Generate Predictions
+                        </button>
+                    </div>
+
+                    <!-- Alert Container -->
+                    <div id="alertContainer" style="margin-bottom: 1rem;"></div>
+
+                    <!-- Statistics Cards -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);">
+                            <div style="width: 50px; height: 50px; border-radius: 10px; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                                <i class="fas fa-chart-line" style="color: white; font-size: 1.5rem;"></i>
+                            </div>
+                            <div style="font-size: 2rem; font-weight: 700; color: #2D3748; margin-bottom: 0.5rem;" id="totalPredictions">
+                                <?php echo number_format($predictionStats['total_predictions'] ?? 0); ?>
+                            </div>
+                            <div style="color: #718096; font-size: 0.9rem; font-weight: 500;">Total Predictions</div>
+                        </div>
+
+                        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);">
+                            <div style="width: 50px; height: 50px; border-radius: 10px; background: linear-gradient(135deg, #56CCF2, #2F80ED); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                                <i class="fas fa-home" style="color: white; font-size: 1.5rem;"></i>
+                            </div>
+                            <div style="font-size: 2rem; font-weight: 700; color: #2D3748; margin-bottom: 0.5rem;" id="predictedStayins">
+                                <?php echo number_format($predictionStats['total_predicted_stayins'] ?? 0); ?>
+                            </div>
+                            <div style="color: #718096; font-size: 0.9rem; font-weight: 500;">Predicted Stay-Ins</div>
+                        </div>
+
+                        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);">
+                            <div style="width: 50px; height: 50px; border-radius: 10px; background: linear-gradient(135deg, #F2994A, #F2C94C); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                                <i class="fas fa-people-arrows" style="color: white; font-size: 1.5rem;"></i>
+                            </div>
+                            <div style="font-size: 2rem; font-weight: 700; color: #2D3748; margin-bottom: 0.5rem;" id="predictedMoveouts">
+                                <?php echo number_format($predictionStats['total_predicted_moveouts'] ?? 0); ?>
+                            </div>
+                            <div style="color: #718096; font-size: 0.9rem; font-weight: 500;">Predicted Move-Outs</div>
+                        </div>
+
+                        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);">
+                            <div style="width: 50px; height: 50px; border-radius: 10px; background: linear-gradient(135deg, #EB5757, #000000); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                                <i class="fas fa-percentage" style="color: white; font-size: 1.5rem;"></i>
+                            </div>
+                            <div style="font-size: 2rem; font-weight: 700; color: #2D3748; margin-bottom: 0.5rem;" id="avgProbability">
+                                <?php echo number_format(($predictionStats['avg_moveout_probability'] ?? 0) * 100, 1); ?>%
+                            </div>
+                            <div style="color: #718096; font-size: 0.9rem; font-weight: 500;">Avg. Move-Out Probability</div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Grid -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 1.5rem;">
+                        <!-- Monthly Predictions Chart -->
+                        <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);">
+                            <h4 style="font-size: 1.1rem; font-weight: 600; color: #2D3748; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-calendar-alt"></i>
+                                Monthly Migration Predictions
+                            </h4>
+                            <canvas id="monthlyPredictionsChart" style="max-height: 300px;"></canvas>
+                        </div>
+
+                        <!-- Top Puroks Chart -->
+                        <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);">
+                            <h4 style="font-size: 1.1rem; font-weight: 600; color: #2D3748; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-map-marked-alt"></i>
+                                Top Puroks by Predicted Migration
+                            </h4>
+                            <canvas id="topPuroksChart" style="max-height: 300px;"></canvas>
+                        </div>
+
+                        <!-- Probability Distribution -->
+                        <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);">
+                            <h4 style="font-size: 1.1rem; font-weight: 600; color: #2D3748; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-chart-bar"></i>
+                                Probability Distribution
+                            </h4>
+                            <canvas id="probabilityHistogramChart" style="max-height: 300px;"></canvas>
+                        </div>
+
+                        <!-- Cumulative Trend -->
+                        <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);">
+                            <h4 style="font-size: 1.1rem; font-weight: 600; color: #2D3748; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-chart-area"></i>
+                                Cumulative Predictions Trend
+                            </h4>
+                            <canvas id="cumulativeTrendChart" style="max-height: 300px;"></canvas>
                         </div>
                     </div>
                 </div>
@@ -405,7 +585,7 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/modal-items.php
                                 <div style="font-size: 0.8rem; color: #718096;">Hon. Juan Dela Cruz</div>
                             </div>
                         </div>
-                        
+
                         <div style="text-align: center; padding: 2rem 1rem;">
                             <div style="font-size: 2.5rem; font-weight: 700; color: var(--primary-blue); margin-bottom: 0.5rem;">15</div>
                             <div style="font-size: 0.9rem; color: #718096; margin-bottom: 1.5rem;">Active Officials</div>
@@ -540,28 +720,29 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/modal-items.php
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/SecDash/SecDash.js"></script>
-    
+
     <!-- Initialize Bootstrap Dropdowns -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Get the dropdown toggle element
             const dropdownToggle = document.querySelector('.admin-avatar.dropdown-toggle');
             const dropdownMenu = document.querySelector('.admin-profile .dropdown-menu');
-            
+
             if (dropdownToggle && dropdownMenu) {
                 // Manual click handler
                 dropdownToggle.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    
+
                     // Toggle show class
                     dropdownMenu.classList.toggle('show');
                     dropdownToggle.classList.toggle('show');
-                    
+
                     console.log('Dropdown clicked! Menu is now:', dropdownMenu.classList.contains('show') ? 'VISIBLE' : 'HIDDEN');
                 });
-                
+
                 // Close dropdown when clicking outside
                 document.addEventListener('click', function(e) {
                     if (!dropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
@@ -570,10 +751,10 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/modal-items.php
                     }
                 });
             }
-            
+
             // Initialize all Bootstrap dropdowns as backup
             var dropdownElementList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'));
-            var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
+            var dropdownList = dropdownElementList.map(function(dropdownToggleEl) {
                 return new bootstrap.Dropdown(dropdownToggleEl);
             });
         });
@@ -591,7 +772,7 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/modal-items.php
                             // Remove any orphaned backdrops
                             const backdrops = document.querySelectorAll('.modal-backdrop');
                             backdrops.forEach(backdrop => backdrop.remove());
-                            
+
                             // Unlock body scroll
                             document.body.classList.remove('modal-open');
                             document.body.style.paddingRight = '';
@@ -603,8 +784,331 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/modal-items.php
         });
     </script>
 
+    <!-- Prediction Charts and AJAX Script -->
+    <script>
+        // Prediction chart data from PHP
+        const predictionChartData = <?php echo json_encode($predictionChartData); ?>;
+
+        // Chart instances
+        let monthlyPredChart, topPuroksChart, histogramChart, cumulativeChart;
+
+        // Initialize prediction charts
+        function initializePredictionCharts() {
+            // Monthly Predictions Bar Chart
+            const monthlyCtx = document.getElementById('monthlyPredictionsChart');
+            if (monthlyCtx) {
+                monthlyPredChart = new Chart(monthlyCtx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: predictionChartData.monthly.labels,
+                        datasets: [{
+                                label: 'Predicted Move-Outs',
+                                data: predictionChartData.monthly.moveouts,
+                                backgroundColor: 'rgba(235, 87, 87, 0.8)',
+                                borderColor: 'rgba(235, 87, 87, 1)',
+                                borderWidth: 2,
+                                borderRadius: 6
+                            },
+                            {
+                                label: 'Predicted Stay-Ins',
+                                data: predictionChartData.monthly.stayins,
+                                backgroundColor: 'rgba(86, 204, 242, 0.8)',
+                                borderColor: 'rgba(86, 204, 242, 1)',
+                                borderWidth: 2,
+                                borderRadius: 6
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    font: {
+                                        size: 11,
+                                        family: 'Poppins'
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Top Puroks Pie Chart
+            const puroksCtx = document.getElementById('topPuroksChart');
+            if (puroksCtx) {
+                topPuroksChart = new Chart(puroksCtx.getContext('2d'), {
+                    type: 'pie',
+                    data: {
+                        labels: predictionChartData.puroks.labels,
+                        datasets: [{
+                            data: predictionChartData.puroks.migrations,
+                            backgroundColor: [
+                                'rgba(102, 126, 234, 0.8)',
+                                'rgba(118, 75, 162, 0.8)',
+                                'rgba(237, 100, 166, 0.8)',
+                                'rgba(242, 153, 74, 0.8)',
+                                'rgba(86, 204, 242, 0.8)'
+                            ],
+                            borderWidth: 2,
+                            borderColor: 'white'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: {
+                                    font: {
+                                        size: 11,
+                                        family: 'Poppins'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Probability Histogram
+            const histogramCtx = document.getElementById('probabilityHistogramChart');
+            if (histogramCtx) {
+                histogramChart = new Chart(histogramCtx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: predictionChartData.histogram.labels,
+                        datasets: [{
+                            label: 'Frequency',
+                            data: predictionChartData.histogram.values,
+                            backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                            borderColor: 'rgba(102, 126, 234, 1)',
+                            borderWidth: 2,
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Count',
+                                    font: {
+                                        family: 'Poppins',
+                                        size: 11
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Probability Range',
+                                    font: {
+                                        family: 'Poppins',
+                                        size: 11
+                                    }
+                                },
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Cumulative Trend Line Chart
+            const cumulativeCtx = document.getElementById('cumulativeTrendChart');
+            if (cumulativeCtx) {
+                const cumulativeMoveouts = predictionChartData.monthly.moveouts.reduce((acc, val, idx) => {
+                    acc.push((acc[idx - 1] || 0) + val);
+                    return acc;
+                }, []);
+
+                const cumulativeStayins = predictionChartData.monthly.stayins.reduce((acc, val, idx) => {
+                    acc.push((acc[idx - 1] || 0) + val);
+                    return acc;
+                }, []);
+
+                cumulativeChart = new Chart(cumulativeCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: predictionChartData.monthly.labels,
+                        datasets: [{
+                                label: 'Cumulative Move-Outs',
+                                data: cumulativeMoveouts,
+                                borderColor: 'rgba(235, 87, 87, 1)',
+                                backgroundColor: 'rgba(235, 87, 87, 0.1)',
+                                fill: true,
+                                tension: 0.4,
+                                borderWidth: 3
+                            },
+                            {
+                                label: 'Cumulative Stay-Ins',
+                                data: cumulativeStayins,
+                                borderColor: 'rgba(86, 204, 242, 1)',
+                                backgroundColor: 'rgba(86, 204, 242, 0.1)',
+                                fill: true,
+                                tension: 0.4,
+                                borderWidth: 3
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    font: {
+                                        size: 11,
+                                        family: 'Poppins'
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Show alert message
+        function showAlert(message, type = 'info') {
+            const alertContainer = document.getElementById('alertContainer');
+            if (!alertContainer) return;
+
+            const alertDiv = document.createElement('div');
+            alertDiv.style.cssText = `
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                margin-bottom: 1rem;
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                animation: slideIn 0.3s ease;
+            `;
+
+            if (type === 'success') {
+                alertDiv.style.background = '#D4EDDA';
+                alertDiv.style.color = '#155724';
+                alertDiv.style.border = '1px solid #C3E6CB';
+            } else if (type === 'error') {
+                alertDiv.style.background = '#F8D7DA';
+                alertDiv.style.color = '#721C24';
+                alertDiv.style.border = '1px solid #F5C6CB';
+            } else {
+                alertDiv.style.background = '#D1ECF1';
+                alertDiv.style.color = '#0C5460';
+                alertDiv.style.border = '1px solid #BEE5EB';
+            }
+
+            const icon = type === 'success' ? 'check-circle' :
+                type === 'error' ? 'exclamation-circle' : 'info-circle';
+
+            alertDiv.innerHTML = `
+                <i class="fas fa-${icon}"></i>
+                <span>${message}</span>
+            `;
+
+            alertContainer.appendChild(alertDiv);
+
+            setTimeout(() => {
+                alertDiv.style.opacity = '0';
+                alertDiv.style.transform = 'translateY(-10px)';
+                setTimeout(() => alertDiv.remove(), 300);
+            }, 5000);
+        }
+
+        // Generate predictions AJAX handler
+        document.getElementById('generatePredictionsBtn')?.addEventListener('click', async function() {
+            const btn = this;
+            const originalText = btn.innerHTML;
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+
+            try {
+                const response = await fetch('<?php echo rtrim(BASE_URL, '/'); ?>/controllers/ajax_predictions.php?action=generate', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert(data.message || 'Predictions generated successfully!', 'success');
+
+                    // Reload page after 2 seconds to show updated data
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    showAlert(data.message || 'Failed to generate predictions', 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('An error occurred while generating predictions. Please ensure the Python API is running.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        });
+
+        // Initialize prediction charts on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePredictionCharts();
+        });
+    </script>
+
     <!--  Include Topbar Modals Component (Notifications & Messages) -->
     <?php require_once dirname(__DIR__, 2) . '/components/admin_components/topbar-modals.php'; ?>
 
 </body>
+
 </html>

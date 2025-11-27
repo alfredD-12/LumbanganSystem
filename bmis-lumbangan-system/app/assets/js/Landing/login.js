@@ -165,60 +165,33 @@ document.getElementById('signupForm')?.addEventListener('submit', async function
     e.preventDefault();
     
     const formData = new FormData(this);
-
     
-    const submitBtn = this.querySelector('button[type="submit"]');
-    const originalText = submitBtn.innerHTML;
-    
-    // Disable submit button
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registering...';
-    
-    try {
-                const metaAuth = document.querySelector('meta[name="app-auth-endpoint"]');
-                const authUrlBase = metaAuth ? metaAuth.content : '../../controllers/AuthController.php';
-                const response = await fetch(authUrlBase + '?action=register', {
-            method: 'POST',
-            body: formData,
-            credentials: 'same-origin'
-        });
-        
-        const responseText = await response.text();
-        
-        // Check if response is empty
-        if (!responseText || responseText.trim() === '') {
-            console.error('Empty response from server');
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalText;
-            return;
-        }
-        
-        let result;
-        try {
-            result = JSON.parse(responseText);
-        } catch (parseError) {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalText;
-            return;
-        }
-        
-        if (result.success) {
-            // Registration successful - redirect silently
-            hideRegisterError();
-            window.location.href = result.redirect;
-        } else {
-            // Show error message
-            showRegisterError(result.message || 'Registration failed. Please try again.');
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalText;
-        }
-    } catch (error) {
-        showRegisterError('An error occurred. Please try again.');
-        console.error('Registration error:', error);
-        console.error('Error stack:', error.stack);
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalText;
+    // Close login modal properly
+    const loginModal = document.getElementById('loginModal');
+    if (loginModal) {
+        loginModal.style.display = 'none';
+        loginModal.classList.remove('show');
     }
+    
+    // Reset body scroll
+    document.body.style.overflow = 'auto';
+    
+    // Small delay to ensure modal closes, then open verification modal
+    setTimeout(() => {
+        // Open email verification modal with the registration data
+        if (typeof openEmailVerificationModal === 'function') {
+            openEmailVerificationModal(formData);
+        } else {
+            console.error('Email verification function not found');
+            // Fallback: show login modal again
+            if (loginModal) {
+                loginModal.style.display = 'flex';
+                loginModal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+            showRegisterError('Email verification system not available. Please try again.');
+        }
+    }, 100);
 });
 
 (function(){

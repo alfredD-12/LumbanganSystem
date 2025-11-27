@@ -625,6 +625,9 @@ if (isLoggedIn()) {
     </div>
   </div>
 
+  <!-- Email Verification Modal -->
+  <?php require_once dirname(__DIR__, 2) . '/components/resident_components/email_verify_modal.php'; ?>
+
   <!-- Image Lightbox -->
   <div id="imageLightbox" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:99999; justify-content:center; align-items:center; cursor:pointer;" onclick="closeImageLightbox()">
     <img id="lightboxImg" style="max-width:90%; max-height:90vh; object-fit:contain; border-radius:8px; box-shadow:0 10px 50px rgba(0,0,0,0.7);" onclick="event.stopPropagation()">
@@ -898,6 +901,7 @@ if (isLoggedIn()) {
   </script>
   
   <script src="<?php echo BASE_URL; ?>/assets/js/Landing/Landing.js?v=2"></script>
+  <script src="<?php echo BASE_URL; ?>/assets/js/email_verification.js?v=<?php echo time(); ?>"></script>
   <script src="<?php echo BASE_URL; ?>/assets/js/Landing/login.js?v=2"></script>
   
   <!-- Announcement Modal for Landing -->

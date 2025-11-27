@@ -162,7 +162,7 @@ if (isLoggedIn()) {
       <div class="row align-items-center">
         <div class="col-lg-6">
           <div class="about-img-wrapper">
-            <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 600'><defs><linearGradient id='grad1' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' style='stop-color:%231e3a5f;stop-opacity:1'/><stop offset='100%' style='stop-color:%23c53030;stop-opacity:1'/></linearGradient></defs><rect fill='url(%23grad1)' width='800' height='600'/><circle fill='rgba(255,255,255,0.1)' cx='400' cy='300' r='200'/><circle fill='rgba(255,255,255,0.05)' cx='600' cy='150' r='100'/><rect fill='rgba(255,255,255,0.1)' x='100' y='400' width='200' height='150' rx='20'/></svg>"
+            <img src="<?php echo BASE_URL; ?>uploads/Gemini_Generated_Image_hvkx86hvkx86hvkx.png"
                  alt="Barangay Hall" class="about-img">
           </div>
         </div>
@@ -478,11 +478,11 @@ if (isLoggedIn()) {
         <div class="col-lg-6">
           <div class="contact-card">
             <h4 style="color: var(--primary-blue); font-weight: 700; margin-bottom: 30px;">Send Us a Message</h4>
-            <form class="contact-form">
-              <input type="text" class="form-control" placeholder="Your Name" required>
-              <input type="email" class="form-control" placeholder="Your Email" required>
-              <input type="text" class="form-control" placeholder="Subject" required>
-              <textarea class="form-control" rows="5" placeholder="Your Message" required></textarea>
+            <form class="contact-form" id="contactForm">
+              <input type="text" class="form-control" id="contactName" placeholder="Your Name" required>
+              <input type="email" class="form-control" id="contactEmail" placeholder="Your Email" required>
+              <input type="text" class="form-control" id="contactSubject" placeholder="Subject" required>
+              <textarea class="form-control" id="contactMessage" rows="5" placeholder="Your Message" required></textarea>
               <button type="submit" class="btn btn-custom btn-primary-custom w-100">Send Message</button>
             </form>
           </div>
@@ -1302,6 +1302,33 @@ if (isLoggedIn()) {
 
   <script src="<?php echo BASE_URL; ?>assets/js/ai_chatbot.js"></script>
   
+  <script>
+    // Contact form Gmail handler
+    document.addEventListener('DOMContentLoaded', function() {
+      const contactForm = document.getElementById('contactForm');
+      
+      if (contactForm) {
+        contactForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          const name = document.getElementById('contactName').value;
+          const email = document.getElementById('contactEmail').value;
+          const subject = document.getElementById('contactSubject').value;
+          const message = document.getElementById('contactMessage').value;
+          
+          // Build email body
+          const bodyText = `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`;
+          
+          // Open Gmail compose in new tab
+          const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=bmis.lumbangan@gmail.com&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
+          window.open(gmailUrl, '_blank');
+          
+          // Reset form
+          contactForm.reset();
+        });
+      }
+    });
+  </script>
   
 </body>
 </html>

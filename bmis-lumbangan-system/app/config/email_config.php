@@ -9,7 +9,7 @@ define('SMTP_SECURE', 'tls'); // 'tls' or 'ssl'
 
 // Gmail credentials
 define('SMTP_USERNAME', 'bmis.lumbangan@gmail.com'); // Change this to your Gmail
-define('SMTP_PASSWORD', 'gsrf xume chgs imai');     // Change this to your App Password (NOT your regular Gmail password)
+define('SMTP_PASSWORD', 'zicx hbyy lviu cyqj');     // Change this to your App Password (NOT your regular Gmail password)
 
 // Default sender email (should be your Gmail address)
 define('SENDER_EMAIL', 'bmis.lumbangan@gmail.com');   // Change this

@@ -150,7 +150,7 @@ if (usernameInput) {
         }, 500);
     });
     
-    // Reset border color when focus is lost
+    // Reset border color when focus is lost"
     usernameInput.addEventListener('blur', function() {
         setTimeout(() => {
             this.style.borderColor = '';
@@ -165,6 +165,15 @@ document.getElementById('signupForm')?.addEventListener('submit', async function
     e.preventDefault();
     
     const formData = new FormData(this);
+    
+    // Check if passwords match
+    const password = formData.get('password');
+    const confirmPassword = formData.get('confirm_password');
+    
+    if (password !== confirmPassword) {
+        showRegisterError('Passwords do not match. Please try again.');
+        return;
+    }
     
     // Close login modal properly
     const loginModal = document.getElementById('loginModal');

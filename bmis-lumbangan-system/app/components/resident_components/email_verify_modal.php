@@ -206,4 +206,105 @@
     opacity: 1;
   }
 }
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  #emailVerifyModal {
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  
+  #emailVerifyModal > div {
+    margin: 0 15px;
+  }
+  
+  #emailVerifyModal img[alt="batangas-logo"] {
+    width: 120px !important;
+    top: -60px !important;
+  }
+  
+  #emailVerifyModal > div > div {
+    max-width: 100% !important;
+    padding: 50px 25px 30px !important;
+    border-radius: 40px !important;
+    max-height: 90vh !important;
+  }
+  
+  #emailVerifyModal h1 {
+    font-size: 20px !important;
+  }
+  
+  #emailVerifyModal p {
+    font-size: 0.85rem !important;
+  }
+  
+  #emailVerifyModal > div > button {
+    width: 35px !important;
+    height: 35px !important;
+    top: -40px !important;
+    font-size: 18px !important;
+  }
+  
+  #emailVerifyModal .login-modal-overlay {
+    padding: 10px !important;
+  }
+  
+  #emailVerifyStep1 img,
+  #emailVerifyStep2 img {
+    width: 32px !important;
+  }
+  
+  #emailVerifyCode {
+    font-size: 20px !important;
+    letter-spacing: 6px !important;
+    padding: 10px 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  #emailVerifyModal img[alt="batangas-logo"] {
+    width: 100px !important;
+    top: -50px !important;
+  }
+  
+  #emailVerifyModal > div > div {
+    padding: 40px 20px 25px !important;
+    border-radius: 30px !important;
+  }
+  
+  #emailVerifyModal h1 {
+    font-size: 18px !important;
+    margin-bottom: 8px !important;
+  }
+  
+  #emailVerifyModal p {
+    font-size: 0.8rem !important;
+  }
+  
+  #emailVerifyStep1 img,
+  #emailVerifyStep2 img {
+    width: 28px !important;
+    gap: 10px !important;
+  }
+  
+  #emailVerifyModal button[type="submit"],
+  #emailVerifyModal button[onclick*="send"] {
+    padding: 10px 30px !important;
+    font-size: 11px !important;
+  }
+  
+  #emailVerifyCode {
+    font-size: 18px !important;
+    letter-spacing: 4px !important;
+  }
+  
+  #emailVerifyStep3 > div {
+    width: 80px !important;
+    height: 80px !important;
+  }
+  
+  #emailVerifyStep3 > div i {
+    font-size: 40px !important;
+  }
+}
 </style>

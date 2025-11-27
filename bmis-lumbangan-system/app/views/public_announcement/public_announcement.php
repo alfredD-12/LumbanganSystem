@@ -206,7 +206,9 @@ include __DIR__ . '/../../components/resident_components/header-resident.php';
                 <div class="carousel-3d-container earlier-carousel enhanced">
                     <div class="carousel-3d" id="earlierCarousel">
                         <?php 
-                        foreach ($announcements as $index => $a): 
+                        $earlierDisplayLimit = 10; // Limit to 10 announcements in carousel
+                        $earlierAnnouncements = array_slice($announcements, 0, $earlierDisplayLimit);
+                        foreach ($earlierAnnouncements as $index => $a): 
                             $data_title = htmlspecialchars($a['title'], ENT_QUOTES);
                                 $data_message = htmlspecialchars($a['message'], ENT_QUOTES);
                                 $data_image = $a['image'] ? htmlspecialchars(announcement_image_url($a['image']), ENT_QUOTES) : '';
@@ -330,7 +332,7 @@ include __DIR__ . '/../../components/resident_components/header-resident.php';
                             <div class="indicators-section">
                                 <div class="carousel-indicators-3d enhanced" id="earlierCarouselIndicators">
                                     <?php 
-                                    $maxIndicators = min(count($announcements), 10);
+                                    $maxIndicators = min(count($earlierAnnouncements), 10);
                                     for ($i = 0; $i < $maxIndicators; $i++): 
                                     ?>
                                     <button class="indicator-dot enhanced <?php echo $i === 0 ? 'active' : ''; ?>" 
@@ -353,7 +355,7 @@ include __DIR__ . '/../../components/resident_components/header-resident.php';
                                 <span class="counter-numbers">
                                     <span id="currentSlide" class="current">1</span>
                                     <span class="separator">/</span>
-                                    <span id="totalSlides" class="total"><?php echo count($announcements); ?></span>
+                                    <span id="totalSlides" class="total"><?php echo count($earlierAnnouncements); ?></span>
                                 </span>
                                 <span class="counter-text">announcements</span>
                             </div>

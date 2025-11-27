@@ -84,7 +84,7 @@ render_favicon()
             </a>
         </li>
         <li>
-            <a href="<?php echo htmlspecialchars(BASE_PUBLIC . 'index.php?page=admin_documents', ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo ($currentPage === 'admin_documents') ? 'active' : ''; ?>" data-tooltip="Documents">
+            <a href="<?php echo htmlspecialchars(BASE_PUBLIC . 'index.php?page=admin_document_requests', ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo ($currentPage === 'admin_documents') ? 'active' : ''; ?>" data-tooltip="Documents">
                 <i class="fas fa-file-alt"></i>
                 <span>Documents</span>
             </a>
@@ -97,8 +97,8 @@ render_favicon()
         </li>
         <li>
             <a href="<?php echo htmlspecialchars(BASE_PUBLIC . 'index.php?page=admin_settings', ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo ($currentPage === 'admin_settings') ? 'active' : ''; ?>" data-tooltip="Settings">
-                <i class="fas fa-cog"></i>
-                <span>Settings</span>
+                <i class="fas fa-images"></i>
+                <span>Gallery</span>
             </a>
         </li>
     </ul>

@@ -127,12 +127,6 @@ render_favicon()
                 <i class="fas fa-bell"></i>
                 <span class="badge-count pulse">5</span>
             </button>
-
-            <!-- Messages/Inbox Button -->
-            <button class="action-icon-btn" title="Messages" data-bs-toggle="modal" data-bs-target="#messagesModal">
-                <i class="fas fa-envelope"></i>
-                <span class="badge-count">12</span>
-            </button>
         </div>
 
         <!-- Admin Profile Dropdown -->
@@ -154,11 +148,6 @@ render_favicon()
                 <li>
                     <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#adminProfileModal">
                         <i class="fas fa-user"></i> My Profile
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item" href="#">
-                        <i class="fas fa-cog"></i> Settings
                     </a>
                 </li>
                 <li>
@@ -221,9 +210,9 @@ render_favicon()
                 </a>
             </li>
             <li>
-                <a href="<?php echo htmlspecialchars(BASE_PUBLIC . 'index.php?page=admin_settings', ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo ($currentPage === 'admin_settings') ? 'active' : ''; ?>" data-tooltip="Settings">
-                    <i class="fas fa-cog"></i>
-                    <span>Settings</span>
+                <a href="<?php echo htmlspecialchars(BASE_PUBLIC . 'index.php?page=admin_settings', ENT_QUOTES, 'UTF-8'); ?>" class="<?php echo ($currentPage === 'admin_settings') ? 'active' : ''; ?>" data-tooltip="Gallery">
+                    <i class="fas fa-images"></i>
+                    <span>Gallery</span>
                 </a>
             </li>
         </ul>

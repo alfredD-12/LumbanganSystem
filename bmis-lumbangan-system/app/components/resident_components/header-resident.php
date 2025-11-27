@@ -275,9 +275,6 @@ render_favicon();
 
         <div class="d-flex align-items-center gap-1 gap-md-2">
           <button class="navbar-icon-btn" type="button" data-bs-toggle="modal" data-bs-target="#notificationsModal" title="Notifications"><i class="fas fa-bell"></i><span class="badge">3</span></button>
-          <button class="navbar-icon-btn" type="button" data-bs-toggle="modal" data-bs-target="#inboxModal" title="Inbox"><i class="fas fa-envelope"></i><span class="badge">1</span></button>
-          <button class="navbar-icon-btn d-none d-sm-inline-block" type="button" data-bs-toggle="modal" data-bs-target="#documentsModal" title="My Documents"><i class="fas fa-file-alt"></i></button>
-
           <!-- User Dropdown (static markup preserved) -->
           <div class="dropdown" style="margin-left:0.5rem; border-left:1px solid rgba(0,0,0,0.1); padding-left:0.5rem;">
             <button class="user-profile-btn dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
@@ -296,7 +293,6 @@ render_favicon();
                 </div>
               </li>
               <li><a class="dropdown-item" href="#" id="btn-open-profile" data-bs-toggle="modal" data-bs-target="#userProfileModal"><i class="fas fa-user me-2"></i> My Profile</a></li>
-              <li><a class="dropdown-item" href="#settings" id="btn-open-settings"><i class="fas fa-cog me-2"></i> Settings</a></li>
               <li>
                 <hr class="dropdown-divider">
               </li>

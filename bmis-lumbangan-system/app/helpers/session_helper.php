@@ -63,6 +63,20 @@ function getFirstName() {
 }
 
 /**
+ * Get email address
+ */
+function getEmail() {
+    return $_SESSION['email'] ?? '';
+}
+
+/**
+ * Get contact number
+ */
+function getContactNumber() {
+    return $_SESSION['contact_no'] ?? '';
+}
+
+/**
  * Require user login - redirect if not logged in
  */
 function requireUser() {

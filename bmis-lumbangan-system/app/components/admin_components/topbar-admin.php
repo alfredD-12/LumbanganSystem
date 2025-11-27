@@ -93,6 +93,8 @@ $logoutUrl = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.p
 (function() {
     const topbarCssId = 'topbar-admin-css';
     const topbarJsId = 'topbar-admin-js';
+    const notificationCssId = 'notification-system-css';
+    const notificationJsId = 'notification-system-js';
     
     // Load CSS if not already loaded
     if (!document.getElementById(topbarCssId)) {
@@ -103,11 +105,28 @@ $logoutUrl = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.p
         document.head.appendChild(link);
     }
     
+    // Load Notification System CSS if not already loaded
+    if (!document.getElementById(notificationCssId)) {
+        const link = document.createElement('link');
+        link.id = notificationCssId;
+        link.rel = 'stylesheet';
+        link.href = '<?= $assetBase ?>/assets/css/notifications.css';
+        document.head.appendChild(link);
+    }
+    
     // Load JS if not already loaded
     if (!document.getElementById(topbarJsId)) {
         const script = document.createElement('script');
         script.id = topbarJsId;
         script.src = '<?= $assetBase ?>/assets/js/SecDash/topbar-admin.js';
+        document.body.appendChild(script);
+    }
+    
+    // Load Notification System JS if not already loaded
+    if (!document.getElementById(notificationJsId)) {
+        const script = document.createElement('script');
+        script.id = notificationJsId;
+        script.src = '<?= $assetBase ?>/assets/js/notifications.js';
         document.body.appendChild(script);
     }
 })();
@@ -143,16 +162,11 @@ $logoutUrl = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.p
     <!-- Action Buttons -->
     <div class="top-bar-actions">
         <!-- Notifications Button -->
-        <button class="action-icon-btn" title="Notifications" onclick="toggleNotifications()">
+        <button class="action-icon-btn" title="Notifications" data-bs-toggle="modal" data-bs-target="#notificationsModal">
             <i class="fas fa-bell"></i>
             <span class="badge-count pulse">5</span>
         </button>
 
-        <!-- Messages/Inbox Button -->
-        <button class="action-icon-btn" title="Messages" onclick="toggleMessages()">
-            <i class="fas fa-envelope"></i>
-            <span class="badge-count">12</span>
-        </button>
     </div>
 
     <!-- Admin Profile Dropdown -->
@@ -174,11 +188,6 @@ $logoutUrl = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.p
             <li>
                 <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#adminProfileModal">
                     <i class="fas fa-user"></i> My Profile
-                </a>
-            </li>
-            <li>
-                <a class="dropdown-item" href="#">
-                    <i class="fas fa-cog"></i> Settings
                 </a>
             </li>
             <li><hr class="dropdown-divider"></li>

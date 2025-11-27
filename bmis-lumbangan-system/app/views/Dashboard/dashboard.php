@@ -19,7 +19,10 @@ $recentAnnouncements = array_slice($recentAnnouncements, 0, 3); // Limit to 3
 $fullName = getFullName();
 $username = getUsername();
 $firstName = getFirstName();
+$email = getEmail();
+$contactNumber = getContactNumber();
 $userId = $_SESSION['user_id'] ?? null;
+
 
 // Get dynamic dashboard stats
 $dashboardStats = getUserDashboardStats($userId);
@@ -113,7 +116,7 @@ render_favicon();
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <a class="dropdown-item" href="#new-request">
+                                <a class="dropdown-item" href="<?php echo htmlspecialchars((defined('BASE_PUBLIC') ? BASE_PUBLIC : '') . 'index.php?page=document_request', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                     <i class="fas fa-plus-circle"></i>
                                     New Request
                                 </a>
@@ -143,17 +146,6 @@ render_favicon();
                         <span class="badge notification-badge" id="notificationBadge">0</span>
                     </button>
 
-                    <!-- Inbox Button -->
-                    <button class="navbar-icon-btn" type="button" data-bs-toggle="modal" data-bs-target="#inboxModal" title="Inbox" aria-label="Inbox">
-                        <i class="fas fa-envelope"></i>
-                        <span class="badge">1</span>
-                    </button>
-
-                    <!-- Documents Button - Hidden on very small screens -->
-                    <button class="navbar-icon-btn d-none d-sm-inline-block" type="button" data-bs-toggle="modal" data-bs-target="#documentsModal" title="My Documents" aria-label="My Documents">
-                        <i class="fas fa-file-alt"></i>
-                    </button>
-
                     <!-- User Profile Dropdown - Responsive margins -->
                     <div class="dropdown" style="margin-left: 0.5rem; border-left: 1px solid rgba(0,0,0,0.1); padding-left: 0.5rem;">
                         <button class="user-profile-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="User menu">
@@ -177,10 +169,6 @@ render_favicon();
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="#settings">
-                                    <i class="fas fa-cog"></i>
-                                    Settings
-                                </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
@@ -274,13 +262,13 @@ render_favicon();
                         <!-- Quick Stats -->
                         <div style="display: flex; gap: 2rem; padding: 1.5rem; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); border-radius: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid rgba(255,255,255,0.8);">
                             <div style="flex: 1;">
-                                <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.3rem; font-weight: 500;">Pending Requests</div>
-                                <div style="font-size: 1.8rem; font-weight: 700; color: #1e3a5f;"><?php echo $pendingRequests; ?></div>
+                                <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.3rem; font-weight: 500;">Email Adress</div>
+                                <div style="font-size: 0.8rem; font-weight: 700; color: #1e3a5f;"><?php echo $email; ?></div>
                             </div>
                             <div style="width: 1px; background: #e2e8f0;"></div>
                             <div style="flex: 1;">
-                                <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.3rem; font-weight: 500;">Completed</div>
-                                <div style="font-size: 1.8rem; font-weight: 700; color: #10b981;"><?php echo $completedRequests; ?></div>
+                                <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.3rem; font-weight: 500;">Contact Number</div>
+                                <div style="font-size: 0.8rem; font-weight: 700; color: #10b981;"><?php echo $contactNumber; ?></div>
                             </div>
                             <div style="width: 1px; background: #e2e8f0;"></div>
                             <div style="flex: 1;">

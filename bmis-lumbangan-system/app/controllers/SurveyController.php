@@ -173,7 +173,37 @@ class SurveyController
                 'line' => $ex->getLine()
             ];
             if ($capt !== '') $debug['captured_output'] = substr($capt, 0, 20000);
-            $this->jsonResponse(['success' => false, 'message' => 'Server error', 'debug' => $debug], 500);
+
+            // Detect common unique constraint violation on users.mobile (MySQL SQLSTATE 23000)
+            $userMessage = 'Server error';
+            $statusCode = 500;
+            try {
+                // PDOException may expose SQLSTATE via getCode() or errorInfo
+                if ($ex instanceof \PDOException) {
+                    $code = (string)$ex->getCode();
+                    $msg = $ex->getMessage();
+                    $errInfo = $ex->errorInfo ?? null;
+                    // SQLSTATE 23000 typically indicates integrity constraint violation
+                    if ($code === '23000' || (is_array($errInfo) && ($errInfo[0] ?? '') === '23000')) {
+                        // Check for the unique key name or duplicate entry text
+                        if (stripos($msg, 'uq_users_mobile') !== false || stripos($msg, 'mobile') !== false || stripos($msg, 'Duplicate entry') !== false) {
+                            $userMessage = 'Number already registered';
+                            $statusCode = 409; // Conflict
+                        }
+                    }
+                } else {
+                    // Fallback: inspect message text
+                    $msg = $ex->getMessage();
+                    if (stripos($msg, 'Duplicate entry') !== false || stripos($msg, 'uq_users_mobile') !== false) {
+                        $userMessage = 'Number already registered';
+                        $statusCode = 409;
+                    }
+                }
+            } catch (\Throwable $x) {
+                // ignore inspection errors
+            }
+
+            $this->jsonResponse(['success' => false, 'message' => $userMessage, 'debug' => $debug], $statusCode);
         }
     }
 
@@ -530,6 +560,19 @@ class SurveyController
     public function save_household_action()
     {
         $this->requireLoggedIn();
+        // Temporary debug hook: if client sends debug=1, echo back session and POST for inspection
+        if ((isset($_GET['debug']) && ($_GET['debug'] == '1' || $_GET['debug'] === 'true')) || (isset($_POST['debug']) && ($_POST['debug'] == '1' || $_POST['debug'] === 'true'))) {
+            $posted = $_POST;
+            // convert uploaded files info lightly
+            $files = [];
+            foreach ($_FILES as $k => $f) {
+                $files[$k] = ['name' => $f['name'] ?? null, 'size' => $f['size'] ?? null, 'type' => $f['type'] ?? null];
+            }
+            $this->jsonResponse(['success' => true, 'debug' => true, 'session' => [
+                'person_id' => $_SESSION['person_id'] ?? null,
+                'user_id' => $_SESSION['user_id'] ?? null
+            ], 'post' => $posted, 'files' => $files]);
+        }
         $person_id = $_SESSION['person_id'] ?? null;
         if (!$person_id) $this->jsonResponse(['success' => false, 'message' => 'Person not in session'], 400);
 

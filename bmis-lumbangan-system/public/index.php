@@ -9,11 +9,6 @@ require_once __DIR__ . '/../app/controllers/admins/AdminDocumentController.php';
 require_once __DIR__ . '/../app/controllers/admins/DocumentTemplateController.php';
 require_once __DIR__ . '/../app/controllers/PasswordResetController.php';
 
-// Add SurveyController so AJAX survey actions can be routed here
-// Note: Do not auto-include SurveyController here because it contains a file-level
-// action dispatcher that would intercept AJAX `action=` requests before this
-// front-controller can handle them. Include or instantiate SurveyController
-// only when needed in specific routes below.
 require_once __DIR__ . '/../app/controllers/SurveyController.php';
 // Load announcement helpers (provides base_url/assets_url/uploads_url/announcement_image_url)
 require_once __DIR__ . '/../app/helpers/announcement_helper.php';
@@ -392,6 +387,17 @@ switch ($page) {
             exit;
         }
         include __DIR__ . '/../app/views/admins/officials.php';
+        break;
+    case 'admin_residents':
+        // Only allow access to officials/admins
+        if (!isOfficial()) {
+            $redirect = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=landing';
+            header('Location: ' . $redirect);
+            exit;
+        }
+        require_once __DIR__ . '/../app/controllers/admins/ResidentAdminController.php';
+        $rac = new ResidentAdminController();
+        $rac->index();
         break;
     case 'dashboard_official':
         // Only allow access to officials

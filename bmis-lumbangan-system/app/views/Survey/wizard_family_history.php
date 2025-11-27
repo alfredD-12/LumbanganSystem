@@ -8,6 +8,9 @@ requireUser();
 
 // Load existing survey data from database
 $surveyData = loadSurveyData();
+// Ensure helper functions that reference the global `$surveyData` (e.g. isChecked)
+// can access the data even when this view is included inside a controller method scope.
+$GLOBALS['surveyData'] = $surveyData;
 
 $fh = $surveyData['family_history'] ?? [];
 $familyFields = ['hypertension','stroke','heart_attack','asthma','diabetes','cancer','kidney_disease'];

@@ -211,7 +211,9 @@ body {
 .sidebar-toggle {
     position: fixed;
     top: 50%;
-    left: 250px;
+    /* align toggle to the sidebar's right edge using CSS variables
+       avoid hard-coded pixel values that can overlap menu links */
+    left: calc(var(--sidebar-width) - 10px);
     width: 32px;
     height: 32px;
     background: #1e3a5f; /* Solid color, no gradient */
@@ -257,7 +259,8 @@ body {
 /* REMOVED: pulse-toggle animation - constant CPU usage */
 
 .sidebar.collapsed + .sidebar-toggle {
-    left: 70px;
+    /* when sidebar collapsed, align accordingly */
+    left: calc(var(--sidebar-collapsed-width) - 10px);
 }
 
 .sidebar-toggle:hover {

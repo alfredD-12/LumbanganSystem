@@ -137,16 +137,40 @@ const mobileMenuToggle = document.getElementById('mobileMenuToggle');
         // Sidebar menu active state
         document.querySelectorAll('.sidebar-menu a').forEach(link => {
             link.addEventListener('click', function(e) {
+                // Prevent default navigation so we can update active state and handle mobile close first
+                // but allow manual navigation below for normal links (non-hash, same-origin)
                 e.preventDefault();
+
                 document.querySelectorAll('.sidebar-menu a').forEach(l => l.classList.remove('active'));
                 this.classList.add('active');
-                
+
                 // On mobile, close sidebar after selection
                 if (window.innerWidth <= 991) {
                     sidebar.classList.remove('show');
                     const icon = mobileMenuToggle.querySelector('i');
                     icon.classList.remove('fa-times');
                     icon.classList.add('fa-bars');
+                }
+
+                // Determine href and navigate if it's a normal link (not an in-page hash or handled by SPA)
+                try {
+                    var href = this.getAttribute('href') || '';
+                    // Skip hash anchors and javascript:void links
+                    if (!href || href === '#' || href.startsWith('javascript:')) return;
+
+                    // If it's an anchor intended for in-page navigation (starts with #) it was already handled above
+                    if (href.startsWith('#')) return;
+
+                    // Resolve relative URLs to absolute so same-origin check is reliable
+                    var resolved = new URL(href, window.location.href).href;
+
+                    // Only perform full navigation for same-origin URLs
+                    if (resolved.startsWith(window.location.origin)) {
+                        // Small defer to allow UI state updates/animations to run
+                        setTimeout(function() { window.location.href = resolved; }, 30);
+                    }
+                } catch (err) {
+                    console.error('Sidebar navigation error', err);
                 }
             });
         });
@@ -335,52 +359,112 @@ const mobileMenuToggle = document.getElementById('mobileMenuToggle');
 
 // Admin Profile Management
 function saveAdminProfileChanges() {
-    const name = document.getElementById('editAdminName').value;
-    const email = document.getElementById('editAdminEmail').value;
-    const contact = document.getElementById('editAdminContact').value;
+    var form = document.getElementById('editAdminProfileForm');
+    if (!form) return alert('Profile form not found');
 
-    // Update the profile modal
-    document.getElementById('adminProfileName').textContent = name;
-    document.getElementById('adminProfileEmail').textContent = email;
-    document.getElementById('adminProfileContact').textContent = contact;
+    var fd = new FormData(form);
+    // include official_id if present in window.officialProfile
+    if (window.officialProfile && window.officialProfile.id) fd.append('official_id', window.officialProfile.id);
 
-    // Update the top bar display
-    document.querySelector('.admin-info .name').textContent = name;
+    var saveBtn = form.querySelector('button[type="button"], .btn-save');
+    if (saveBtn) saveBtn.disabled = true;
 
-    // Close the edit modal properly
-    const editModalElement = document.getElementById('editAdminProfileModal');
-    const editModal = bootstrap.Modal.getInstance(editModalElement);
-    if (editModal) {
-        editModal.hide();
-    }
-    
-    // Bootstrap should handle backdrop automatically
-    // Only cleanup orphaned backdrops AFTER modal is fully hidden
-    editModalElement.addEventListener('hidden.bs.modal', function cleanupOnce() {
-        setTimeout(() => {
-            // Only remove backdrops if no other modal is showing
-            if (!document.querySelector('.modal.show')) {
-                const backdrops = document.querySelectorAll('.modal-backdrop');
-                backdrops.forEach(backdrop => backdrop.remove());
-                document.body.classList.remove('modal-open');
-                document.body.style.paddingRight = '';
-                document.body.style.overflow = '';
+    fetch('index.php?action=update_official_profile', { method: 'POST', body: fd, credentials: 'same-origin' })
+        .then(function(res) { return res.json().catch(function(){ return { success: false, message: 'Invalid server response' }; }); })
+        .then(function(json) {
+            if (json && json.success) {
+                // update local UI values
+                var name = fd.get('full_name') || fd.get('name') || '';
+                var email = fd.get('email') || '';
+                var contact = fd.get('contact_no') || fd.get('contact') || '';
+
+                var profileNameEl = document.getElementById('adminProfileName'); if (profileNameEl) profileNameEl.textContent = name || window.officialProfile.full_name;
+                var profileEmailEl = document.getElementById('adminProfileEmail'); if (profileEmailEl) profileEmailEl.textContent = email;
+                var profileContactEl = document.getElementById('adminProfileContact'); if (profileContactEl) profileContactEl.textContent = contact;
+                var topName = document.querySelector('.admin-info .name'); if (topName) topName.textContent = name || window.officialProfile.full_name;
+
+                // update window.officialProfile
+                if (window.officialProfile) {
+                    window.officialProfile.full_name = name || window.officialProfile.full_name;
+                    window.officialProfile.email = email;
+                    window.officialProfile.contact_no = contact;
+                }
+
+                // Close edit modal
+                try {
+                    var editModalElement = document.getElementById('editAdminProfileModal');
+                    var editModal = bootstrap.Modal.getInstance(editModalElement) || new bootstrap.Modal(editModalElement);
+                    if (editModal) editModal.hide();
+                } catch (e) {}
+
+                // show inline saved message above the Save Changes button
+                showInlineSavedMessage(saveBtn, 'Saved Successfully');
+            } else {
+                var msg = (json && json.message) ? json.message : 'Unable to save profile';
+                showInlineSavedMessage(saveBtn, msg, true);
             }
-        }, 350); // Match Bootstrap fade time
-        
-        // Remove this listener after one use
-        editModalElement.removeEventListener('hidden.bs.modal', cleanupOnce);
-    }, { once: true });
+        })
+        .catch(function(err){
+            console.error('Save profile error', err);
+            showInlineSavedMessage(saveBtn, 'Error saving profile', true);
+        })
+        .finally(function(){ if (saveBtn) saveBtn.disabled = false; });
+}
 
-    // Show success message
-    alert('Profile updated successfully!\n\nName: ' + name + '\nEmail: ' + email + '\nContact: ' + contact);
+function showInlineSavedMessage(saveBtn, message, isError) {
+    // If we don't have a reference to the button, try to find the modal footer button
+    var target = saveBtn || document.querySelector('#editAdminProfileModal .modal-footer button[onclick*="saveAdminProfileChanges"]');
+    if (!target) {
+        // fallback: use alert
+        if (isError) alert(message); else console.log(message);
+        return;
+    }
 
-    // In a real application, you would send this data to the server
-    // fetch('/api/admin/update-profile', {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({ name, email, contact })
-    // });
+    // ensure parent has relative positioning
+    var parent = target.parentElement || target.closest('.modal-footer');
+    if (parent && window.getComputedStyle(parent).position === 'static') parent.style.position = 'relative';
+
+    // remove existing message if present
+    var existing = parent.querySelector('.inline-save-msg');
+    if (existing) existing.remove();
+
+    var msg = document.createElement('div');
+    msg.className = 'inline-save-msg';
+    msg.style.position = 'absolute';
+    msg.style.left = '50%';
+    msg.style.transform = 'translateX(-50%)';
+    msg.style.top = '-36px';
+    msg.style.padding = '6px 10px';
+    msg.style.borderRadius = '6px';
+    msg.style.fontSize = '0.85rem';
+    msg.style.fontWeight = '600';
+    msg.style.display = 'flex';
+    msg.style.alignItems = 'center';
+    msg.style.gap = '8px';
+    msg.style.zIndex = 2000;
+    msg.style.opacity = '0';
+    msg.style.transition = 'opacity 180ms ease, transform 180ms ease';
+    if (isError) {
+        msg.style.background = '#ef4444';
+        msg.style.color = 'white';
+    } else {
+        msg.style.background = '#16a34a';
+        msg.style.color = 'white';
+    }
+
+    msg.innerHTML = (isError ? '<i class="fas fa-exclamation-circle"></i>' : '<i class="fas fa-check-circle"></i>') + ' ' + (message || (isError ? 'Error' : 'Saved Successfully'));
+
+    parent.appendChild(msg);
+
+    // animate in
+    requestAnimationFrame(function(){ msg.style.opacity = '1'; msg.style.transform = 'translateX(-50%) translateY(0)'; });
+
+    // hide after 2.2s
+    setTimeout(function(){
+        msg.style.opacity = '0';
+        msg.style.transform = 'translateX(-50%) translateY(-6px)';
+        setTimeout(function(){ msg.remove(); }, 220);
+    }, 2200);
 }
 
 // ============================================

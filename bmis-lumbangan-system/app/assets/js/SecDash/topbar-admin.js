@@ -16,7 +16,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Toggle show class
             dropdownMenu.classList.toggle('show');
-            dropdownToggle.classList.toggle('show');
         });
         
         // Close dropdown when clicking outside

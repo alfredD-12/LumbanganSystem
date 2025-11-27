@@ -715,7 +715,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (btn.dataset.orig) btn.innerHTML = btn.dataset.orig;
   }
 
-  btn.addEventListener('click', async function (e) {
+    btn.addEventListener('click', async function (e) {
     e.preventDefault();
     if (!form.checkValidity()) {
       form.classList.add('was-validated');
@@ -732,18 +732,30 @@ document.addEventListener('DOMContentLoaded', function() {
     var fd = new FormData(form);
 
     try {
-      var resp = await fetch(endpoint, { method: 'POST', body: fd });
-      var json = await resp.json();
+      // Ensure cookies/session are sent so server can identify the logged-in user
+      var resp = await fetch(endpoint, { method: 'POST', body: fd, credentials: 'same-origin' });
 
-      if (resp.ok && json.success) {
+      // Read as text first so we don't crash on HTML error pages
+      var text = await resp.text();
+      var json = null;
+      try {
+        json = text ? JSON.parse(text) : null;
+      } catch (parseErr) {
+        console.warn('save_household: response is not valid JSON', parseErr, text);
+      }
+
+      if (resp.ok && json && json.success) {
         showToast('success', json.message || 'Survey completed!', 2000);
-        // Clear local storage drafts upon successful completion
         if (window.SurveyPersistence && typeof window.SurveyPersistence.clearAll === 'function') {
             window.SurveyPersistence.clearAll();
         }
         setTimeout(() => { window.location.href = successUrl; }, 1200);
       } else {
-        showToast('danger', json.message || 'Could not save data. Please try again.', 4000);
+        // Prefer server-provided message when available
+        var msg = (json && json.message) ? json.message : (resp.ok ? 'Could not save data. Please try again.' : ('Server error: ' + resp.status));
+        showToast('danger', msg, 4000);
+        // Helpful console output to aid debugging
+        console.debug('save_household response:', { status: resp.status, bodyText: text, parsedJson: json });
         stopSpinner(); // Re-enable button only on failure
       }
     } catch (err) {

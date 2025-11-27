@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 24, 2025 at 05:56 PM
+-- Generation Time: Nov 27, 2025 at 03:44 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -66,7 +66,8 @@ INSERT INTO `angina_stroke_screening` (`id`, `cvd_id`, `q1_chest_discomfort`, `q
 (18, 18, 0, 1, 1, 0, 1, 0, 1, 1, '2025-10-30 08:05:00'),
 (19, 19, 0, 0, 0, 0, 0, 0, 0, 0, '2025-09-25 13:38:00'),
 (20, 20, 0, 0, 0, 0, 0, 0, 0, 0, '2025-08-28 07:25:00'),
-(21, 24, 0, 0, 0, 0, 0, 0, 0, 0, '2025-11-24 19:01:32');
+(21, 24, 0, 0, 0, 0, 0, 0, 0, 0, '2025-11-24 19:01:32'),
+(22, 25, 1, 1, 1, 1, 1, 1, 0, 0, '2025-11-26 09:28:29');
 
 -- --------------------------------------------------------
 
@@ -92,9 +93,38 @@ CREATE TABLE `announcements` (
 --
 
 INSERT INTO `announcements` (`id`, `title`, `message`, `image`, `audience`, `status`, `type`, `expires_at`, `author`, `created_at`) VALUES
-(0, 'hff', 'ugbh', NULL, 'all', 'published', 'project', NULL, 'Official', '2025-11-23 00:50:02'),
-(0, 'adfdg', 'safad', NULL, 'all', 'published', 'event', NULL, 'Official', '2025-11-23 00:51:48'),
-(0, 'ftgfgh', 'jgtykyu', NULL, 'all', 'published', 'general', NULL, 'Official', '2025-11-24 01:05:50');
+(1, 'hff', 'ugbh', NULL, 'all', 'published', 'project', NULL, 'Official', '2025-11-23 00:50:02'),
+(2, 'adfdg', 'safad', NULL, 'all', 'published', 'event', NULL, 'Official', '2025-11-23 00:51:48'),
+(3, 'ftgfgh', 'jgtykyu', NULL, 'all', 'published', 'general', NULL, 'Official', '2025-11-24 01:05:50');
+
+--
+-- Triggers `announcements`
+--
+DELIMITER $$
+CREATE TRIGGER `notify_new_announcement` AFTER INSERT ON `announcements` FOR EACH ROW BEGIN
+    DECLARE target_type VARCHAR(10);
+    
+    IF NEW.status = 'published' THEN
+        -- Map announcement audience to notification user_type
+        SET target_type = CASE NEW.audience
+            WHEN 'residents' THEN 'user'
+            WHEN 'officials' THEN 'official'
+            ELSE 'all'
+        END;
+        
+        -- Notify targeted audience
+        INSERT INTO `notifications` 
+        (`user_id`, `user_type`, `notification_type`, `title`, `message`, `link`, `reference_id`)
+        VALUES 
+        (NULL, target_type, 'announcement', 
+         CONCAT('New Announcement: ', NEW.title),
+         LEFT(NEW.message, 150),
+         CONCAT('?page=public_announcement#announcement-', NEW.id),
+         NEW.id);
+    END IF;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -184,7 +214,8 @@ INSERT INTO `cvd_ncd_risk_assessments` (`id`, `person_id`, `answered_at`, `surve
 (21, 18, '2025-10-30 08:00:00', 15, '2025-10-30', 'Follow-up', 1, 19, '2025-10-30 09:00:00', 'Follow up required'),
 (22, 19, '2025-09-25 13:33:00', 16, '2025-09-25', 'Community screening', 0, NULL, NULL, NULL),
 (23, 20, '2025-08-28 07:22:00', 17, '2025-08-28', 'Monthly', 1, 21, '2025-08-28 08:00:00', NULL),
-(24, 51, '2025-11-24 18:58:51', NULL, '2025-11-24', NULL, 0, NULL, NULL, NULL);
+(24, 51, '2025-11-24 18:58:51', NULL, '2025-11-24', NULL, 0, NULL, NULL, NULL),
+(25, 53, '2025-11-26 09:26:27', NULL, '2025-11-26', NULL, 0, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -233,7 +264,7 @@ CREATE TABLE `diabetes_screening` (
 --
 
 INSERT INTO `diabetes_screening` (`id`, `cvd_id`, `known_diabetes`, `on_medications`, `family_history`, `polyuria`, `polydipsia`, `polyphagia`, `weight_loss`, `rbs_mg_dl`, `fbs_mg_dl`, `hba1c_percent`, `urine_ketone`, `urine_protein`, `screen_positive`, `created_at`) VALUES
-(1, 1, 0, 0, 0, 0, 0, 0, 0, 95.50, 90.00, 5.20, NULL, NULL, 0, '2025-11-22 11:21:00'),
+(1, 1, 0, 0, 0, 0, 0, 0, 0, 95.50, 90.00, 5.20, NULL, NULL, NULL, '2025-11-25 14:30:09'),
 (2, 2, 1, 1, 1, 1, 1, 0, 1, 180.00, 160.00, 9.20, 1, 1, 1, '2025-10-05 09:12:00'),
 (3, 3, 0, 0, 0, 0, 0, 0, 0, 100.00, 95.00, 5.40, NULL, NULL, 0, '2025-10-01 09:12:00'),
 (4, 4, 0, 0, 1, 0, 0, 0, 0, 110.00, 101.00, 6.10, NULL, NULL, 0, '2025-09-15 14:27:00'),
@@ -253,7 +284,19 @@ INSERT INTO `diabetes_screening` (`id`, `cvd_id`, `known_diabetes`, `on_medicati
 (18, 18, 0, 0, 1, 0, 0, 0, 0, 125.00, 115.00, 6.90, NULL, NULL, 0, '2025-10-30 08:03:00'),
 (19, 19, 0, 0, 0, 0, 0, 0, 0, 99.00, 94.00, 5.30, NULL, NULL, 0, '2025-09-25 13:35:00'),
 (20, 20, 0, 0, 0, 0, 0, 0, 0, 88.00, 83.00, 4.80, NULL, NULL, 0, '2025-08-28 07:23:00'),
-(21, 24, 0, 0, 0, 0, 0, 0, 0, 70.00, 70.00, 5.00, 0, 0, NULL, '2025-11-24 19:02:01');
+(21, 24, 0, 0, 0, 0, 0, 0, 0, 70.00, 70.00, 5.00, 0, 0, NULL, '2025-11-25 19:28:39'),
+(24, 25, 1, 1, 1, 1, 1, 1, 1, 70.00, 70.00, 5.00, 1, 1, NULL, '2025-11-26 09:35:27');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `document_categories`
+--
+
+CREATE TABLE `document_categories` (
+  `category_id` int(11) NOT NULL,
+  `category_name` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -267,6 +310,7 @@ CREATE TABLE `document_requests` (
   `document_type_id` int(11) NOT NULL,
   `purpose` varchar(255) DEFAULT NULL,
   `status` enum('Pending','Approved','Released','Rejected') DEFAULT 'Pending',
+  `pdf_file_path` varchar(255) DEFAULT NULL,
   `request_date` timestamp NOT NULL DEFAULT current_timestamp(),
   `approval_date` datetime DEFAULT NULL,
   `release_date` datetime DEFAULT NULL,
@@ -278,6 +322,89 @@ CREATE TABLE `document_requests` (
   `relation_to_requestee` varchar(150) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Triggers `document_requests`
+--
+DELIMITER $$
+CREATE TRIGGER `notify_document_status` AFTER UPDATE ON `document_requests` FOR EACH ROW BEGIN
+    DECLARE doc_name VARCHAR(100);
+    
+    -- Only notify if status changed
+    IF OLD.status <> NEW.status THEN
+        -- Get document type name
+        SELECT document_name INTO doc_name 
+        FROM document_types 
+        WHERE document_type_id = NEW.document_type_id 
+        LIMIT 1;
+        
+        -- Notify the specific user who made the request
+        INSERT INTO `notifications` 
+        (`user_id`, `user_type`, `notification_type`, `title`, `message`, `link`, `reference_id`)
+        VALUES 
+        (NEW.user_id, 'user', 'document_request', 
+         CONCAT('Document Request ', NEW.status),
+         CONCAT('Your request for ', COALESCE(doc_name, 'document'), ' has been ', LOWER(NEW.status)),
+         CONCAT('?page=document_request#request-', NEW.request_id),
+         NEW.request_id);
+         
+        -- Also notify officials
+        INSERT INTO `notifications` 
+        (`user_id`, `user_type`, `notification_type`, `title`, `message`, `link`, `reference_id`)
+        VALUES 
+        (NULL, 'official', 'document_request', 
+         CONCAT('Document Request ', NEW.status),
+         CONCAT('Request #', NEW.request_id, ' for ', COALESCE(doc_name, 'document'), ' - ', NEW.status),
+         CONCAT('?page=admin_document_requests#request-', NEW.request_id),
+         NEW.request_id);
+    END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `notify_new_document_request` AFTER INSERT ON `document_requests` FOR EACH ROW BEGIN
+    DECLARE doc_name VARCHAR(100);
+    DECLARE requester_name VARCHAR(150);
+    
+    -- Get document type name
+    SELECT document_name INTO doc_name 
+    FROM document_types 
+    WHERE document_type_id = NEW.document_type_id 
+    LIMIT 1;
+    
+    -- Get requester name from users table
+    SELECT CONCAT(COALESCE(p.first_name, ''), ' ', COALESCE(p.last_name, ''))
+    INTO requester_name
+    FROM users u
+    LEFT JOIN persons p ON u.person_id = p.id
+    WHERE u.id = NEW.user_id
+    LIMIT 1;
+    
+    -- Notify officials
+    INSERT INTO `notifications` 
+    (`user_id`, `user_type`, `notification_type`, `title`, `message`, `link`, `reference_id`)
+    VALUES 
+    (NULL, 'official', 'document_request', 
+     CONCAT('New Document Request: ', COALESCE(doc_name, 'Document')),
+     CONCAT('Requested by: ', COALESCE(requester_name, 'User'), ' - Purpose: ', COALESCE(NEW.purpose, 'N/A')),
+     CONCAT('?page=admin_document_requests#request-', NEW.request_id),
+     NEW.request_id);
+END
+$$
+DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `document_templates`
+--
+
+CREATE TABLE `document_templates` (
+  `id` int(11) NOT NULL,
+  `document_type_id` int(11) NOT NULL,
+  `template_html` longtext NOT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 -- --------------------------------------------------------
 
 --
@@ -286,6 +413,7 @@ CREATE TABLE `document_requests` (
 
 CREATE TABLE `document_types` (
   `document_type_id` int(11) NOT NULL,
+  `category_id` int(11) NOT NULL,
   `document_name` varchar(100) NOT NULL,
   `description` text DEFAULT NULL,
   `requirements` text DEFAULT NULL,
@@ -331,7 +459,8 @@ INSERT INTO `families` (`id`, `household_id`, `family_number`, `head_person_id`,
 (13, 13, 'FAM-13', 41, 'Permanent', NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
 (14, 14, 'FAM-14', 43, 'Permanent', NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
 (15, 15, 'FAM-15', 46, 'Permanent', NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
-(16, 16, '0995-3373-692', 51, 'Permanent', 26, 'davidgludo@gmail.com', '2025-11-24', '2025-11-24 19:02:38', '2025-11-24 19:02:38');
+(16, 16, '0995-3373-692', 51, 'Permanent', 26, 'davidgludo@gmail.com', '2025-11-26', '2025-11-24 19:02:38', '2025-11-26 11:10:36'),
+(31, 31, '0995-3373-693', 53, 'Permanent', 36, 'ley@gmail.com', '2025-11-26', '2025-11-26 11:11:25', '2025-11-26 11:11:25');
 
 -- --------------------------------------------------------
 
@@ -395,7 +524,7 @@ CREATE TABLE `health_family_history` (
 --
 
 INSERT INTO `health_family_history` (`id`, `person_id`, `hypertension`, `stroke`, `heart_attack`, `asthma`, `diabetes`, `cancer`, `kidney_disease`, `recorded_at`) VALUES
-(1, 1, 0, 0, 0, 0, 0, 0, 0, '2025-11-22'),
+(1, 1, 0, 0, 0, 0, 0, 0, 0, '2025-11-25'),
 (2, 2, 1, 0, 0, 0, 1, 0, 0, '2025-10-05'),
 (3, 3, 0, 0, 0, 0, 0, 0, 0, '2025-10-01'),
 (4, 4, 1, 1, 0, 0, 0, 0, 0, '2025-09-15'),
@@ -415,7 +544,8 @@ INSERT INTO `health_family_history` (`id`, `person_id`, `hypertension`, `stroke`
 (18, 18, 0, 0, 0, 0, 0, 0, 0, '2025-10-30'),
 (19, 19, 0, 0, 0, 0, 0, 0, 0, '2025-09-25'),
 (20, 20, 0, 0, 0, 0, 0, 0, 0, '2025-08-28'),
-(21, 51, 0, 0, 0, 0, 0, 1, 1, '2025-11-24');
+(21, 51, 0, 0, 0, 0, 1, 0, 1, '2025-11-26'),
+(22, 53, 0, 0, 0, 0, 1, 0, 1, '2025-11-26');
 
 -- --------------------------------------------------------
 
@@ -470,7 +600,8 @@ INSERT INTO `households` (`id`, `purok_id`, `household_no`, `address`, `latitude
 (13, 2, 'CA-013', 'Blk 2 Lt 25, Bougainvillea Street, Camia Homes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 18:45:19'),
 (14, 2, 'CA-014', 'Blk 2 Lt 25, Bougainvillea Street, Camia Homes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 18:45:20'),
 (15, 2, 'CA-015', 'Blk 2 Lt 25, Bougainvillea Street, Camia Homes', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 18:45:21'),
-(16, 2, 'CA-016', 'Blk 2 Lt 25, Bougainvillea Street, Camia Homes', NULL, NULL, 'Owned', '', 'Strong', '', 'Electricity', '', 'Level III', '', 'Covered container', '', 'Covered', 1, 'Garbage Collection', '', 'Sanitary', '', '2025-11-24 19:02:38', '2025-11-24 19:02:38');
+(16, 2, 'CA-016', 'Blk 2 Lt 25, Bougainvillea Street, Camia Homes', NULL, NULL, 'Owned', '', 'Strong', '', 'Electricity', '', 'Level III', '', 'Covered container', '', 'Covered', 1, 'Garbage Collection', '', 'Sanitary', '', '2025-11-24 19:02:38', '2025-11-24 19:02:38'),
+(31, 2, 'CA-017', 'Blk 2 Lt 25, Bougainvillea Street, Camia Homes', NULL, NULL, 'Owned', '', 'Strong', '', 'Electricity', '', 'Level III', '', 'Covered container', '', 'Covered', 1, 'Garbage Collection', '', 'Sanitary', '', '2025-11-26 11:11:25', '2025-11-26 11:11:25');
 
 -- --------------------------------------------------------
 
@@ -521,6 +652,52 @@ INSERT INTO `incidents` (`id`, `incident_title`, `blotter_type`, `case_type_id`,
 (11, 'gfhjfgdhsfghfghfhf', 'Complaint', 1, 'asadasdsadasdasda', 'Resident', '67867867967969', 'male', '2025-11-19', 'sdjkgiergfuigesbdcgifg', 'resident', 'male', 'asdsadasas', 'asdadasdasdada', 'asdadasddsad', '2025-11-20', '09:58:00', 'asdasdwerwergeggsdfsdg', 'asdasdasdasdsadsdasdasdsasafa', 3, '2025-11-21 01:58:38', '2025-11-21 01:58:51', '2025-11-21 09:58:51'),
 (12, 'RALLYs', 'Complaint', 2, 'bato', 'Resident', '898957485445', 'male', '2025-11-05', 'Graba', 'resident', 'male', 'Marcos', 'HAHAHAHAHAHA', 'hahahahah', '2025-11-07', '10:50:00', 'HAHAHAHAHA DIKO ALAM', 'hahahahahahahaha ean', 2, '2025-11-21 14:49:54', '2025-11-22 05:35:40', NULL);
 
+--
+-- Triggers `incidents`
+--
+DELIMITER $$
+CREATE TRIGGER `notify_complaint_update` AFTER UPDATE ON `incidents` FOR EACH ROW BEGIN
+    DECLARE status_text VARCHAR(50);
+    
+    -- Only notify if status changed
+    IF OLD.status_id <> NEW.status_id THEN
+        -- Map status_id to readable text (adjust based on your status table)
+        SET status_text = CASE NEW.status_id
+            WHEN 1 THEN 'Pending'
+            WHEN 2 THEN 'Under Investigation'
+            WHEN 3 THEN 'Resolved'
+            WHEN 4 THEN 'Closed'
+            ELSE 'Updated'
+        END;
+        
+        -- Notify officials about status change
+        INSERT INTO `notifications` 
+        (`user_id`, `user_type`, `notification_type`, `title`, `message`, `link`, `reference_id`)
+        VALUES 
+        (NULL, 'official', 'complaint', 
+         CONCAT('Complaint Status Updated: ', NEW.incident_title),
+         CONCAT('Status changed to: ', status_text),
+         CONCAT('?page=admin_complaints#incident-', NEW.id),
+         NEW.id);
+    END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `notify_new_complaint` AFTER INSERT ON `incidents` FOR EACH ROW BEGIN
+    -- Notify officials only (admins handle complaints)
+    INSERT INTO `notifications` 
+    (`user_id`, `user_type`, `notification_type`, `title`, `message`, `link`, `reference_id`)
+    VALUES 
+    (NULL, 'official', 'complaint', 
+     CONCAT('New Complaint: ', NEW.incident_title),
+     CONCAT('From: ', NEW.complainant_name, ' - ', LEFT(NEW.narrative, 100)),
+     CONCAT('?page=admin_complaints#incident-', NEW.id),
+     NEW.id);
+END
+$$
+DELIMITER ;
+
 -- --------------------------------------------------------
 
 --
@@ -548,7 +725,7 @@ CREATE TABLE `lifestyle_risk` (
 --
 
 INSERT INTO `lifestyle_risk` (`id`, `cvd_id`, `smoking_status`, `smoking_comments`, `alcohol_use`, `excessive_alcohol`, `alcohol_notes`, `eats_processed_weekly`, `fruits_3_servings_daily`, `vegetables_3_servings_daily`, `exercise_days_per_week`, `exercise_minutes_per_day`, `exercise_intensity`) VALUES
-(1, 1, 'Never', NULL, 'Never', 0, NULL, 0, 1, 1, 3, 30, 'Moderate'),
+(1, 1, 'Never', '', 'Never', 0, '', 0, 1, 1, 3, 30, 'Moderate'),
 (2, 2, 'Current', 'Smokes 5/day', 'Current', 1, 'Occasional binge', 1, 0, 0, 1, 20, 'Light'),
 (3, 3, 'Never', NULL, 'Never', 0, NULL, 0, 1, 1, 4, 40, 'Moderate'),
 (4, 4, 'Stopped_gt_1yr', NULL, 'Former', 0, NULL, 0, 1, 1, 2, 25, 'Light'),
@@ -568,7 +745,8 @@ INSERT INTO `lifestyle_risk` (`id`, `cvd_id`, `smoking_status`, `smoking_comment
 (18, 18, 'Stopped_gt_1yr', NULL, 'Former', 0, NULL, 0, 1, 1, 2, 20, 'Light'),
 (19, 19, 'Never', NULL, 'Never', 0, NULL, 0, 1, 1, 3, 30, 'Moderate'),
 (20, 20, 'Never', NULL, 'Never', 0, NULL, 0, 1, 1, 1, 15, 'Light'),
-(21, 24, 'Current', '', 'Never', 1, '', 1, 1, 1, 1, 15, 'Moderate');
+(21, 24, 'Current', '', 'Never', 1, '', 1, 1, 1, 1, 15, 'Moderate'),
+(24, 25, 'Passive', '', 'Never', 1, '', 1, 1, 1, 2, 60, 'Moderate');
 
 -- --------------------------------------------------------
 
@@ -608,6 +786,52 @@ CREATE TABLE `morbidity_logs` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `notifications`
+--
+
+CREATE TABLE `notifications` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED DEFAULT NULL COMMENT 'NULL = notify all users',
+  `user_type` enum('user','official','all') NOT NULL DEFAULT 'all' COMMENT 'Target user type: user=resident, official=admin/official, all=everyone',
+  `notification_type` varchar(50) NOT NULL COMMENT 'Type: announcement, complaint, document_request',
+  `title` varchar(255) NOT NULL,
+  `message` text NOT NULL,
+  `link` varchar(500) DEFAULT NULL COMMENT 'URL to navigate when clicked',
+  `reference_id` int(11) DEFAULT NULL COMMENT 'ID of the related record',
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='System notifications for residents and officials';
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `notification_deletions`
+--
+
+CREATE TABLE `notification_deletions` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `notification_id` bigint(20) UNSIGNED NOT NULL,
+  `deleted_by_user_id` bigint(20) UNSIGNED NOT NULL COMMENT 'User who deleted this notification',
+  `deleted_by_user_type` enum('user','official') NOT NULL COMMENT 'Type of user who deleted',
+  `deleted_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Tracks soft-deleted notifications per user';
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `notification_reads`
+--
+
+CREATE TABLE `notification_reads` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `notification_id` bigint(20) UNSIGNED NOT NULL,
+  `read_by_user_id` bigint(20) UNSIGNED NOT NULL COMMENT 'User who read this notification',
+  `read_by_user_type` enum('user','official') NOT NULL COMMENT 'Type of user who read',
+  `read_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Tracks read status per user for each notification';
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `officials`
 --
 
@@ -631,7 +855,7 @@ CREATE TABLE `officials` (
 --
 
 INSERT INTO `officials` (`id`, `full_name`, `username`, `password_hash`, `last_login_at`, `role`, `contact_no`, `email`, `photo_url`, `active`, `created_at`, `updated_at`) VALUES
-(1, 'Ramon Santos', 'ramon.santos', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Captain', '09170000001', 'ramon.santos@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
+(1, 'Ramon Santos', 'ramon.santos', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', '2025-11-27 09:44:59', 'Barangay Captain', '09170000001', 'ramon.santos@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-27 09:44:59'),
 (2, 'Maria Reyes', 'maria.reyes', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Secretary', '09170000002', 'maria.reyes@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
 (3, 'Liza Santos', 'liza.santos', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Health Worker President', '09170000003', 'liza.santos@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
 (4, 'Pedro Ramos', 'pedro.ramos', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Conciliation Panel', '09170000004', 'pedro.ramos@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
@@ -661,6 +885,23 @@ INSERT INTO `officials` (`id`, `full_name`, `username`, `password_hash`, `last_l
 (28, 'Rico Ramos', 'rico.ramos', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Health Worker', '09170000028', 'rico.ramos@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
 (29, 'Sally Tolentino', 'sally.tolentino', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Health Worker', '09170000029', 'sally.tolentino@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
 (30, 'Tony Umali', 'tony.umali', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Health Worker', '09170000030', 'tony.umali@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `password_resets`
+--
+
+CREATE TABLE `password_resets` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `code` varchar(6) NOT NULL,
+  `token` varchar(255) NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `used_at` datetime DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -746,8 +987,10 @@ INSERT INTO `persons` (`id`, `family_id`, `household_id`, `last_name`, `first_na
 (48, 15, 15, 'Kendrick', 'Willa', 'A', NULL, 0, 'F', '1995-05-05', 'Single', 'O+', NULL, 'College', 'Writer', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
 (49, 15, 15, 'Lozada', 'Xavier', 'B', NULL, 0, 'M', '1993-03-03', 'Single', 'A+', NULL, 'College', 'Engineer', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
 (50, 15, 15, 'Mata', 'Yolanda', 'C', NULL, 0, 'F', '1987-07-07', 'Married', 'B+', NULL, 'College', 'Administrator', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
-(51, 16, 16, 'Gludo', 'David Alfred', 'Cabali', NULL, 1, 'M', '2004-08-12', 'Single', 'O+', NULL, 'College', 'Student', 'Roman Catholic', NULL, 0, '2025-11-24 18:51:37', '2025-11-24 19:35:26'),
-(52, NULL, NULL, 'Malata', 'Ronel Lance', 'Sumama', NULL, 0, NULL, NULL, 'Single', NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-24 19:03:16', '2025-11-24 19:03:16');
+(51, 16, 16, 'Vazques', 'John Ley Lucky', 'Medyor', NULL, 1, 'M', '2004-08-12', 'Single', 'O+', NULL, 'College', 'Student', 'Roman Catholic', NULL, 0, '2025-11-24 18:51:37', '2025-11-26 09:50:51'),
+(52, 16, 16, 'Malata', 'Ronel Lance', 'Sumama', NULL, 0, NULL, NULL, 'Single', NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-24 19:03:16', '2025-11-25 19:28:25'),
+(53, 31, 31, 'Vazques', 'John Ley Lucky', 'Medyor', NULL, 1, 'M', '2004-08-12', 'Single', 'O+', NULL, 'College', 'Student', 'Roman Catholic', NULL, 0, '2025-11-26 09:21:41', '2025-11-26 11:11:25'),
+(54, 0, NULL, 'Condicion', 'Marlo', 'Humarang', NULL, 0, NULL, NULL, 'Single', NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-26 09:23:26', '2025-11-26 09:23:26');
 
 -- --------------------------------------------------------
 
@@ -773,12 +1016,8 @@ CREATE TABLE `person_relationships` (
 INSERT INTO `person_relationships` (`id`, `person_id`, `related_person_id`, `relationship_type`, `family_id`, `is_inverse`, `created_at`, `updated_at`) VALUES
 (1, 1, 2, 'spouse', 1, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
 (2, 2, 1, 'spouse', 1, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
-(3, 1, 9, 'parent', 1, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
-(4, 9, 1, 'child', 1, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
 (5, 2, 9, 'parent', 1, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
 (6, 9, 2, 'child', 1, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
-(7, 1, 10, 'parent', 1, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
-(8, 10, 1, 'child', 1, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
 (9, 2, 10, 'parent', 1, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
 (10, 10, 2, 'child', 1, 1, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
 (11, 9, 13, 'parent', 1, 0, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
@@ -1002,7 +1241,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `person_id`, `username`, `email`, `mobile`, `password_hash`, `status`, `last_login_at`, `created_at`, `updated_at`) VALUES
-(1, 1, 'adrian.cruz', 'adrian.cruz01@example.local', '09170000001', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', '2025-11-24 17:28:32', '2025-11-24 09:26:54', '2025-11-24 17:28:32'),
+(1, 1, 'adrian.cruz', 'adrian.cruz01@example.local', '0917-0000-001', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', '2025-11-27 09:57:50', '2025-11-24 09:26:54', '2025-11-27 09:57:50'),
 (2, 2, 'bianca.reyes', 'bianca.reyes02@example.local', '09170000002', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
 (3, 3, 'carlo.mendoza', 'carlo.mendoza03@example.local', '09170000003', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
 (4, 4, 'diana.lopez', 'diana.lopez04@example.local', '09170000004', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
@@ -1052,8 +1291,10 @@ INSERT INTO `users` (`id`, `person_id`, `username`, `email`, `mobile`, `password
 (48, 48, 'willa.kendrick', 'willa.kendrick48@example.local', '09170000048', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
 (49, 49, 'xavier.lozada', 'xavier.lozada49@example.local', '09170000049', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
 (50, 50, 'yolanda.mata', 'yolanda.mata50@example.local', '09170000050', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(51, 51, 'alf_red_c', 'davidgludo@gmail.com', '0995-3373-692', '$2y$10$TRFluf/ZAo7NSe1862inK.NJ0dz1ZO986wR7/KGoq7LdgFgMPeWHq', 'active', '2025-11-25 00:54:35', '2025-11-24 18:51:37', '2025-11-25 00:54:35'),
-(52, 52, 'lancey', 'ronel@gmail.com', NULL, '$2y$10$eWxedBtB7eE8QvzqF/cXGOXq0uhLduwvEMZTNGcbgCXgLg1Xh.mSW', 'active', '2025-11-24 20:12:08', '2025-11-24 19:03:16', '2025-11-24 20:12:08');
+(51, 51, 'alf_red_c', 'davidgludo@gmail.com', '0995-3373-692', '$2y$10$TRFluf/ZAo7NSe1862inK.NJ0dz1ZO986wR7/KGoq7LdgFgMPeWHq', 'active', '2025-11-27 09:57:38', '2025-11-24 18:51:37', '2025-11-27 09:57:38'),
+(52, 52, 'lancey', 'ronel@gmail.com', NULL, '$2y$10$eWxedBtB7eE8QvzqF/cXGOXq0uhLduwvEMZTNGcbgCXgLg1Xh.mSW', 'active', '2025-11-24 20:12:08', '2025-11-24 19:03:16', '2025-11-24 20:12:08'),
+(53, 53, 'vayqiz', 'ley@gmail.com', '0995-3373-693', '$2y$10$PicgUG0gYrOj29JEXRUTkumsqEWW3xnFKhCbQWCMVDLUKjn3ouiIe', 'active', '2025-11-26 11:10:46', '2025-11-26 09:21:41', '2025-11-26 11:10:46'),
+(54, 54, 'condiiii', 'marlo@gmail.com', NULL, '$2y$10$xuG95KX3afPDtjJH/SgXten16JacX.Sv1S8In6VNpNWGoyO9ygXc6', 'active', '2025-11-26 09:43:38', '2025-11-26 09:23:26', '2025-11-26 09:43:38');
 
 -- --------------------------------------------------------
 
@@ -1105,7 +1346,8 @@ INSERT INTO `vitals` (`id`, `cvd_id`, `height_cm`, `weight_kg`, `bmi`, `central_
 (18, 18, 168.00, 88.00, 31.20, 1, 1, 1, 1, 98.00, 140, 94, 88, 18, 37.0),
 (19, 19, 162.00, 70.00, 26.60, 0, 0, 0, 0, 86.00, 120, 80, 76, 16, 36.6),
 (20, 20, 175.00, 78.00, 25.50, 0, 0, 0, 0, 90.00, 122, 82, 76, 16, 36.6),
-(21, 24, 170.00, 70.00, NULL, NULL, NULL, NULL, NULL, 25.00, 120, 80, 72, 16, 37.0);
+(21, 24, 171.00, 70.00, NULL, NULL, NULL, NULL, NULL, 25.00, 120, 80, 72, 16, 37.0),
+(22, 25, 171.00, 70.00, NULL, NULL, NULL, NULL, NULL, 25.00, 120, 80, 72, 16, 37.0);
 
 --
 -- Indexes for dumped tables
@@ -1117,6 +1359,12 @@ INSERT INTO `vitals` (`id`, `cvd_id`, `height_cm`, `weight_kg`, `bmi`, `central_
 ALTER TABLE `angina_stroke_screening`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uq_angina_cvd` (`cvd_id`);
+
+--
+-- Indexes for table `announcements`
+--
+ALTER TABLE `announcements`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `births`
@@ -1153,16 +1401,30 @@ ALTER TABLE `diabetes_screening`
   ADD UNIQUE KEY `uq_diabetes_cvd` (`cvd_id`);
 
 --
+-- Indexes for table `document_categories`
+--
+ALTER TABLE `document_categories`
+  ADD PRIMARY KEY (`category_id`);
+
+--
 -- Indexes for table `document_requests`
 --
 ALTER TABLE `document_requests`
   ADD PRIMARY KEY (`request_id`);
 
 --
+-- Indexes for table `document_templates`
+--
+ALTER TABLE `document_templates`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `document_type_id` (`document_type_id`);
+
+--
 -- Indexes for table `document_types`
 --
 ALTER TABLE `document_types`
-  ADD PRIMARY KEY (`document_type_id`);
+  ADD PRIMARY KEY (`document_type_id`),
+  ADD KEY `category_id` (`category_id`);
 
 --
 -- Indexes for table `families`
@@ -1239,12 +1501,50 @@ ALTER TABLE `morbidity_logs`
   ADD KEY `idx_morbidity_purok` (`purok_id`);
 
 --
+-- Indexes for table `notifications`
+--
+ALTER TABLE `notifications`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_user_type` (`user_id`,`user_type`),
+  ADD KEY `idx_created` (`created_at`);
+
+--
+-- Indexes for table `notification_deletions`
+--
+ALTER TABLE `notification_deletions`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_user_notification` (`notification_id`,`deleted_by_user_id`,`deleted_by_user_type`),
+  ADD KEY `idx_notification_id` (`notification_id`),
+  ADD KEY `idx_deleted_by` (`deleted_by_user_id`,`deleted_by_user_type`);
+
+--
+-- Indexes for table `notification_reads`
+--
+ALTER TABLE `notification_reads`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_user_read` (`notification_id`,`read_by_user_id`,`read_by_user_type`),
+  ADD KEY `idx_notification_id` (`notification_id`),
+  ADD KEY `idx_read_by` (`read_by_user_id`,`read_by_user_type`);
+
+--
 -- Indexes for table `officials`
 --
 ALTER TABLE `officials`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uq_officials_username` (`username`),
   ADD KEY `idx_officials_role_active` (`role`,`active`);
+
+--
+-- Indexes for table `password_resets`
+--
+ALTER TABLE `password_resets`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `code` (`code`),
+  ADD UNIQUE KEY `token` (`token`),
+  ADD UNIQUE KEY `unique_user_code` (`user_id`,`code`),
+  ADD KEY `idx_email` (`email`),
+  ADD KEY `idx_token` (`token`),
+  ADD KEY `idx_expires` (`expires_at`);
 
 --
 -- Indexes for table `persons`
@@ -1317,7 +1617,13 @@ ALTER TABLE `vitals`
 -- AUTO_INCREMENT for table `angina_stroke_screening`
 --
 ALTER TABLE `angina_stroke_screening`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+
+--
+-- AUTO_INCREMENT for table `announcements`
+--
+ALTER TABLE `announcements`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `births`
@@ -1335,7 +1641,7 @@ ALTER TABLE `case_types`
 -- AUTO_INCREMENT for table `cvd_ncd_risk_assessments`
 --
 ALTER TABLE `cvd_ncd_risk_assessments`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `deaths`
@@ -1347,13 +1653,25 @@ ALTER TABLE `deaths`
 -- AUTO_INCREMENT for table `diabetes_screening`
 --
 ALTER TABLE `diabetes_screening`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+
+--
+-- AUTO_INCREMENT for table `document_categories`
+--
+ALTER TABLE `document_categories`
+  MODIFY `category_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `document_requests`
 --
 ALTER TABLE `document_requests`
   MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `document_templates`
+--
+ALTER TABLE `document_templates`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `document_types`
@@ -1365,7 +1683,7 @@ ALTER TABLE `document_types`
 -- AUTO_INCREMENT for table `families`
 --
 ALTER TABLE `families`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `gallery`
@@ -1377,13 +1695,13 @@ ALTER TABLE `gallery`
 -- AUTO_INCREMENT for table `health_family_history`
 --
 ALTER TABLE `health_family_history`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `households`
 --
 ALTER TABLE `households`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `incidents`
@@ -1395,7 +1713,7 @@ ALTER TABLE `incidents`
 -- AUTO_INCREMENT for table `lifestyle_risk`
 --
 ALTER TABLE `lifestyle_risk`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `migrations`
@@ -1410,16 +1728,40 @@ ALTER TABLE `morbidity_logs`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `notifications`
+--
+ALTER TABLE `notifications`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `notification_deletions`
+--
+ALTER TABLE `notification_deletions`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `notification_reads`
+--
+ALTER TABLE `notification_reads`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `officials`
 --
 ALTER TABLE `officials`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
+-- AUTO_INCREMENT for table `password_resets`
+--
+ALTER TABLE `password_resets`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `persons`
 --
 ALTER TABLE `persons`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
 
 --
 -- AUTO_INCREMENT for table `person_relationships`
@@ -1449,17 +1791,23 @@ ALTER TABLE `statuses`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
 
 --
 -- AUTO_INCREMENT for table `vitals`
 --
 ALTER TABLE `vitals`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `document_types`
+--
+ALTER TABLE `document_types`
+  ADD CONSTRAINT `document_types_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `document_categories` (`category_id`);
 
 --
 -- Constraints for table `incidents`
@@ -1467,6 +1815,24 @@ ALTER TABLE `vitals`
 ALTER TABLE `incidents`
   ADD CONSTRAINT `incidents_ibfk_1` FOREIGN KEY (`status_id`) REFERENCES `statuses` (`id`) ON UPDATE CASCADE,
   ADD CONSTRAINT `incidents_ibfk_2` FOREIGN KEY (`case_type_id`) REFERENCES `case_types` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `notification_deletions`
+--
+ALTER TABLE `notification_deletions`
+  ADD CONSTRAINT `notification_deletions_ibfk_1` FOREIGN KEY (`notification_id`) REFERENCES `notifications` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `notification_reads`
+--
+ALTER TABLE `notification_reads`
+  ADD CONSTRAINT `notification_reads_ibfk_1` FOREIGN KEY (`notification_id`) REFERENCES `notifications` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `password_resets`
+--
+ALTER TABLE `password_resets`
+  ADD CONSTRAINT `password_resets_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `persons`

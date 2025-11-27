@@ -133,8 +133,25 @@
         params.set('action', 'next_household_no');
         if (purokId) params.set('purok_id', purokId);
         if (purokCode) params.set('code', purokCode);
-        return fetch(window.SURVEY_API + '?' + params.toString(), { credentials: 'same-origin' })
-          .then(res => res.json())
+        const url = window.SURVEY_API + '?' + params.toString();
+        // Helpful debug: log the exact URL being requested
+        console.debug('Fetching next_household_no from:', url);
+
+        return fetch(url, { credentials: 'same-origin' })
+          .then(async (res) => {
+            // Read as text first so we can log HTML error pages when they occur
+            const text = await res.text();
+            if (!res.ok) {
+              console.warn('next_household_no fetch returned non-OK status', res.status, text);
+              return null;
+            }
+            try {
+              return JSON.parse(text);
+            } catch (parseErr) {
+              console.warn('next_household_no: response is not valid JSON', parseErr, text);
+              return null;
+            }
+          })
           .catch(err => { console.warn('next_household_no fetch failed', err); return null; });
       };
 

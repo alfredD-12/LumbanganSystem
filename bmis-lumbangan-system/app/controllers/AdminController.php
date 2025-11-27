@@ -298,4 +298,222 @@ class AdminController {
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
     }
+
+    /**
+     * AJAX: List all officials (returns JSON)
+     */
+    public function listOfficials() {
+        header('Content-Type: application/json');
+        require_once __DIR__ . '/../config/Database.php';
+        require_once __DIR__ . '/../models/Official.php';
+
+        $db = (new Database())->getConnection();
+        $model = new Official($db);
+        $rows = $model->getAll(true);
+
+        // Group by role
+        $grouped = [];
+        foreach ($rows as $r) {
+            $role = $r['role'] ?? 'Unspecified';
+            if (!isset($grouped[$role])) $grouped[$role] = [];
+            $grouped[$role][] = $r;
+        }
+
+        echo json_encode(['success' => true, 'data' => $grouped]);
+    }
+
+    /**
+     * AJAX: Get single official by id
+     */
+    public function getOfficial() {
+        header('Content-Type: application/json');
+        $id = $_GET['id'] ?? null;
+        if (!$id) { echo json_encode(['success'=>false,'message'=>'No id']); return; }
+        require_once __DIR__ . '/../config/Database.php';
+        require_once __DIR__ . '/../models/Official.php';
+        $db = (new Database())->getConnection();
+        $model = new Official($db);
+        $row = $model->getById($id);
+        if ($row) echo json_encode(['success'=>true,'data'=>$row]);
+        else echo json_encode(['success'=>false,'message'=>'Not found']);
+    }
+
+    /**
+     * AJAX: Create official
+     */
+    public function createOfficial() {
+        header('Content-Type: application/json');
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); echo json_encode(['success'=>false,'message'=>'Invalid method']); return; }
+        $full_name = trim($_POST['full_name'] ?? '');
+        $username = trim($_POST['username'] ?? '');
+        // Password should be same as username per requirements
+        $password = $username;
+        $role = trim($_POST['role'] ?? '');
+        // allow submitting other role via other_role field
+        if (strtolower($role) === 'other' || strtolower($role) === 'others') {
+            $other = trim($_POST['other_role'] ?? '');
+            if ($other !== '') $role = $other;
+        }
+        $email = trim($_POST['email'] ?? '');
+        $contact_no = trim($_POST['contact_no'] ?? '');
+
+        if ($full_name === '' || $username === '') { echo json_encode(['success'=>false,'message'=>'Missing required fields']); return; }
+
+        require_once __DIR__ . '/../config/Database.php';
+        require_once __DIR__ . '/../models/Official.php';
+        require_once __DIR__ . '/../models/User.php';
+
+        $db = (new Database())->getConnection();
+        $model = new Official($db);
+        $userModel = new User($db);
+
+        // Server-side uniqueness checks
+        try {
+            // username must not exist in officials or users
+            if ($model->usernameExists($username) || $userModel->usernameExists($username)) {
+                echo json_encode(['success'=>false,'field'=>'username','message'=>'Username already exists']);
+                return;
+            }
+
+            // email uniqueness within officials (if provided)
+            if ($email !== '' && $model->emailExists($email)) {
+                echo json_encode(['success'=>false,'field'=>'email','message'=>'Email already used by another official']);
+                return;
+            }
+
+            // contact uniqueness within officials (if provided)
+            if ($contact_no !== '' && $model->contactExists($contact_no)) {
+                echo json_encode(['success'=>false,'field'=>'contact_no','message'=>'Contact number already used by another official']);
+                return;
+            }
+
+            // Enforce single-instance roles for certain exclusive roles
+            $exclusiveRoles = [
+                'barangay captain',
+                'barangay secretary',
+                'barangay health worker president'
+            ];
+            $normalizedRole = strtolower(trim($role));
+            if (in_array($normalizedRole, $exclusiveRoles, true)) {
+                // check existing active officials for this role
+                $all = $model->getAll(true);
+                foreach ($all as $r) {
+                    if (isset($r['role']) && strcasecmp(trim($r['role']), $role) === 0) {
+                        echo json_encode(['success'=>false,'field'=>'role','message'=>'An official with this role already exists']);
+                        return;
+                    }
+                }
+            }
+
+            $hash = password_hash($password, PASSWORD_DEFAULT);
+
+            $id = $model->create([ 'full_name'=>$full_name, 'username'=>$username, 'password_hash'=>$hash, 'role'=>$role, 'email'=>$email, 'contact_no'=>$contact_no ]);
+            if ($id) echo json_encode(['success'=>true,'message'=>'Official created','id'=>$id]);
+            else echo json_encode(['success'=>false,'message'=>'Create failed']);
+        } catch (Exception $e) { error_log('createOfficial: '.$e->getMessage()); echo json_encode(['success'=>false,'message'=>'Server error']); }
+    }
+
+    /**
+     * AJAX: Check availability for a field (username/email/contact_no)
+     */
+    public function checkAvailability() {
+        header('Content-Type: application/json');
+        $field = $_GET['field'] ?? $_POST['field'] ?? null;
+        $value = $_GET['value'] ?? $_POST['value'] ?? null;
+        if (!$field || !$value) { echo json_encode(['success'=>false,'message'=>'Missing parameters']); return; }
+
+        require_once __DIR__ . '/../config/Database.php';
+        require_once __DIR__ . '/../models/Official.php';
+        require_once __DIR__ . '/../models/User.php';
+
+        $db = (new Database())->getConnection();
+        $official = new Official($db);
+        $user = new User($db);
+
+        $field = strtolower($field);
+        if ($field === 'username') {
+            $exists = $official->usernameExists($value) || $user->usernameExists($value);
+            echo json_encode(['success'=>true,'available'=>!$exists]);
+            return;
+        }
+        if ($field === 'email') {
+            $exists = $official->emailExists($value);
+            echo json_encode(['success'=>true,'available'=>!$exists]);
+            return;
+        }
+        if ($field === 'contact_no' || $field === 'contact') {
+            $exists = $official->contactExists($value);
+            echo json_encode(['success'=>true,'available'=>!$exists]);
+            return;
+        }
+
+        echo json_encode(['success'=>false,'message'=>'Unsupported field']);
+    }
+
+    /**
+     * AJAX: Admin updates an official (by id)
+     */
+    public function updateOfficialAdmin() {
+        header('Content-Type: application/json');
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); echo json_encode(['success'=>false,'message'=>'Invalid method']); return; }
+        $id = $_POST['id'] ?? null;
+        if (!$id) { echo json_encode(['success'=>false,'message'=>'Missing id']); return; }
+
+        $data = [];
+        if (isset($_POST['full_name'])) $data['full_name'] = trim($_POST['full_name']);
+        if (isset($_POST['username'])) $data['username'] = trim($_POST['username']);
+        if (isset($_POST['role'])) $data['role'] = trim($_POST['role']);
+        if (isset($_POST['email'])) $data['email'] = trim($_POST['email']);
+        if (isset($_POST['contact_no'])) $data['contact_no'] = trim($_POST['contact_no']);
+        if (!empty($_POST['password'])) $data['password_hash'] = password_hash($_POST['password'], PASSWORD_DEFAULT);
+
+        require_once __DIR__ . '/../config/Database.php';
+        require_once __DIR__ . '/../models/Official.php';
+        $db = (new Database())->getConnection();
+        $model = new Official($db);
+
+        try {
+            // If role is being changed, enforce exclusive-role constraint
+            if (isset($data['role'])) {
+                $exclusiveRoles = [
+                    'barangay captain',
+                    'barangay secretary',
+                    'barangay health worker president'
+                ];
+                $newRoleNorm = strtolower(trim($data['role']));
+                if (in_array($newRoleNorm, $exclusiveRoles, true)) {
+                    $current = $model->getById($id);
+                    $currentRole = $current['role'] ?? '';
+                    // If role is actually changing to an exclusive role, ensure no other official already holds it
+                    if (strcasecmp(trim($currentRole), $data['role']) !== 0) {
+                        $all = $model->getAll(true);
+                        foreach ($all as $r) {
+                            if ($r['id'] == $id) continue;
+                            if (isset($r['role']) && strcasecmp(trim($r['role']), $data['role']) === 0) {
+                                echo json_encode(['success'=>false,'field'=>'role','message'=>'Another official already has this role']);
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+            $ok = $model->updateById($id, $data);
+            if ($ok) echo json_encode(['success'=>true,'message'=>'Official updated']);
+            else echo json_encode(['success'=>false,'message'=>'Update failed']);
+        } catch (Exception $e) { error_log('updateOfficialAdmin: '.$e->getMessage()); echo json_encode(['success'=>false,'message'=>'Server error']); }
+    }
+
+    /**
+     * AJAX: Delete (soft) official
+     */
+    public function deleteOfficial() {
+        header('Content-Type: application/json');
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); echo json_encode(['success'=>false,'message'=>'Invalid method']); return; }
+        $id = $_POST['id'] ?? null; if (!$id) { echo json_encode(['success'=>false,'message'=>'Missing id']); return; }
+        require_once __DIR__ . '/../config/Database.php';
+        require_once __DIR__ . '/../models/Official.php';
+        $db = (new Database())->getConnection();
+        $model = new Official($db);
+        try { $ok = $model->deleteById($id); if ($ok) echo json_encode(['success'=>true,'message'=>'Deleted']); else echo json_encode(['success'=>false,'message'=>'Delete failed']); } catch (Exception $e) { error_log('deleteOfficial: '.$e->getMessage()); echo json_encode(['success'=>false,'message'=>'Server error']); }
+    }
 }

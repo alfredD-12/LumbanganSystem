@@ -1,0 +1,228 @@
+/* Scoped styles for Officials admin view */
+#officials-admin-scope .page-header { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:18px; }
+#officials-admin-scope .page-header-left { display:flex; align-items:center; gap:12px; }
+#officials-admin-scope .page-title { font-size:1.5rem; color: #12324a; margin:0; }
+#officials-admin-scope .page-subtitle { color:#6b7280; margin:0; font-size:0.95rem; }
+#officials-admin-scope .create-btn { background: linear-gradient(180deg,#12324a,#0b2a3b); color:#fff; border-radius:8px; padding:8px 12px; border:none; box-shadow: 0 4px 12px rgba(18,50,74,0.12); }
+#officials-admin-scope .create-btn:hover { transform: translateY(-1px); }
+#officials-admin-scope .roles-wrapper { padding: 0 0.5rem; }
+#officials-admin-scope .role-card { border: 1px solid #e6edf3; border-radius: 10px; padding: 14px; background: linear-gradient(180deg, #ffffff, #fbfdff); box-shadow: 0 1px 6px rgba(30,58,95,0.04); }
+#officials-admin-scope .role-card h5 { margin: 0 0 8px 0; display:flex; align-items:center; gap:8px; font-size:1rem; color: #12324a; }
+#officials-admin-scope .role-icon { width:20px; height:20px; opacity:0.8; }
+
+#officials-admin-scope .officials-inner { display:flex; gap:10px; overflow-x:auto; padding-bottom:6px; align-items:flex-start; }
+#officials-admin-scope .official-card { width:280px; min-width:220px; border-radius:12px; padding:18px; background:#fff; box-shadow: 0 6px 18px rgba(16,24,40,0.06); text-align:center; display:flex; flex-direction:column; align-items:center; gap:10px; transition: transform 0.18s ease, box-shadow 0.18s ease; }
+#officials-admin-scope .official-card:hover { transform: translateY(-6px); box-shadow: 0 12px 30px rgba(30,58,95,0.10); }
+#officials-admin-scope .official-avatar { width:72px; height:72px; border-radius:12px; background:#e6eef8; display:flex; align-items:center; justify-content:center; font-weight:800; color:#1e3a5f; font-size:20px; }
+#officials-admin-scope .official-name { font-weight:800; color:#1e3a5f; font-size:1.02rem; }
+#officials-admin-scope .official-username { font-size:0.9rem; color:#6b7280; }
+#officials-admin-scope .official-meta { display:flex; gap:8px; margin-top:6px; }
+#officials-admin-scope .input-with-icon{position:relative}
+#officials-admin-scope .avail-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:18px;display:none;line-height:1;pointer-events:none;}
+#officials-admin-scope .input-with-icon .form-control { padding-right: 40px; }
+#officials-admin-scope .avail-ok{color:#16a34a}
+#officials-admin-scope .avail-bad{color:#dc2626}
+#officials-admin-scope .icon { width:16px; height:16px; opacity:0.85; }
+
+/* Entry-from-bottom animation (apply only when animate-in is present).
+   Keep elements visible by default so the view still works if JS doesn't add the class. */
+#officials-admin-scope .role-card, #officials-admin-scope .official-card {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+@keyframes admin_slide_up {
+  from { transform: translateY(22px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+#officials-admin-scope.animate-in .role-card,
+#officials-admin-scope.animate-in .official-card {
+  animation: admin_slide_up 420ms cubic-bezier(.2,.9,.2,1) both;
+}
+
+/* Slight responsive adjustments */
+@media (max-width: 900px) {
+  #officials-admin-scope .top-row { flex-direction: column; }
+  #officials-admin-scope .top-row > .role-card { flex: 0 0 100%; min-width: auto; }
+}
+
+/* Ensure our modals appear above other elements (e.g. custom header stacks) */
+.modal { z-index: 11000 !important; }
+.modal-backdrop { z-index: 10990 !important; }
+
+/* Small helpers for feedback text */
+#officials-admin-scope .field-feedback { font-size:0.85rem; color:#d0342c; margin-top:6px; display:none; }
+
+/* Modal: clean, professional form styling */
+#officials-admin-scope .modal .modal-content {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(16,24,40,0.12);
+  border: 1px solid rgba(16,24,40,0.04);
+}
+
+#officials-admin-scope .modal .modal-header {
+  /* Stronger header so modals don't look washed out */
+  background: linear-gradient(180deg,#12324a,#0b2a3b);
+  border-bottom: 1px solid rgba(11,42,59,0.12);
+  padding: 1rem 1.25rem;
+}
+
+#officials-admin-scope .modal .modal-title {
+  margin: 0;
+  font-weight: 700;
+  color: #ffffff;
+  font-size: 1.05rem;
+}
+
+#officials-admin-scope .modal .btn-close {
+  /* make the bootstrap close icon visible on dark headers */
+  filter: invert(1) brightness(1.1);
+  opacity: 0.95;
+}
+
+#officials-admin-scope .modal .modal-body { padding: 1.25rem; color: #253243; }
+
+#officials-admin-scope .modal .modal-footer { padding: 0.75rem 1.25rem; gap: 0.5rem; display:flex; justify-content:flex-end; align-items:center; }
+
+/* Form controls inside modals */
+#officials-admin-scope .modal .form-label { font-size:0.85rem; color:#41505f; margin-bottom:0.35rem; display:block; }
+#officials-admin-scope .modal .form-control { border-radius:8px; border:1px solid rgba(16,24,40,0.08); padding:0.6rem 0.75rem; box-shadow:none; }
+#officials-admin-scope .modal .form-control:focus { outline: none; box-shadow: 0 6px 18px rgba(18,50,74,0.06); border-color: rgba(18,50,74,0.18); }
+
+/* Availability icon inside inputs */
+#officials-admin-scope .modal .input-with-icon { position: relative; }
+#officials-admin-scope .modal .avail-icon { right: 12px; top:50%; transform:translateY(-50%); line-height:1; pointer-events:none; }
+#officials-admin-scope .modal .input-with-icon .form-control { padding-right: 40px; }
+
+/* Create modal specific tweaks */
+#officials-admin-scope #createOfficialModal .modal-dialog { max-width: 720px; }
+#officials-admin-scope #createOfficialModal .modal-body { padding-top: 0.8rem; }
+
+/* Review content (confirmation) */
+#officials-admin-scope #reviewCreateContent dl { margin: 0; }
+#officials-admin-scope #reviewCreateContent dt { font-weight: 600; color:#2b4354; margin-top: 0.6rem; }
+#officials-admin-scope #reviewCreateContent dd { margin: 0 0 0.6rem 0; color:#425563; }
+
+/* Official details modal */
+#officials-admin-scope #viewOfficialModal .modal-dialog { max-width: 520px; }
+#officials-admin-scope #viewOfficialModal .modal-body { padding-top: 0.5rem; }
+#officials-admin-scope .official-detail-row { display:flex; gap:12px; align-items:flex-start; }
+#officials-admin-scope .official-detail-avatar { width:76px; height:76px; border-radius:10px; background:#e6eef8; display:flex; align-items:center; justify-content:center; font-weight:700; color:#1e3a5f; font-size:1.25rem; }
+#officials-admin-scope .official-detail-main h5 { margin:0 0 6px 0; font-size:1.05rem; color:#12324a; }
+#officials-admin-scope .official-detail-main .role { color:#6b7280; font-size:0.9rem; }
+
+#officials-admin-scope .official-details-list { margin-top:0.8rem; font-size:0.95rem; color:#344a57; }
+#officials-admin-scope .official-details-list strong { color:#243544; }
+
+/* Buttons: primary and secondary consistent look */
+#officials-admin-scope .btn-primary { background: linear-gradient(180deg,#12324a,#0b2a3b); border: none; color: #fff; border-radius:8px; padding:0.45rem 0.8rem; }
+#officials-admin-scope .btn-outline-secondary { background: transparent; border:1px solid rgba(16,24,40,0.08); color:#253243; border-radius:8px; padding:0.45rem 0.7rem; }
+
+/* Small screens: make modals full width for comfort */
+@media (max-width: 576px) {
+  #officials-admin-scope #createOfficialModal .modal-dialog,
+  #officials-admin-scope #viewOfficialModal .modal-dialog { width: 95%; max-width: 95%; }
+}
+
+/* ========================================================================
+   Unscoped modal rules for cases where modals are rendered outside the
+   `#officials-admin-scope` wrapper (many apps append modals to <body>). These
+   target the specific modal IDs used in this view so the appearance is
+   consistent regardless of where the modal DOM lives.
+   ======================================================================== */
+
+/* Increase stacking so modals appear above header stacks */
+.modal { z-index: 11000 !important; }
+ .modal-backdrop { z-index: 10990 !important; }
+
+/* Base modal content visual treatment */
+ #createOfficialModal .modal-content,
+ #viewOfficialModal .modal-content,
+ #editOfficialModal .modal-content,
+ #reviewCreateModal .modal-content {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(16,24,40,0.12);
+  border: 1px solid rgba(16,24,40,0.04);
+  background: linear-gradient(180deg, #ffffff, #fbfdff);
+}
+
+/* Header */
+#createOfficialModal .modal-header,
+#viewOfficialModal .modal-header,
+#editOfficialModal .modal-header,
+#reviewCreateModal .modal-header {
+  background: linear-gradient(180deg,#12324a,#0b2a3b);
+  border-bottom: 1px solid rgba(11,42,59,0.12);
+  padding: 1rem 1.25rem;
+}
+
+#createOfficialModal .modal-title,
+#viewOfficialModal .modal-title,
+#editOfficialModal .modal-title,
+#reviewCreateModal .modal-title {
+  margin: 0;
+  font-weight: 700;
+  color: #ffffff;
+  font-size: 1.05rem;
+}
+
+#createOfficialModal .btn-close,
+#viewOfficialModal .btn-close,
+#editOfficialModal .btn-close,
+#reviewCreateModal .btn-close {
+  filter: invert(1) brightness(1.1);
+  opacity: 0.95;
+}
+
+/* Body and footer */
+#createOfficialModal .modal-body,
+#viewOfficialModal .modal-body,
+#editOfficialModal .modal-body,
+#reviewCreateModal .modal-body { padding: 1.25rem; color: #253243; }
+
+#createOfficialModal .modal-footer,
+#viewOfficialModal .modal-footer,
+#editOfficialModal .modal-footer,
+#reviewCreateModal .modal-footer { padding: 0.75rem 1.25rem; gap: 0.5rem; display:flex; justify-content:flex-end; align-items:center; }
+
+/* Form controls inside modals */
+#createOfficialModal .form-label,
+#viewOfficialModal .form-label,
+#editOfficialModal .form-label,
+#reviewCreateModal .form-label { font-size:0.85rem; color:#41505f; margin-bottom:0.35rem; display:block; }
+
+#createOfficialModal .form-control,
+#viewOfficialModal .form-control,
+#editOfficialModal .form-control,
+#reviewCreateModal .form-control { border-radius:8px; border:1px solid rgba(16,24,40,0.08); padding:0.6rem 0.75rem; box-shadow:none; }
+#createOfficialModal .form-control:focus,
+#viewOfficialModal .form-control:focus,
+#editOfficialModal .form-control:focus,
+#reviewCreateModal .form-control:focus { outline: none; box-shadow: 0 6px 18px rgba(18,50,74,0.06); border-color: rgba(18,50,74,0.18); }
+
+/* Unscoped modals: ensure input spacing for availability icons */
+#createOfficialModal .input-with-icon, #viewOfficialModal .input-with-icon, #editOfficialModal .input-with-icon, #reviewCreateModal .input-with-icon { position: relative; }
+#createOfficialModal .avail-icon, #viewOfficialModal .avail-icon, #editOfficialModal .avail-icon, #reviewCreateModal .avail-icon { right: 12px; top:50%; transform:translateY(-50%); line-height:1; pointer-events:none; }
+#createOfficialModal .input-with-icon .form-control, #viewOfficialModal .input-with-icon .form-control, #editOfficialModal .input-with-icon .form-control, #reviewCreateModal .input-with-icon .form-control { padding-right: 40px; }
+
+/* Size constraints */
+#createOfficialModal .modal-dialog { max-width: 720px; }
+#viewOfficialModal .modal-dialog { max-width: 520px; }
+@media (max-width: 576px) {
+  #createOfficialModal .modal-dialog, #viewOfficialModal .modal-dialog { width: 95%; max-width: 95%; }
+}
+
+/* Buttons inside unscoped modals */
+#createOfficialModal .btn-primary, #viewOfficialModal .btn-primary, #editOfficialModal .btn-primary { background: linear-gradient(180deg,#12324a,#0b2a3b); border: none; color: #fff; border-radius:8px; padding:0.45rem 0.8rem; }
+#createOfficialModal .btn-outline-secondary, #viewOfficialModal .btn-outline-secondary, #editOfficialModal .btn-outline-secondary { background: transparent; border:1px solid rgba(16,24,40,0.08); color:#253243; border-radius:8px; padding:0.45rem 0.7rem; }
+
+/* Small helper: align review DL formatting when unscoped */
+#reviewCreateContent dl { margin: 0; }
+#reviewCreateContent dt { font-weight: 600; color:#2b4354; margin-top: 0.6rem; }
+#reviewCreateContent dd { margin: 0 0 0.6rem 0; color:#425563; }
+
+/* End unscoped modal rules */
+

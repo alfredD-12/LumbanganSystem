@@ -1,6 +1,5 @@
 <?php
 // password_reset.php - endpoint for password reset actions
-session_start();
 require_once __DIR__ . '/app/controllers/PasswordResetController.php';
 
 if (!empty($_GET['action'])) {

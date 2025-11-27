@@ -26,6 +26,7 @@ $firstName = isLoggedIn() ? getFirstName() : 'Guest';
 $pageTitle = 'Public Announcements - Barangay Lumbangan';
 include __DIR__ . '/../../components/resident_components/header-resident.php';
 ?>
+<link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/announcement/public_announcements_modern.css?v=<?php echo time(); ?>">
 
 <div class="public-announcements">
     

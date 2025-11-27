@@ -117,6 +117,8 @@
 
 <!-- Residents Complaint Page JS -->
 <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/residents/residents.js?v=<?php echo time(); ?>"></script>
+<!-- Notification System JavaScript -->
+<script src="<?php echo BASE_URL . 'assets/js/notifications.js'; ?>"></script>
 <!-- Base url from config.php -->
 <script>
     const BASE_URL = "<?php echo BASE_URL; ?>";

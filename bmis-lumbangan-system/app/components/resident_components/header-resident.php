@@ -49,7 +49,8 @@ render_favicon();
   <!-- If may iba kayong need or idagdag na link pakilagay nalang sa baba -->
   <link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/Survey/wizard_personal.css?v=<?php echo time(); ?>">
   <link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/Survey/bhw-float.css?v=<?php echo time(); ?>">
-  <link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/announcement/public_announcements_modern.css?v=<?php echo time(); ?>">
+  <!-- Notification System CSS -->
+  <link rel="stylesheet" href="<?php echo BASE_URL . 'assets/css/notifications.css'; ?>">
   <style>
     /* Fix dropdown animation positioning */
     .dashboard-header .dropdown-menu {
@@ -311,6 +312,39 @@ render_favicon();
       </div>
     </div>
   </nav>
+
+  <!-- Notifications Modal -->
+<div class="modal fade" id="notificationsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+    <div class="modal-content" style="border: none; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);">
+      <!-- Modal Header -->
+      <div class="modal-header" style="background: white; border-bottom: 1px solid #f0f0f0; border-radius: 12px 12px 0 0; padding: 1.5rem;">
+        <h5 class="modal-title" style="color: var(--primary-blue); font-weight: 600; font-size: 1.1rem;">
+          <i class="fas fa-bell"></i> Notifications
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body" style="padding: 0; background: #f8fafc;">
+        <div class="notification-loading">
+          <i class="fas fa-spinner"></i>
+          <p>Loading notifications...</p>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer" style="border-top: 1px solid #e2e8f0; padding: 1rem 1.5rem; background: white; border-radius: 0 0 12px 12px;">
+        <button type="button" class="btn btn-sm btn-notification-action" data-bs-dismiss="modal">
+          <i class="fas fa-times"></i> Close
+        </button>
+        <button type="button" class="btn btn-sm btn-notification-action primary" data-action="mark-all-read">
+          <i class="fas fa-check-double"></i> Mark All Read
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
   <!-- Profile modal (small) -->
   <div class="modal fade" id="userProfileModal" tabindex="-1" aria-hidden="true">

@@ -39,6 +39,8 @@
     </script>
     <!-- Admin Complaint Page JavaScript -->
     <script src="<?php echo BASE_URL . 'assets/js/complaint/admin.js'; ?>"></script>
+    <!-- Notification System JavaScript -->
+    <script src="<?php echo BASE_URL . 'assets/js/notifications.js'; ?>"></script>
 
     </body>
 

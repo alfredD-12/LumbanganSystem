@@ -28,6 +28,8 @@ if (file_exists(__DIR__ . '/../../helpers/official_profile_helper.php')) {
     <link rel="stylesheet" href="<?php echo BASE_URL . 'assets/css/SecDash/admin-header.css'; ?>">
     <!-- Document Request CSS -->
     <link rel="stylesheet" href="<?php echo BASE_URL . 'assets/css/admins/document_admin.css'; ?>">
+    <!-- Notification System CSS -->
+    <link rel="stylesheet" href="<?php echo BASE_URL . 'assets/css/notifications.css'; ?>">
 
     <!-- Additional links if needed can be added below -->
     <!-- DataTables CSS -->
@@ -215,12 +217,27 @@ if (file_exists(__DIR__ . '/../../helpers/official_profile_helper.php')) {
             <div class="modal-content" style="border: none; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);">
                 <!-- Modal Header -->
                 <div class="modal-header" style="background: white; border-bottom: 1px solid #f0f0f0; border-radius: 12px 12px 0 0; padding: 1.5rem;">
+                    <h5 class="modal-title" style="color: var(--primary-blue); font-weight: 600; font-size: 1.1rem;">
+                        <i class="fas fa-bell"></i> Notifications
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="modal-body" style="padding: 0; background: #f8fafc;">
+                    <div class="notification-loading">
+                        <i class="fas fa-spinner"></i>
+                        <p>Loading notifications...</p>
+                    </div>
                 </div>
 
                 <!-- Modal Footer -->
                 <div class="modal-footer" style="border-top: 1px solid #e2e8f0; padding: 1rem 1.5rem; background: white; border-radius: 0 0 12px 12px;">
-                    <button type="button" class="btn btn-sm" style="background: transparent; border: 1px solid #cbd5e1; color: #64748b; padding: 0.5rem 1.5rem; border-radius: 8px; font-weight: 500;" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-sm btn-notification-action" data-bs-dismiss="modal">
                         <i class="fas fa-times"></i> Close
+                    </button>
+                    <button type="button" class="btn btn-sm btn-notification-action primary" data-action="mark-all-read">
+                        <i class="fas fa-check-double"></i> Mark All Read
                     </button>
                 </div>
             </div>

@@ -15,6 +15,7 @@ class Complaint {
      */
     public function getAll($filters = []) {
         $query = "SELECT DISTINCT i.id,
+                         i.user_id,
                          i.incident_title,
                          i.blotter_type,
                          i.case_type_id,
@@ -109,13 +110,13 @@ class Complaint {
      */
     public function create($data) {
         $stmt = $this->pdo->prepare("INSERT INTO {$this->table_name} (
-            incident_title, blotter_type, complainant_name, complainant_type,
+            user_id, incident_title, blotter_type, complainant_name, complainant_type,
             complainant_gender, complainant_contact, complainant_birthday, complainant_address,
             offender_name, offender_type, offender_gender, offender_address, offender_description,
             case_type_id, date_of_incident, time_of_incident,
             location, narrative, status_id
         ) VALUES (
-            :incident_title, :blotter_type, :complainant_name, :complainant_type,
+            :user_id, :incident_title, :blotter_type, :complainant_name, :complainant_type,
             :complainant_gender, :complainant_contact, :complainant_birthday, :complainant_address,
             :offender_name, :offender_type, :offender_gender, :offender_address, :offender_description,
             :case_type_id, :date_of_incident, :time_of_incident,
@@ -123,6 +124,7 @@ class Complaint {
         )");
 
         $params = [
+            ':user_id' => !empty($data['user_id']) ? $data['user_id'] : null,
             ':incident_title' => $data['incident_title'] ?? null,
             ':blotter_type' => $data['blotter_type'] ?? null,
             ':complainant_name' => $data['complainant_name'],
@@ -155,6 +157,7 @@ class Complaint {
      */
     public function update($id, $data) {
         $stmt = $this->pdo->prepare("UPDATE {$this->table_name} SET 
+            user_id = :user_id,
             incident_title = :incident_title,
             blotter_type = :blotter_type,
             complainant_name = :complainant_name,
@@ -177,6 +180,7 @@ class Complaint {
             WHERE id = :id");
         
         $params = [
+            ':user_id' => !empty($data['user_id']) ? $data['user_id'] : null,
             ':incident_title' => $data['incident_title'],
             ':blotter_type' => $data['blotter_type'],
             ':complainant_name' => $data['complainant_name'],

@@ -463,4 +463,7 @@ if (!isset($complaints) || !isset($statistics) || !isset($statuses) || !isset($c
     </div>
 </main>
 
+<!-- Complaint Autofill Script -->
+<script src="<?php echo BASE_URL . 'assets/js/complaint/complaint_autofill.js'; ?>"></script>
+
 <?php include __DIR__ . '/../../components/admin_components/footer-admin.php'; ?>

@@ -548,10 +548,21 @@ render_favicon();
                 ]);
                 $thisWeekAnnouncementsCount = is_array($weekAnnouncements) ? count($weekAnnouncements) : 0;
 
-                // Pending complaints count
+                // Pending complaints count for this user
                 $complaintModel = new Complaint();
-                $complaintStats = $complaintModel->getStatistics();
-                $pendingComplaints = isset($complaintStats['pending']) ? (int)$complaintStats['pending'] : 0;
+                $allComplaints = $complaintModel->getAll();
+                
+                // Filter complaints by current user_id and pending status
+                $pendingComplaints = 0;
+                foreach ($allComplaints as $complaint) {
+                    // Check if complaint belongs to current user (by user_id or name fallback) and is pending (status_id = 1)
+                    $belongsToUser = (!empty($complaint['user_id']) && $complaint['user_id'] == $userId) ||
+                                     (empty($complaint['user_id']) && strtolower(trim($complaint['complainant_name'])) === strtolower(trim($fullName)));
+                    
+                    if ($belongsToUser && $complaint['status_id'] == 1) {
+                        $pendingComplaints++;
+                    }
+                }
 
                 // Document requests count
                 require_once dirname(__DIR__, 2) . '/config/Database.php';

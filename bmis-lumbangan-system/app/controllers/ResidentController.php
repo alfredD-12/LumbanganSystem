@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../models/Complaint.php';
+require_once __DIR__ . '/../helpers/session_helper.php';
 
 class ResidentController {
     private $complaintModel;
@@ -20,9 +21,41 @@ class ResidentController {
                 'case_type_id' => isset($_GET['case_type_id']) ? trim($_GET['case_type_id']) : ''
             ];
 
-            // Get data from model
-            $complaints = $this->complaintModel->getAll($filters);
-            $statistics = $this->complaintModel->getStatistics();
+            // Get all complaints and filter by current user
+            $allComplaints = $this->complaintModel->getAll($filters);
+            $currentUserId = getUserId();
+            $currentUserName = getFullName();
+            
+            // Filter complaints to show only those filed by current user
+            // Check user_id first (more accurate), fall back to name matching for legacy data
+            $complaints = array_filter($allComplaints, function($complaint) use ($currentUserId, $currentUserName) {
+                // If complaint has user_id, match by user_id
+                if (!empty($complaint['user_id'])) {
+                    return $complaint['user_id'] == $currentUserId;
+                }
+                // Otherwise fall back to name matching for old complaints without user_id
+                return strtolower(trim($complaint['complainant_name'])) === strtolower(trim($currentUserName));
+            });
+            
+            // Calculate statistics for current user only
+            $statistics = [
+                'total' => 0,
+                'pending' => 0,
+                'investigating' => 0,
+                'resolved' => 0
+            ];
+            
+            foreach ($complaints as $complaint) {
+                $statistics['total']++;
+                if ($complaint['status_id'] == 1) {
+                    $statistics['pending']++;
+                } elseif ($complaint['status_id'] == 2) {
+                    $statistics['investigating']++;
+                } elseif ($complaint['status_id'] == 3) {
+                    $statistics['resolved']++;
+                }
+            }
+            
             $statuses = $this->complaintModel->getStatuses();
             $caseTypes = $this->complaintModel->getCaseTypes();
 

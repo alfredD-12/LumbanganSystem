@@ -63,7 +63,7 @@ if (isLoggedIn()) {
       <!-- Brand / Logo Section -->
       <a class="navbar-brand d-flex align-items-center" href="#home">
         <div class="logo-circle">
-          <i class="fas fa-landmark"></i>
+          <img src="<?php echo BASE_URL; ?>/uploads/BMISlogo.png" alt="BMIS Logo" class="navbar-logo-img">
         </div>
         <div class="brand-text">
           <h6 class="mb-0 fw-bold brand-title">Barangay Lumbangan</h6>
@@ -78,28 +78,36 @@ if (isLoggedIn()) {
 
       <!-- Navbar links -->
       <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto me-auto">
+        <ul class="navbar-nav mx-auto">
           <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
           <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
           <li class="nav-item"><a class="nav-link" href="#projects">Projects</a></li>
+          <li class="nav-item"><a class="nav-link" href="#officials">Officials</a></li>
           <li class="nav-item"><a class="nav-link" href="#announcements">Announcements</a></li>
           <li class="nav-item"><a class="nav-link" href="#news-section">News</a></li>
           <li class="nav-item"><a class="nav-link" href="#gallery">Gallery</a></li>
           <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
-          <li class="nav-item"><a class="nav-link" href="#" id="openLoginModal">Login / Register</a></li>
         </ul>
 
-        <!-- Government Seals (Right side) -->
-        <div class="d-none d-lg-flex align-items-center gap-2">
+        <!-- Government Seals -->
+        <div class="d-none d-lg-flex align-items-center gap-2 me-3 gov-seals">
           <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Bagong_Pilipinas_logo.png"
                alt="Bagong Pilipinas" title="Bagong Pilipinas"
-               style="width: 38px; height: 38px; object-fit: contain;">
+               class="seal-img">
           <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Seal_of_Nasugbu.png/599px-Seal_of_Nasugbu.png"
                alt="Nasugbu Seal" title="Municipality of Nasugbu"
-               style="width: 38px; height: 38px; object-fit: contain;">
+               class="seal-img">
           <img src="https://upload.wikimedia.org/wikipedia/commons/0/0c/Seal_of_Batangas.png"
                alt="Batangas Seal" title="Province of Batangas"
-               style="width: 38px; height: 38px; object-fit: contain;">
+               class="seal-img">
+        </div>
+
+        <!-- Login Button -->
+        <div class="d-flex align-items-center auth-buttons">
+          <a href="#" id="openLoginModal" class="btn-auth">
+            <i class="fas fa-sign-in-alt me-1"></i>
+            <span>Login</span>
+          </a>
         </div>
       </div>
     </div>
@@ -109,22 +117,29 @@ if (isLoggedIn()) {
   <section class="hero-section" id="home">
     <div class="container">
       <div class="hero-content">
-        <div class="mb-4 matatag-logo-wrapper" style="animation: fadeInUp 1s ease;">
+        <div class="mb-4 hero-logos-wrapper" style="animation: fadeInUp 1s ease;">
           <img src="https://portal.batangas.gov.ph/wp-content/uploads/2025/06/batangaslogo2025.png"
-               alt="Bagong Batangas"
-               class="matatag-logo"
-               style="width: 400px; height: auto; filter: drop-shadow(0 10px 30px rgba(0,0,0,0.2));">
+               alt="Matatag Batangas"
+               class="matatag-logo-hero">
         </div>
 
-        <div class="hero-badge">🏛️ Official Government Portal</div>
+        <div class="hero-badge">🏛️ OFFICIAL GOVERNMENT PORTAL</div>
         <h1>BARANGAY LUMBANGAN</h1>
         <div class="hero-subtitle">Nasugbu, Batangas</div>
         <div class="hero-tagline">"Isang Barangay, Isang Puso, Para sa Lumbangan!"</div>
         <div class="hero-buttons">
           <a href="#announcements" class="btn btn-custom btn-primary-custom">View Announcements</a>
-          <a href="#about" class="btn btn-custom btn-outline-custom">Discover More</a>
+          <a href="#about" class="btn btn-custom btn-outline-white">Discover More</a>
         </div>
       </div>
+      
+      <!-- Scroll Down Indicator -->
+      <a href="#about" class="scroll-down-indicator">
+        <div class="mouse-icon">
+          <div class="mouse-wheel"></div>
+        </div>
+        <span>Scroll Down</span>
+      </a>
     </div>
     <div class="wave-animation">
       <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
@@ -162,7 +177,7 @@ if (isLoggedIn()) {
       <div class="row align-items-center">
         <div class="col-lg-6">
           <div class="about-img-wrapper">
-            <img src="<?php echo BASE_URL; ?>uploads/Gemini_Generated_Image_hvkx86hvkx86hvkx.png"
+            <img src="<?php echo BASE_URL; ?>uploads/BarangayHall.png"
                  alt="Barangay Hall" class="about-img">
           </div>
         </div>
@@ -204,20 +219,18 @@ if (isLoggedIn()) {
               $excerpt = htmlspecialchars(strlen($a['message']) > 120 ? substr($a['message'], 0, 120) . '...' : $a['message']);
               $date = htmlspecialchars(date('F j, Y', strtotime($a['created_at'])));
               $icon = !empty($a['image']) ? 'fas fa-image' : 'fas fa-bullhorn';
+              $bgImage = !empty($a['image']) ? 'style="background-image: url(' . BASE_URL . 'uploads/announcementimage/' . htmlspecialchars($a['image']) . ');"' : '';
             ?>
             <div class="col-lg-4 col-md-6">
               <div class="announcement-card">
-                <div class="announcement-header">
+                <div class="announcement-header" <?php echo $bgImage; ?>>
                   <i class="<?php echo $icon; ?> announcement-icon"></i>
-                  <div>
-                    <h5 style="margin: 0; font-size: 1rem;"><?php echo $title; ?></h5>
-                    <div class="announcement-date"><?php echo $date; ?></div>
-                  </div>
                 </div>
                 <div class="announcement-body">
                   <h5 class="announcement-title"><?php echo $title; ?></h5>
                   <p style="color: #718096; font-size: 0.95rem;"><?php echo $excerpt; ?></p>
-                  <div style="display:flex; justify-content: flex-end;">
+                  <div style="display:flex; justify-content: space-between; align-items: center;">
+                    <div class="announcement-date"><?php echo $date; ?></div>
                     <button class="btn btn-custom btn-outline-custom" onclick="landingReadMore(this)"
                             data-id="<?php echo $id; ?>"
                             data-title="<?php echo $title; ?>"
@@ -252,14 +265,73 @@ if (isLoggedIn()) {
         <h2 class="section-title">Barangay Officials</h2>
         <p class="section-subtitle">Meet the dedicated leaders serving our community with integrity and passion</p>
       </div>
-      <div class="row">
-        <div class="col-lg-4 col-md-6"><div class="official-card"><div class="official-img"><i class="fas fa-user"></i></div><div class="official-info"><div class="official-name">Hon. Juan Dela Cruz</div><div class="official-position">Punong Barangay</div></div></div></div>
-        <div class="col-lg-4 col-md-6"><div class="official-card"><div class="official-img"><i class="fas fa-user"></i></div><div class="official-info"><div class="official-name">Hon. Maria Santos</div><div class="official-position">Kagawad</div></div></div></div>
-        <div class="col-lg-4 col-md-6"><div class="official-card"><div class="official-img"><i class="fas fa-user"></i></div><div class="official-info"><div class="official-name">Hon. Pedro Reyes</div><div class="official-position">Kagawad</div></div></div></div>
-        <div class="col-lg-4 col-md-6"><div class="official-card"><div class="official-img"><i class="fas fa-user"></i></div><div class="official-info"><div class="official-name">Hon. Ana Mercado</div><div class="official-position">Kagawad</div></div></div></div>
-        <div class="col-lg-4 col-md-6"><div class="official-card"><div class="official-img"><i class="fas fa-user"></i></div><div class="official-info"><div class="official-name">Hon. Jose Garcia</div><div class="official-position">SK Chairman</div></div></div></div>
-        <div class="col-lg-4 col-md-6"><div class="official-card"><div class="official-img"><i class="fas fa-user"></i></div><div class="official-info"><div class="official-name">Grace Flores</div><div class="official-position">Barangay Secretary</div></div></div></div>
+      
+      <!-- Officials Carousel -->
+      <div class="officials-carousel-wrapper">
+        <button class="carousel-nav carousel-prev" onclick="moveOfficialsCarousel(-1)">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        
+        <div class="officials-carousel-container">
+          <div class="officials-carousel-track" id="officialsCarouselTrack">
+            <!-- Official 1 -->
+            <div class="official-card-carousel">
+              <div class="official-img"><i class="fas fa-user"></i></div>
+              <div class="official-info">
+                <div class="official-name">Hon. Juan Dela Cruz</div>
+                <div class="official-position">Punong Barangay</div>
+              </div>
+            </div>
+            <!-- Official 2 -->
+            <div class="official-card-carousel">
+              <div class="official-img"><i class="fas fa-user"></i></div>
+              <div class="official-info">
+                <div class="official-name">Hon. Maria Santos</div>
+                <div class="official-position">Kagawad</div>
+              </div>
+            </div>
+            <!-- Official 3 -->
+            <div class="official-card-carousel">
+              <div class="official-img"><i class="fas fa-user"></i></div>
+              <div class="official-info">
+                <div class="official-name">Hon. Pedro Reyes</div>
+                <div class="official-position">Kagawad</div>
+              </div>
+            </div>
+            <!-- Official 4 -->
+            <div class="official-card-carousel">
+              <div class="official-img"><i class="fas fa-user"></i></div>
+              <div class="official-info">
+                <div class="official-name">Hon. Ana Mercado</div>
+                <div class="official-position">Kagawad</div>
+              </div>
+            </div>
+            <!-- Official 5 -->
+            <div class="official-card-carousel">
+              <div class="official-img"><i class="fas fa-user"></i></div>
+              <div class="official-info">
+                <div class="official-name">Hon. Jose Garcia</div>
+                <div class="official-position">SK Chairman</div>
+              </div>
+            </div>
+            <!-- Official 6 -->
+            <div class="official-card-carousel">
+              <div class="official-img"><i class="fas fa-user"></i></div>
+              <div class="official-info">
+                <div class="official-name">Grace Flores</div>
+                <div class="official-position">Barangay Secretary</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <button class="carousel-nav carousel-next" onclick="moveOfficialsCarousel(1)">
+          <i class="fas fa-chevron-right"></i>
+        </button>
       </div>
+      
+      <!-- Carousel Indicators -->
+      <div class="carousel-indicators" id="officialsIndicators"></div>
     </div>
   </section>
 
@@ -281,20 +353,18 @@ if (isLoggedIn()) {
               $excerpt = htmlspecialchars(strlen($a['message']) > 120 ? substr($a['message'], 0, 120) . '...' : $a['message']);
               $date = htmlspecialchars(date('F j, Y', strtotime($a['created_at'])));
               $icon = !empty($a['image']) ? 'fas fa-image' : 'fas fa-bullhorn';
+              $bgImage = !empty($a['image']) ? 'style="background-image: url(' . BASE_URL . 'uploads/announcementimage/' . htmlspecialchars($a['image']) . ');"' : '';
             ?>
             <div class="col-lg-4 col-md-6">
               <div class="announcement-card">
-                <div class="announcement-header">
+                <div class="announcement-header" <?php echo $bgImage; ?>>
                   <i class="<?php echo $icon; ?> announcement-icon"></i>
-                  <div>
-                    <h5 style="margin: 0; font-size: 1rem;"><?php echo $title; ?></h5>
-                    <div class="announcement-date"><?php echo $date; ?></div>
-                  </div>
                 </div>
                 <div class="announcement-body">
                   <h5 class="announcement-title"><?php echo $title; ?></h5>
                   <p style="color: #718096; font-size: 0.95rem;"><?php echo $excerpt; ?></p>
-                  <div style="display:flex; justify-content: flex-end;">
+                  <div style="display:flex; justify-content: space-between; align-items: center;">
+                    <div class="announcement-date"><?php echo $date; ?></div>
                     <button class="btn btn-custom btn-outline-custom" onclick="landingReadMore(this)"
                             data-id="<?php echo $id; ?>"
                             data-title="<?php echo $title; ?>"
@@ -444,7 +514,7 @@ if (isLoggedIn()) {
       <div class="row">
         <div class="col-lg-6">
           <div class="contact-card">
-            <h4 style="color: var(--primary-blue); font-weight: 700; margin-bottom: 30px;">Contact Information</h4>
+            <h4 style="color: var(--primary-blue); font-weight: 700; margin-bottom: 1.618rem; font-size: 1.5rem;">Contact Information</h4>
             <div class="contact-info-item">
               <div class="contact-icon"><i class="fas fa-map-marker-alt"></i></div>
               <div>
@@ -477,7 +547,7 @@ if (isLoggedIn()) {
         </div>
         <div class="col-lg-6">
           <div class="contact-card">
-            <h4 style="color: var(--primary-blue); font-weight: 700; margin-bottom: 30px;">Send Us a Message</h4>
+            <h4 style="color: var(--primary-blue); font-weight: 700; margin-bottom: 1.618rem; font-size: 1.5rem;">Send Us a Message</h4>
             <form class="contact-form" id="contactForm">
               <input type="text" class="form-control" id="contactName" placeholder="Your Name" required>
               <input type="email" class="form-control" id="contactEmail" placeholder="Your Email" required>
@@ -1326,6 +1396,147 @@ if (isLoggedIn()) {
           // Reset form
           contactForm.reset();
         });
+      }
+
+      // Officials Carousel
+      initOfficialsCarousel();
+    });
+
+    // Officials Carousel Functionality
+    let currentOfficialsSlide = 0;
+    let officialsPerSlide = 3;
+    let officialsAutoplayInterval;
+
+    function initOfficialsCarousel() {
+      updateOfficialsPerSlide();
+      createOfficialIndicators();
+      updateOfficialCarousel();
+      startOfficialsAutoplay();
+
+      // Update on window resize
+      window.addEventListener('resize', function() {
+        updateOfficialsPerSlide();
+        currentOfficialsSlide = 0;
+        updateOfficialCarousel();
+        createOfficialIndicators();
+      });
+    }
+
+    function updateOfficialsPerSlide() {
+      if (window.innerWidth <= 768) {
+        officialsPerSlide = 1;
+      } else if (window.innerWidth <= 992) {
+        officialsPerSlide = 2;
+      } else {
+        officialsPerSlide = 3;
+      }
+    }
+
+    function createOfficialIndicators() {
+      const track = document.getElementById('officialsCarouselTrack');
+      const indicatorsContainer = document.getElementById('officialsIndicators');
+      const totalCards = track.children.length;
+      const totalSlides = Math.ceil(totalCards / officialsPerSlide);
+      
+      indicatorsContainer.innerHTML = '';
+      
+      for (let i = 0; i < totalSlides; i++) {
+        const indicator = document.createElement('button');
+        indicator.className = 'carousel-indicator';
+        indicator.onclick = () => goToOfficialSlide(i);
+        if (i === currentOfficialsSlide) {
+          indicator.classList.add('active');
+        }
+        indicatorsContainer.appendChild(indicator);
+      }
+    }
+
+    function moveOfficialsCarousel(direction) {
+      const track = document.getElementById('officialsCarouselTrack');
+      const totalCards = track.children.length;
+      const totalSlides = Math.ceil(totalCards / officialsPerSlide);
+      
+      currentOfficialsSlide += direction;
+      
+      if (currentOfficialsSlide >= totalSlides) {
+        currentOfficialsSlide = 0;
+      } else if (currentOfficialsSlide < 0) {
+        currentOfficialsSlide = totalSlides - 1;
+      }
+      
+      updateOfficialCarousel();
+      resetOfficialsAutoplay();
+    }
+
+    function goToOfficialSlide(slideIndex) {
+      currentOfficialsSlide = slideIndex;
+      updateOfficialCarousel();
+      resetOfficialsAutoplay();
+    }
+
+    function updateOfficialCarousel() {
+      const track = document.getElementById('officialsCarouselTrack');
+      const cardWidth = track.children[0].offsetWidth;
+      const gap = 25;
+      const offset = -(currentOfficialsSlide * (cardWidth + gap) * officialsPerSlide);
+      
+      track.style.transform = `translateX(${offset}px)`;
+      
+      // Update indicators
+      const indicators = document.querySelectorAll('.carousel-indicator');
+      indicators.forEach((indicator, index) => {
+        indicator.classList.toggle('active', index === currentOfficialsSlide);
+      });
+    }
+
+    function startOfficialsAutoplay() {
+      officialsAutoplayInterval = setInterval(() => {
+        moveOfficialsCarousel(1);
+      }, 5000);
+    }
+
+    function resetOfficialsAutoplay() {
+      clearInterval(officialsAutoplayInterval);
+      startOfficialsAutoplay();
+    }
+
+    // Smooth Scroll for all anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href');
+        
+        // If clicking home, scroll to top
+        if (targetId === '#home') {
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+        } else {
+          const target = document.querySelector(targetId);
+          if (target) {
+            target.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+          }
+        }
+      });
+    });
+
+    // Parallax effect for hero section
+    let ticking = false;
+    window.addEventListener('scroll', function() {
+      if (!ticking) {
+        window.requestAnimationFrame(function() {
+          const scrolled = window.pageYOffset;
+          const heroSection = document.querySelector('.hero-section');
+          if (heroSection && scrolled < window.innerHeight) {
+            heroSection.style.transform = `translateY(${scrolled * 0.5}px)`;
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     });
   </script>

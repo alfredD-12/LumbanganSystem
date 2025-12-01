@@ -7,23 +7,41 @@
 document.addEventListener('DOMContentLoaded', function() {
     const dropdownToggle = document.querySelector('.admin-avatar.dropdown-toggle');
     const dropdownMenu = document.querySelector('.admin-profile .dropdown-menu');
+    const adminProfile = document.querySelector('.admin-profile');
     
     if (dropdownToggle && dropdownMenu) {
+        console.log('Admin profile dropdown initialized');
+        
         // Manual click handler
         dropdownToggle.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
             
+            console.log('Admin avatar clicked');
+            
             // Toggle show class
-            dropdownMenu.classList.toggle('show');
+            const isShown = dropdownMenu.classList.contains('show');
+            
+            if (isShown) {
+                dropdownMenu.classList.remove('show');
+                adminProfile.classList.remove('show');
+            } else {
+                dropdownMenu.classList.add('show');
+                adminProfile.classList.add('show');
+            }
         });
         
         // Close dropdown when clicking outside
         document.addEventListener('click', function(e) {
-            if (!dropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
+            if (!adminProfile.contains(e.target)) {
                 dropdownMenu.classList.remove('show');
-                dropdownToggle.classList.remove('show');
+                adminProfile.classList.remove('show');
             }
+        });
+    } else {
+        console.warn('Dropdown elements not found:', {
+            toggle: !!dropdownToggle,
+            menu: !!dropdownMenu
         });
     }
 });

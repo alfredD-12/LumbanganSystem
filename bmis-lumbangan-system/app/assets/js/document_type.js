@@ -282,12 +282,9 @@ document
 
         if (res.success) {
           loadDocumentTypes();
+          showSuccess("Document type deleted successfully!");
         } else {
-          Swal.fire({
-            icon: "error",
-            title: "Delete failed!",
-            text: res.message || "",
-          });
+          showError(res.message || "Delete failed!");
         }
       })
       .catch((err) => console.error(err))
@@ -351,8 +348,8 @@ document
           // Reload card list
           loadDocumentTypes();
 
-          // Optional toast / sweetalert
-          alert("Document type added!");
+          // Show success notification
+          showSuccess("Document type added successfully!");
           // Clear form for next use
           clearAddDocForm();
         }

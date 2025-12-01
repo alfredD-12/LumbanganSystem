@@ -460,6 +460,54 @@ if (!isset($complaints) || !isset($statistics) || !isset($statuses) || !isset($c
             </div>
         </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteComplaintModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this complaint?</p>
+                    <p class="text-danger"><strong>This action cannot be undone!</strong></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDeleteComplaint()">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Notification Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-body text-center py-4">
+                    <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3 mb-2" id="successTitle">Success!</h5>
+                    <p class="mb-0 text-muted" id="successMessage"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Notification Modal -->
+    <div class="modal fade" id="errorModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-body text-center py-4">
+                    <i class="fas fa-exclamation-circle text-danger" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3 mb-2">Error!</h5>
+                    <p class="mb-0 text-muted" id="errorMessage"></p>
+                </div>
+            </div>
+        </div>
+    </div>
     </div>
 </main>
 

@@ -4,17 +4,20 @@
 require_once dirname(__DIR__) . '/config/Database.php';
 require_once dirname(__DIR__) . '/models/EmailVerification.php';
 require_once dirname(__DIR__) . '/models/User.php';
+require_once dirname(__DIR__) . '/helpers/sms_helper.php';
 
 class EmailVerificationController {
     private $db;
     private $verificationModel;
     private $userModel;
+    private $smsHelper;
 
     public function __construct() {
         $database = new Database();
         $this->db = $database->getConnection();
         $this->verificationModel = new EmailVerification($this->db);
         $this->userModel = new User($this->db);
+        $this->smsHelper = new SMSHelper();
     }
 
     /**
@@ -44,7 +47,7 @@ class EmailVerificationController {
             $birthdate = $_POST['birthdate'] ?? null;
             $marital_status = $_POST['marital_status'] ?? 'Single';
 
-            // Validate required fields
+            // Validate required fields (email is required at this point - will be moved to mobile if it's a phone number)
             if (empty($username) || empty($email) || empty($password) || empty($first_name) || empty($last_name)) {
                 echo json_encode(['success' => false, 'message' => 'Please fill in all required fields']);
                 return;
@@ -62,10 +65,20 @@ class EmailVerificationController {
                 return;
             }
 
-            // Validate email format
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                echo json_encode(['success' => false, 'message' => 'Please provide a valid email address']);
+            // Validate email format (accept both email and phone number)
+            // Check if it's a valid email OR a valid phone number
+            $isEmail = filter_var($email, FILTER_VALIDATE_EMAIL);
+            $isPhone = preg_match('/^(09|\+639)\d{9}$/', $email); // Philippine mobile format
+            
+            if (!$isEmail && !$isPhone) {
+                echo json_encode(['success' => false, 'message' => 'Please provide a valid email address or phone number']);
                 return;
+            }
+            
+            // If it's a phone number, store it in mobile field instead
+            if ($isPhone && !$isEmail) {
+                $mobile = $email;
+                $email = ''; // Clear email since user provided phone number
             }
 
             // Check if username already exists
@@ -74,8 +87,8 @@ class EmailVerificationController {
                 return;
             }
 
-            // Check if email already exists
-            if ($this->userModel->emailExists($email)) {
+            // Check if email already exists (only if email was provided)
+            if (!empty($email) && $this->userModel->emailExists($email)) {
                 echo json_encode(['success' => false, 'message' => 'This email is already registered.']);
                 return;
             }
@@ -105,21 +118,49 @@ class EmailVerificationController {
                 return;
             }
 
-            // Send email with verification code
+            // Send verification code via email AND/OR SMS
             $code = $result['code'];
-            $subject = 'Email Verification Code - Barangay Lumbangan';
-            $body = $this->getEmailTemplate($first_name, $code);
-
-            if ($this->sendEmail($email, $subject, $body)) {
+            $emailSent = false;
+            $smsSent = false;
+            
+            // Send via Email
+            if (!empty($email)) {
+                $subject = 'Email Verification Code - Barangay Lumbangan';
+                $body = $this->getEmailTemplate($first_name, $code);
+                $emailSent = $this->sendEmail($email, $subject, $body);
+            }
+            
+            // Send via SMS if mobile number is provided
+            if (!empty($mobile)) {
+                $message = "Your Barangay Lumbangan verification code is: {$code}. Valid for 1 hour. Do not share this code.";
+                $smsResult = $this->smsHelper->sendSMS($mobile, $message);
+                $smsSent = $smsResult['success'];
+            }
+            
+            // Determine success message based on what was sent
+            if ($emailSent && $smsSent) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Verification code sent to your email and mobile number',
+                    'email' => $email,
+                    'mobile' => $mobile
+                ]);
+            } elseif ($emailSent) {
                 echo json_encode([
                     'success' => true,
                     'message' => 'Verification code sent to your email',
                     'email' => $email
                 ]);
+            } elseif ($smsSent) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Verification code sent to your mobile number',
+                    'mobile' => $mobile
+                ]);
             } else {
                 echo json_encode([
                     'success' => false,
-                    'message' => 'Failed to send verification email. Please try again later.'
+                    'message' => 'Failed to send verification code. Please try again later.'
                 ]);
             }
         } catch (Exception $e) {
@@ -219,8 +260,9 @@ class EmailVerificationController {
 
             $personId = $this->db->lastInsertId();
 
-            // Create user record - handle empty mobile field
+            // Create user record - handle empty mobile and email fields
             $mobile = !empty($userData['mobile']) ? $userData['mobile'] : NULL;
+            $email = !empty($userData['email']) ? $userData['email'] : NULL;
             
             $userQuery = "INSERT INTO users (person_id, username, email, mobile, password_hash) 
                          VALUES (:person_id, :username, :email, :mobile, :password_hash)";
@@ -228,7 +270,7 @@ class EmailVerificationController {
             $userStmt = $this->db->prepare($userQuery);
             $userStmt->bindParam(':person_id', $personId);
             $userStmt->bindParam(':username', $userData['username']);
-            $userStmt->bindParam(':email', $userData['email']);
+            $userStmt->bindParam(':email', $email);
             $userStmt->bindParam(':mobile', $mobile);
             $userStmt->bindParam(':password_hash', $userData['password_hash']);
             

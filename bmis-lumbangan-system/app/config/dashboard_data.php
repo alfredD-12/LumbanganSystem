@@ -2,109 +2,77 @@
 /**
  * Dashboard Data Configuration
  * Centralized data for SecDash dashboard
- * Easy to modify - all data in one place!
+ * Now fetches REAL data from database!
  */
 
+// Load database statistics helper
+require_once dirname(__DIR__) . '/helpers/dashboard_stats_helper.php';
+
+$statsHelper = new DashboardStatsHelper();
+
+// Fetch real statistics
+$totalResidents = $statsHelper->getTotalResidents();
+$residentsThisMonth = $statsHelper->getResidentsThisMonth();
+$pendingComplaints = $statsHelper->getPendingComplaints();
+$complaintsLastWeek = $statsHelper->getComplaintsLastWeek();
+$resolvedComplaints = $statsHelper->getResolvedComplaints();
+$resolvedThisWeek = $statsHelper->getResolvedThisWeek();
+$totalDocRequests = $statsHelper->getTotalDocumentRequests();
+$docRequestsToday = $statsHelper->getDocumentRequestsToday();
+
 return [
-    // Statistics Cards Data
+    // Statistics Cards Data - REAL DATA FROM DATABASE
     'stats' => [
         [
             'icon' => 'fas fa-users',
             'icon_color' => 'blue',
-            'number' => '2,847',
+            'number' => number_format($totalResidents),
             'label' => 'Total Registered Residents',
-            'change' => '+124 this month',
+            'change' => '+' . $residentsThisMonth . ' this month',
             'change_type' => 'up'
         ],
         [
             'icon' => 'fas fa-exclamation-circle',
             'icon_color' => 'yellow',
-            'number' => '45',
+            'number' => $pendingComplaints,
             'label' => 'Pending Complaints',
-            'change' => '-12 from last week',
-            'change_type' => 'down'
+            'change' => ($complaintsLastWeek > 0 ? '-' : '') . $complaintsLastWeek . ' from last week',
+            'change_type' => $complaintsLastWeek > 0 ? 'down' : 'up'
         ],
         [
             'icon' => 'fas fa-check-circle',
             'icon_color' => 'green',
-            'number' => '189',
+            'number' => $resolvedComplaints,
             'label' => 'Resolved Complaints',
-            'change' => '+23 this week',
+            'change' => '+' . $resolvedThisWeek . ' this week',
             'change_type' => 'up'
         ],
         [
             'icon' => 'fas fa-file-alt',
             'icon_color' => 'red',
-            'number' => '67',
+            'number' => $totalDocRequests,
             'label' => 'Document Requests',
-            'change' => '15 new today',
+            'change' => $docRequestsToday . ' new today',
             'change_type' => 'up'
         ]
     ],
 
-    // Recent Complaints/Activities
-    'complaints' => [
-        [
-            'title' => 'Noise disturbance complaint',
-            'time' => '5 minutes ago',
-            'badge' => 'NEW',
-            'badge_class' => 'badge-new'
-        ],
-        [
-            'title' => 'Street lighting repair needed',
-            'time' => '25 minutes ago',
-            'badge' => 'PENDING',
-            'badge_class' => 'badge-pending'
-        ],
-        [
-            'title' => 'Garbage collection issue resolved',
-            'time' => '1 hour ago',
-            'badge' => 'RESOLVED',
-            'badge_class' => 'badge-completed'
-        ],
-        [
-            'title' => 'Water supply problem reported',
-            'time' => '2 hours ago',
-            'badge' => 'PENDING',
-            'badge_class' => 'badge-pending'
-        ],
-        [
-            'title' => 'Road damage complaint',
-            'time' => '3 hours ago',
-            'badge' => 'NEW',
-            'badge_class' => 'badge-new'
-        ],
-        [
-            'title' => 'Stray animal concern addressed',
-            'time' => '5 hours ago',
-            'badge' => 'RESOLVED',
-            'badge_class' => 'badge-completed'
-        ]
-    ],
+    // Recent Complaints/Activities - REAL DATA FROM DATABASE
+    'complaints' => array_map(function($complaint) use ($statsHelper) {
+        return [
+            'title' => $complaint['incident_title'],
+            'time' => $statsHelper->timeAgo($complaint['created_at']),
+            'badge' => strtoupper($complaint['status_label'] ?? 'NEW'),
+            'badge_class' => $statsHelper->getStatusBadgeClass($complaint['status_label'] ?? 'NEW')
+        ];
+    }, $statsHelper->getRecentComplaints(6)),
 
-    // Document Management Data
+    // Document Management Data - REAL DATA FROM DATABASE
     'documents' => [
-        'pending_approvals' => [
-            ['name' => 'Barangay Clearance', 'count' => 6],
-            ['name' => 'Certificate of Indigency', 'count' => 4],
-            ['name' => 'Certificate of Residency', 'count' => 2]
-        ],
-        'today_released' => [
-            ['num' => '11', 'label' => 'Clearances'],
-            ['num' => '5', 'label' => 'Indigency'],
-            ['num' => '2', 'label' => 'Residency']
-        ],
-        'queue' => [
-            ['label' => 'Barangay Clearance', 'count' => 21, 'width' => '70%'],
-            ['label' => 'Indigency Cert.', 'count' => 16, 'width' => '55%'],
-            ['label' => 'Residency Cert.', 'count' => 10, 'width' => '35%']
-        ],
-        'monthly_progress' => [
-            'current' => 164,
-            'target' => 200,
-            'percentage' => 82,
-            'remaining' => 36
-        ]
+        'pending_approvals' => $statsHelper->getPendingApprovalsByType(),
+        'today_released' => $statsHelper->getReleasedToday(),
+        'queue' => $statsHelper->getDocumentQueue(),
+        'monthly_progress' => $statsHelper->getMonthlyProgress()
     ],
 
     // Upcoming Events

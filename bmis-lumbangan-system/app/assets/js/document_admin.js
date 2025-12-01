@@ -1,3 +1,18 @@
+// Modal notification functions
+function showSuccess(message) {
+  const modal = new bootstrap.Modal(document.getElementById('successModal'));
+  document.getElementById('successMessage').textContent = message;
+  modal.show();
+  setTimeout(() => modal.hide(), 2000);
+}
+
+function showError(message) {
+  const modal = new bootstrap.Modal(document.getElementById('errorModal'));
+  document.getElementById('errorMessage').textContent = message;
+  modal.show();
+  setTimeout(() => modal.hide(), 3000);
+}
+
 $(document).ready(function () {
   /* ----------------------------
      🔹 INITIALIZE DATATABLE
@@ -219,12 +234,12 @@ $(document).ready(function () {
         const currentStatus = $("#status").data("current-status") || "";
 
         if (!selectedStatus) {
-          alert("Please select a status before saving.");
+          showError("Please select a status before saving.");
           return;
         }
 
         if (selectedStatus === currentStatus) {
-          alert("No changes detected.");
+          showError("No changes detected.");
           return;
         }
 
@@ -255,7 +270,7 @@ $(document).ready(function () {
       const selectedStatus = $(this).data("selected-status");
 
       if (!selectedStatus) {
-        alert("Please select a status before saving.");
+        showError("Please select a status before saving.");
         $("#confirmUpdateModal").modal("hide");
         return;
       }
@@ -296,13 +311,13 @@ $(document).ready(function () {
             $("#requestsTable").DataTable().ajax.reload(null, false);
             updateSummaryCards();
 
-            alert("Status updated successfully!");
+            showSuccess("Status updated successfully!");
           } else {
-            alert("❌ " + (res.message || "Failed to update status."));
+            showError(res.message || "Failed to update status.");
           }
         },
         error: function () {
-          alert("⚠️ An error occurred while updating status.");
+          showError("An error occurred while updating status.");
         },
         complete: function () {
           $("#confirmUpdateBtn").prop("disabled", false).text("Confirm");
@@ -368,19 +383,19 @@ $(document).ready(function () {
           if (result.success) {
             updateSummaryCards();
 
-            alert("Request added successfully!");
+            showSuccess("Request added successfully!");
 
             $("#newRequestModal").modal("hide");
             this.reset();
 
             $("#requestsTable").DataTable().ajax.reload(null, false);
           } else {
-            alert(result.message || "Error adding request.");
+            showError(result.message || "Error adding request.");
           }
         })
         .catch((err) => {
           console.error(err);
-          alert("Server error.");
+          showError("Server error.");
         });
     });
 

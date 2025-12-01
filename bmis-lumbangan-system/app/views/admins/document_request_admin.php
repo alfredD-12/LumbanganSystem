@@ -377,6 +377,30 @@
 
 
 
+<!-- Success Notification Modal -->
+<div class="modal fade" id="successModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-body text-center py-4">
+        <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+        <h5 class="mt-3 mb-2" id="successTitle">Success!</h5>
+        <p class="mb-0 text-muted" id="successMessage"></p>
+      </div>
+    </div>
+  </div>
+</div>
 
+<!-- Error Notification Modal -->
+<div class="modal fade" id="errorModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-body text-center py-4">
+        <i class="fas fa-exclamation-circle text-danger" style="font-size: 3rem;"></i>
+        <h5 class="mt-3 mb-2">Error!</h5>
+        <p class="mb-0 text-muted" id="errorMessage"></p>
+      </div>
+    </div>
+  </div>
+</div>
 
 <?php include_once __DIR__ . '/../../components/admin_components/footer-admin.php' ?>

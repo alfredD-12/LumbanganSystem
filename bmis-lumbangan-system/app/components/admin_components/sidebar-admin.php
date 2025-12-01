@@ -52,7 +52,7 @@ render_favicon()
 <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
         <div class="logo-icon">
-            <i class="fas fa-landmark"></i>
+            <img src="<?php echo BASE_URL; ?>uploads/BMISlogo.png" alt="BMIS Logo" style="width: 60px; height: 60px; object-fit: contain;">
         </div>
         <h4>BARANGAY</h4>
         <small>Admin Portal</small>

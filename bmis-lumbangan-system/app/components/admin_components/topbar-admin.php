@@ -24,7 +24,7 @@ if (!isset($adminName)) {
 ?>
 <!-- Dropdown fallback: ensure admin profile dropdown opens/closes even if Bootstrap JS is missing or conflicting -->
 <script>
-    (function() {
+    document.addEventListener('DOMContentLoaded', function() {
         var profile = document.querySelector('.admin-profile');
         if (!profile) return;
         var toggle = profile.querySelector('.dropdown-toggle');
@@ -43,6 +43,8 @@ if (!isset($adminName)) {
             toggle.addEventListener('click', function(ev) {
                 ev = ev || window.event;
                 if (ev && ev.preventDefault) ev.preventDefault();
+                if (ev && ev.stopPropagation) ev.stopPropagation();
+                
                 var shown = menu && menu.classList.contains('show');
                 if (shown) {
                     profile.classList.remove('show');
@@ -54,11 +56,11 @@ if (!isset($adminName)) {
                     if (menu) menu.classList.add('show');
                     toggle.setAttribute('aria-expanded', 'true');
                     // Close when clicking outside
-                    setTimeout(function() { document.addEventListener('click', closeProfile); }, 0);
+                    setTimeout(function() { document.addEventListener('click', closeProfile); }, 10);
                 }
             });
         }
-    })();
+    });
 </script>
 
 <?php

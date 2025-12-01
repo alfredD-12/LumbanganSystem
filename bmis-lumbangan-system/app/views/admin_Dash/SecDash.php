@@ -14,6 +14,14 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/stat-card.php';
 require_once dirname(__DIR__, 2) . '/components/admin_components/activity-item.php';
 require_once dirname(__DIR__, 2) . '/components/admin_components/modal-items.php';
 
+// Load dashboard stats helper for additional real-time data
+require_once dirname(__DIR__, 2) . '/helpers/dashboard_stats_helper.php';
+$statsHelper = new DashboardStatsHelper();
+
+// Get real-time statistics
+$totalResidents = $statsHelper->getTotalResidents();
+$registrationsByDay = $statsHelper->getRegistrationsByDay(7);
+
 // Load predictive analytics data
 require_once dirname(__DIR__, 2) . '/controllers/PredictiveAnalyticsController.php';
 $predictiveController = new PredictiveAnalyticsController();
@@ -132,13 +140,13 @@ $predictionChartData['histogram'] = [
                     <div style="text-align: center; margin: 1.5rem 0;">
                         <div style="font-size: 2.5rem; font-weight: 700; color: var(--primary-blue);">
                             <i class="fas fa-arrow-up" style="color: var(--success-green); font-size: 1.8rem;"></i>
-                            2,847
+                            <?php echo number_format($totalResidents); ?>
                         </div>
                         <div style="font-size: 0.9rem; color: #718096; margin-top: 0.5rem;">TOTAL REGISTERED RESIDENTS</div>
                     </div>
                     <div class="chart-container">
                         <div class="line-chart">
-                            <svg viewBox="0 0 700 300" preserveAspectRatio="xMidYMid meet">
+                            <svg viewBox="0 0 700 300" preserveAspectRatio="xMidYMid meet" id="registrationChart">
                                 <!-- Define gradients -->
                                 <defs>
                                     <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -157,39 +165,58 @@ $predictionChartData['histogram'] = [
                                 <line x1="50" y1="140" x2="550" y2="140" class="chart-grid-line" />
                                 <line x1="50" y1="190" x2="550" y2="190" class="chart-grid-line" />
 
+                                <?php
+                                // Generate chart data from real registrations
+                                $chartData = [];
+                                $maxCount = 1;
+                                foreach ($registrationsByDay as $day) {
+                                    $chartData[] = $day;
+                                    if ($day['count'] > $maxCount) {
+                                        $maxCount = $day['count'];
+                                    }
+                                }
+                                
+                                // Calculate positions
+                                $xStart = 70;
+                                $xSpacing = 80;
+                                $yMax = 190;
+                                $yMin = 40;
+                                $yRange = $yMax - $yMin;
+                                
+                                $pathD = 'M ';
+                                $areaD = 'M ';
+                                for ($i = 0; $i < count($chartData); $i++) {
+                                    $x = $xStart + ($i * $xSpacing);
+                                    $count = $chartData[$i]['count'];
+                                    $y = $maxCount > 0 ? $yMax - (($count / $maxCount) * $yRange) : $yMax;
+                                    
+                                    $pathD .= "$x,$y ";
+                                    $areaD .= ($i === 0 ? '' : 'L ') . "$x,$y ";
+                                    
+                                    if ($i < count($chartData) - 1) {
+                                        $pathD .= 'L ';
+                                    }
+                                }
+                                $areaD .= " L " . ($xStart + ((count($chartData) - 1) * $xSpacing)) . ",200 L $xStart,200 Z";
+                                ?>
+
                                 <!-- Area under the line -->
-                                <path class="chart-area" d="M 70,110 L 150,90 L 230,130 L 310,70 L 390,100 L 470,50 L 550,80 L 550,200 L 70,200 Z" />
+                                <path class="chart-area" d="<?php echo $areaD; ?>" />
 
                                 <!-- Line path -->
-                                <path class="chart-line" d="M 70,110 L 150,90 L 230,130 L 310,70 L 390,100 L 470,50 L 550,80"
+                                <path class="chart-line" d="<?php echo $pathD; ?>"
                                     style="stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: drawLine 2s ease-out forwards;" />
 
-                                <!-- Data points -->
-                                <circle class="chart-point" cx="70" cy="110" r="6" />
-                                <circle class="chart-point" cx="150" cy="90" r="6" />
-                                <circle class="chart-point" cx="230" cy="130" r="6" />
-                                <circle class="chart-point" cx="310" cy="70" r="6" />
-                                <circle class="chart-point" cx="390" cy="100" r="6" />
-                                <circle class="chart-point" cx="470" cy="50" r="6" />
-                                <circle class="chart-point" cx="550" cy="80" r="6" />
-
-                                <!-- Value labels -->
-                                <text x="70" y="100" class="chart-value-label" text-anchor="middle">215</text>
-                                <text x="150" y="80" class="chart-value-label" text-anchor="middle">248</text>
-                                <text x="230" y="120" class="chart-value-label" text-anchor="middle">189</text>
-                                <text x="310" y="60" class="chart-value-label" text-anchor="middle">267</text>
-                                <text x="390" y="90" class="chart-value-label" text-anchor="middle">231</text>
-                                <text x="470" y="40" class="chart-value-label" text-anchor="middle">298</text>
-                                <text x="550" y="70" class="chart-value-label" text-anchor="middle">254</text>
-
-                                <!-- X-axis labels -->
-                                <text x="70" y="220" class="chart-label" text-anchor="middle">Mon</text>
-                                <text x="150" y="220" class="chart-label" text-anchor="middle">Tue</text>
-                                <text x="230" y="220" class="chart-label" text-anchor="middle">Wed</text>
-                                <text x="310" y="220" class="chart-label" text-anchor="middle">Thu</text>
-                                <text x="390" y="220" class="chart-label" text-anchor="middle">Fri</text>
-                                <text x="470" y="220" class="chart-label" text-anchor="middle">Sat</text>
-                                <text x="550" y="220" class="chart-label" text-anchor="middle">Sun</text>
+                                <!-- Data points and labels -->
+                                <?php for ($i = 0; $i < count($chartData); $i++): 
+                                    $x = $xStart + ($i * $xSpacing);
+                                    $count = $chartData[$i]['count'];
+                                    $y = $maxCount > 0 ? $yMax - (($count / $maxCount) * $yRange) : $yMax;
+                                ?>
+                                    <circle class="chart-point" cx="<?php echo $x; ?>" cy="<?php echo $y; ?>" r="6" />
+                                    <text x="<?php echo $x; ?>" y="<?php echo $y - 10; ?>" class="chart-value-label" text-anchor="middle"><?php echo $count; ?></text>
+                                    <text x="<?php echo $x; ?>" y="220" class="chart-label" text-anchor="middle"><?php echo $chartData[$i]['day']; ?></text>
+                                <?php endfor; ?>
                             </svg>
                         </div>
                     </div>
@@ -253,19 +280,25 @@ $predictionChartData['histogram'] = [
                         <div style="text-align: center; margin-bottom: 1rem;">
                             <div style="font-weight: 700; color: var(--primary-blue);">REGISTRATION PROGRESS</div>
                         </div>
+                        <?php
+                        $thisMonthReg = $statsHelper->getResidentsThisMonth();
+                        $last7DaysTotal = array_sum(array_column($registrationsByDay, 'count'));
+                        $growthRate = $totalResidents > 0 ? round(($thisMonthReg / $totalResidents) * 100, 1) : 0;
+                        $progressPercentage = min(100, ($thisMonthReg / 50) * 100); // Assuming target of 50 new registrations per month
+                        ?>
                         <div class="chart-summary-header">
                             <span>New Registrations (This Month)</span>
-                            <span>124</span>
+                            <span><?php echo $thisMonthReg; ?></span>
                         </div>
                         <div style="margin-bottom: 1rem;">
-                            <div style="font-size: 0.85rem; color: #718096; margin-bottom: 0.5rem;">Last 7 days</div>
+                            <div style="font-size: 0.85rem; color: #718096; margin-bottom: 0.5rem;">Last 7 days: <?php echo $last7DaysTotal; ?> registrations</div>
                             <div style="width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
-                                <div style="width: 78%; height: 100%; background: linear-gradient(90deg, var(--primary-blue), var(--secondary-blue));"></div>
+                                <div style="width: <?php echo min(100, $progressPercentage); ?>%; height: 100%; background: linear-gradient(90deg, var(--primary-blue), var(--secondary-blue));"></div>
                             </div>
                         </div>
                         <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #718096;">
-                            <span>Growth Rate</span>
-                            <span style="font-weight: 600; color: var(--success-green);">+4.5%</span>
+                            <span>Monthly Growth</span>
+                            <span style="font-weight: 600; color: var(--success-green);">+<?php echo $growthRate; ?>%</span>
                         </div>
                     </div>
                 </div>
@@ -281,9 +314,9 @@ $predictionChartData['histogram'] = [
                         <?php renderActivityItem($complaint); ?>
                     <?php endforeach; ?>
 
-                    <button class="view-all-btn">
+                    <a href="<?php echo htmlspecialchars(BASE_PUBLIC . 'index.php?page=admin_complaints', ENT_QUOTES, 'UTF-8'); ?>" class="view-all-btn" style="text-decoration: none; display: block;">
                         <i class="fas fa-list"></i> View All Complaints
-                    </button>
+                    </a>
                 </div>
 
                 <!-- Document Management Card -->
@@ -534,20 +567,27 @@ $predictionChartData['histogram'] = [
                     <div class="chart-header">
                         <h3 class="chart-title">Document Requests Statistics</h3>
                     </div>
+                    <?php
+                    // Get real document statistics
+                    $docStats = $statsHelper->getDocumentStats();
+                    $pendingDocs = $docStats['pending'] ?? 0;
+                    $completedThisMonth = $statsHelper->getMonthlyProgress()['current'];
+                    $totalIssued = $docStats['released'] ?? 0;
+                    ?>
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 1.5rem;">
                         <div style="text-align: center;">
-                            <div style="font-size: 2rem; font-weight: 700; color: var(--primary-blue);">67</div>
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--primary-blue);"><?php echo $pendingDocs; ?></div>
                             <div style="font-size: 0.85rem; color: #718096; margin-top: 0.25rem;">Pending Requests</div>
                             <div style="margin-top: 1rem; height: 60px; display: flex; align-items: flex-end; justify-content: center; gap: 4px;">
                                 <div style="width: 8px; height: 30%; background: var(--warning-yellow); border-radius: 2px;"></div>
                                 <div style="width: 8px; height: 50%; background: var(--warning-yellow); border-radius: 2px;"></div>
                                 <div style="width: 8px; height: 70%; background: var(--warning-yellow); border-radius: 2px;"></div>
                                 <div style="width: 8px; height: 40%; background: var(--warning-yellow); border-radius: 2px;"></div>
-                                <div style="width: 8px; height: 100%; background: var(--accent-red); border-radius: 2px;"></div>
+                                <div style="width: 8px; height: <?php echo min(100, ($pendingDocs / max(1, $totalIssued)) * 100); ?>%; background: var(--accent-red); border-radius: 2px;"></div>
                             </div>
                         </div>
                         <div style="text-align: center;">
-                            <div style="font-size: 2rem; font-weight: 700; color: var(--primary-blue);">342</div>
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--primary-blue);"><?php echo $completedThisMonth; ?></div>
                             <div style="font-size: 0.85rem; color: #718096; margin-top: 0.25rem;">Completed This Month</div>
                             <div style="margin-top: 1rem; height: 60px; display: flex; align-items: flex-end; justify-content: center; gap: 4px;">
                                 <div style="width: 8px; height: 40%; background: var(--success-green); border-radius: 2px;"></div>
@@ -558,7 +598,7 @@ $predictionChartData['histogram'] = [
                             </div>
                         </div>
                         <div style="text-align: center;">
-                            <div style="font-size: 2rem; font-weight: 700; color: var(--primary-blue);">1,245</div>
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--primary-blue);"><?php echo number_format($totalIssued); ?></div>
                             <div style="font-size: 0.85rem; color: #718096; margin-top: 0.25rem;">Total Documents Issued</div>
                             <div style="margin-top: 1rem; height: 60px; display: flex; align-items: flex-end; justify-content: center; gap: 4px;">
                                 <div style="width: 8px; height: 70%; background: var(--primary-blue); border-radius: 2px;"></div>
@@ -575,27 +615,31 @@ $predictionChartData['histogram'] = [
                     <div class="chart-header">
                         <h3 class="chart-title">Barangay Officials</h3>
                     </div>
+                    <?php
+                    // Get real officials statistics
+                    $officialsStats = $statsHelper->getOfficialsStats();
+                    ?>
                     <div style="padding: 1.5rem 0;">
                         <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: rgba(30, 58, 95, 0.05); border-radius: 12px; margin-bottom: 1rem;">
                             <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1.2rem;">
                                 <i class="fas fa-user-tie"></i>
                             </div>
                             <div style="flex: 1;">
-                                <div style="font-weight: 600; color: var(--dark-text); font-size: 0.95rem;">Punong Barangay</div>
-                                <div style="font-size: 0.8rem; color: #718096;">Hon. Juan Dela Cruz</div>
+                                <div style="font-weight: 600; color: var(--dark-text); font-size: 0.95rem;"><?php echo htmlspecialchars($officialsStats['captain_title']); ?></div>
+                                <div style="font-size: 0.8rem; color: #718096;">Hon. <?php echo htmlspecialchars($officialsStats['captain_name']); ?></div>
                             </div>
                         </div>
 
                         <div style="text-align: center; padding: 2rem 1rem;">
-                            <div style="font-size: 2.5rem; font-weight: 700; color: var(--primary-blue); margin-bottom: 0.5rem;">15</div>
+                            <div style="font-size: 2.5rem; font-weight: 700; color: var(--primary-blue); margin-bottom: 0.5rem;"><?php echo $officialsStats['total']; ?></div>
                             <div style="font-size: 0.9rem; color: #718096; margin-bottom: 1.5rem;">Active Officials</div>
                             <div style="display: flex; justify-content: center; gap: 1.5rem; margin-top: 1.5rem;">
                                 <div>
-                                    <div style="width: 70px; height: 70px; border-radius: 50%; border: 6px solid var(--primary-blue); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--primary-blue); margin: 0 auto; font-size: 1.2rem;">7</div>
+                                    <div style="width: 70px; height: 70px; border-radius: 50%; border: 6px solid var(--primary-blue); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--primary-blue); margin: 0 auto; font-size: 1.2rem;"><?php echo $officialsStats['kagawad']; ?></div>
                                     <div style="font-size: 0.75rem; color: #718096; margin-top: 0.5rem;">Kagawad</div>
                                 </div>
                                 <div>
-                                    <div style="width: 70px; height: 70px; border-radius: 50%; border: 6px solid var(--success-green); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--success-green); margin: 0 auto; font-size: 1.2rem;">7</div>
+                                    <div style="width: 70px; height: 70px; border-radius: 50%; border: 6px solid var(--success-green); display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--success-green); margin: 0 auto; font-size: 1.2rem;"><?php echo $officialsStats['sk_staff']; ?></div>
                                     <div style="font-size: 0.75rem; color: #718096; margin-top: 0.5rem;">SK & Staff</div>
                                 </div>
                             </div>

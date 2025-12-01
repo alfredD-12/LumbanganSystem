@@ -3,9 +3,11 @@
  * For: app/views/complaint/admin.php
  */
 
+// Define baseUrl globally for the confirmDeleteComplaint function
+const baseUrl = '/Lumbangan_BMIS/bmis-lumbangan-system/public';
+
 // Only run if we're on the complaints page
 if (document.getElementById('complaintForm')) {
-    const baseUrl = '/Lumbangan_BMIS/bmis-lumbangan-system/public';
     
     // Helper: safely parse JSON responses (throws if content-type isn't JSON)
     function parseJsonResponse(res) {
@@ -16,6 +18,9 @@ if (document.getElementById('complaintForm')) {
         }
         return res.json();
     }
+    
+    // Make parseJsonResponse global for confirmDeleteComplaint
+    window.parseJsonResponse = parseJsonResponse;
 
     // Helper: render a complaint card HTML (matches server-side markup)
     function renderComplaintCard(c) {
@@ -115,6 +120,9 @@ if (document.getElementById('complaintForm')) {
         const card = btn ? btn.closest('.incident-card') : document.querySelector(`.incident-card .edit-btn[data-id="${id}"]`)?.closest('.incident-card');
         if (card && card.parentNode) card.parentNode.removeChild(card);
     }
+    
+    // Make removeComplaintCardById global for confirmDeleteComplaint
+    window.removeComplaintCardById = removeComplaintCardById;
 
     function bindCardButtons() {
         // Bind view details
@@ -185,24 +193,10 @@ if (document.getElementById('complaintForm')) {
         document.querySelectorAll('.delete-btn').forEach(btn => {
             if (!btn._bound) {
                 btn.addEventListener('click', function() {
-                    if (!confirm('Are you sure you want to delete this complaint?')) return;
                     const id = this.dataset.id;
-                    const delForm = new FormData();
-                    delForm.append('id', id);
-                    fetch(`${baseUrl}/index.php?action=deleteComplaint`, { method: 'POST', body: delForm })
-                        .then(parseJsonResponse)
-                        .then(data => {
-                            if (data.success) {
-                                removeComplaintCardById(id);
-                                // decrement total
-                                const totalEl = document.querySelector('.gradient-card-blue h2');
-                                if (totalEl) totalEl.textContent = Math.max(0, parseInt(totalEl.textContent || '0') - 1);
-                                alert(data.message || 'Deleted');
-                            } else {
-                                alert('Error deleting complaint: ' + (data.message || 'Unknown'));
-                            }
-                        })
-                        .catch(err => { console.error('Delete error', err); alert('Error deleting complaint: ' + (err.message || err)); });
+                    window.complaintToDelete = id;
+                    const deleteModal = new bootstrap.Modal(document.getElementById('deleteComplaintModal'));
+                    deleteModal.show();
                 });
                 btn._bound = true;
             }
@@ -550,4 +544,48 @@ if (document.getElementById('complaintForm')) {
         
         filterAllCards();
     }
+}
+
+// Show success notification
+function showSuccess(message) {
+    document.getElementById('successMessage').textContent = message;
+    const modal = new bootstrap.Modal(document.getElementById('successModal'));
+    modal.show();
+    setTimeout(() => modal.hide(), 2000);
+}
+
+// Show error notification
+function showError(message) {
+    document.getElementById('errorMessage').textContent = message;
+    const modal = new bootstrap.Modal(document.getElementById('errorModal'));
+    modal.show();
+    setTimeout(() => modal.hide(), 3000);
+}
+
+// Confirm delete complaint function
+function confirmDeleteComplaint() {
+    const id = window.complaintToDelete;
+    if (!id) return;
+
+    const delForm = new FormData();
+    delForm.append('id', id);
+    
+    fetch(`${baseUrl}/index.php?action=deleteComplaint`, { method: 'POST', body: delForm })
+        .then(window.parseJsonResponse)
+        .then(data => {
+            if (data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('deleteComplaintModal')).hide();
+                window.complaintToDelete = null;
+                window.removeComplaintCardById(id);
+                const totalEl = document.querySelector('.gradient-card-blue h2');
+                if (totalEl) totalEl.textContent = Math.max(0, parseInt(totalEl.textContent || '0') - 1);
+                showSuccess(data.message || 'Complaint deleted successfully');
+            } else {
+                showError(data.message || 'Failed to delete complaint');
+            }
+        })
+        .catch(err => { 
+            console.error('Delete error', err); 
+            showError('Error deleting complaint');
+        });
 }

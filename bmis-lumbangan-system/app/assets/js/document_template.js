@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const selectedOption = dropdown.options[dropdown.selectedIndex];
 
       if (!selectedOption) {
-        alert("Please select a document type.");
+        showError("Please select a document type.");
         return;
       }
 
@@ -129,7 +129,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Save Template
   saveTemplateBtn.addEventListener("click", () => {
         if (!selectedDocumentTypeId) {
-            alert("Please select a document template first.");
+            showError("Please select a document template first.");
             return;
         }
 
@@ -140,7 +140,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // If no change → block update
         if (currentHTML.trim() === originalHTML.trim()) {
-            alert("No changes detected — template is already up to date.");
+            showError("No changes detected — template is already up to date.");
             return;
         }
 
@@ -153,7 +153,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   confirnmSaveTemplateBtn.addEventListener("click", () => {
     if (!selectedDocumentTypeId && !isEditing) {
-      alert("Please select a document type first.");
+      showError("Please select a document type first.");
       return;
     }
 
@@ -172,7 +172,7 @@ document.addEventListener("DOMContentLoaded", function () {
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
-          alert("Template saved successfully!");
+          showSuccess("Template saved successfully!");
           // VERY IMPORTANT — update stored original HTML
           window.originalTemplateHTML = htmlContent;
           clearEditor();
@@ -182,11 +182,11 @@ document.addEventListener("DOMContentLoaded", function () {
           );
           modal.hide();
         } else {
-          alert("Error saving template: " + data.error);
+          showError("Error saving template: " + data.error);
         }
       })
       .catch((err) => {
-        alert("An error occurred while saving the template.");
+        showError("An error occurred while saving the template.");
         console.error(err);
       });
   });

@@ -1,6 +1,69 @@
 <?php include __DIR__ . '/../../components/resident_components/header-resident.php'; ?>
     <!-- Residents Complaint Page CSS -->
     <link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/residents/residents.css?v=<?php echo time(); ?>">
+
+<!-- Custom Tooltip Styles -->
+<style>
+.case-type-tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.case-type-tooltip .tooltip-text {
+    visibility: hidden;
+    width: 320px;
+    background-color: #ffffff;
+    color: #333;
+    text-align: left;
+    border-radius: 8px;
+    padding: 16px;
+    position: absolute;
+    z-index: 1000;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -160px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 13px;
+    line-height: 1.6;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: 1px solid #e0e0e0;
+}
+
+.case-type-tooltip .tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -6px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: #ffffff transparent transparent transparent;
+}
+
+.case-type-tooltip .tooltip-text::before {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -7px;
+    border-width: 7px;
+    border-style: solid;
+    border-color: #e0e0e0 transparent transparent transparent;
+}
+
+.case-type-tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+.tooltip-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #0d6efd;
+    font-size: 14px;
+}
+</style>
 <?php
 /**
  * Resident Dashboard View
@@ -386,17 +449,50 @@ if (!isset($complaints) || !isset($statistics) || !isset($statuses) || !isset($c
                                                 <div class="d-flex gap-4">
                                                     <div class="form-check">
                                                         <input class="form-check-input" type="radio" name="case_type_id" id="criminalCase" value="1" required>
-                                                        <label class="form-check-label" for="criminalCase">Criminal</label>
+                                                        <label class="form-check-label" for="criminalCase">
+                                                            Criminal 
+                                                            <span class="case-type-tooltip">
+                                                                <i class="fas fa-info-circle text-primary" style="font-size: 0.9em; cursor: help;"></i>
+                                                                <span class="tooltip-text">
+                                                                    <div class="tooltip-title">Criminal Cases</div>
+                                                                    Violations of law punishable by the state.<br>
+                                                                    <strong>Examples:</strong> Theft, assault, robbery, physical injuries, trespassing
+                                                                </span>
+                                                            </span>
+                                                        </label>
                                                     </div>
                                                     <div class="form-check">
                                                         <input class="form-check-input" type="radio" name="case_type_id" id="civilCase" value="2">
-                                                        <label class="form-check-label" for="civilCase">Civil</label>
+                                                        <label class="form-check-label" for="civilCase">
+                                                            Civil 
+                                                            <span class="case-type-tooltip">
+                                                                <i class="fas fa-info-circle text-primary" style="font-size: 0.9em; cursor: help;"></i>
+                                                                <span class="tooltip-text">
+                                                                    <div class="tooltip-title">Civil Cases</div>
+                                                                    Disputes between individuals or entities.<br>
+                                                                    <strong>Examples:</strong> Property disputes, debt collection, contract violations, boundary disputes
+                                                                </span>
+                                                            </span>
+                                                        </label>
                                                     </div>
                                                     <div class="form-check">
                                                         <input class="form-check-input" type="radio" name="case_type_id" id="othersCase" value="3">
-                                                        <label class="form-check-label" for="othersCase">Others</label>
+                                                        <label class="form-check-label" for="othersCase">
+                                                            Others 
+                                                            <span class="case-type-tooltip">
+                                                                <i class="fas fa-info-circle text-primary" style="font-size: 0.9em; cursor: help;"></i>
+                                                                <span class="tooltip-text">
+                                                                    <div class="tooltip-title">Other Cases</div>
+                                                                    Complaints that don't fit criminal or civil categories.<br>
+                                                                    <strong>Examples:</strong> Noise complaints, public nuisance, community concerns
+                                                                </span>
+                                                            </span>
+                                                        </label>
                                                     </div>
                                                 </div>
+                                                <small class="text-muted d-block mt-2">
+                                                    <i class="fas fa-lightbulb"></i> Hover over the info icons to see descriptions
+                                                </small>
                                             </div>
                                             
                                             <div class="col-md-6">
@@ -450,7 +546,52 @@ if (!isset($complaints) || !isset($statistics) || !isset($statuses) || !isset($c
         </div>
     </div>
 
+    <!-- Success Notification Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-body text-center py-4">
+                    <i class="fas fa-check-circle text-success" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3 mb-2" id="successTitle">Success!</h5>
+                    <p class="mb-0 text-muted" id="successMessage"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Notification Modal -->
+    <div class="modal fade" id="errorModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-body text-center py-4">
+                    <i class="fas fa-exclamation-circle text-danger" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3 mb-2">Error!</h5>
+                    <p class="mb-0 text-muted" id="errorMessage"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+    // Show success notification
+    function showSuccess(message) {
+        document.getElementById('successMessage').textContent = message;
+        const modal = new bootstrap.Modal(document.getElementById('successModal'));
+        modal.show();
+        setTimeout(() => {
+            modal.hide();
+            location.reload();
+        }, 2000);
+    }
+
+    // Show error notification
+    function showError(message) {
+        document.getElementById('errorMessage').textContent = message;
+        const modal = new bootstrap.Modal(document.getElementById('errorModal'));
+        modal.show();
+        setTimeout(() => modal.hide(), 3000);
+    }
+
     // Handle form submission
     document.addEventListener('DOMContentLoaded', function() {
         // Handle form submission
@@ -471,17 +612,16 @@ if (!isset($complaints) || !isset($statistics) || !isset($statuses) || !isset($c
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Complaint filed successfully!');
-                    location.reload();
+                    showSuccess('Complaint filed successfully!');
                 } else {
-                    alert('Error: ' + (data.message || 'Failed to file complaint'));
+                    showError(data.message || 'Failed to file complaint');
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originalText;
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('An error occurred while filing the complaint');
+                showError('An error occurred while filing the complaint');
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
             });

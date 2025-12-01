@@ -140,7 +140,7 @@ if (document.getElementById('complaintForm')) {
                         // ... (the existing view-details code below handles rendering)
                         // For simplicity, call the same logic by triggering a custom event
                         document.dispatchEvent(new CustomEvent('complaint:detailsLoaded', { detail: data }));
-                    }).catch(err => alert('Error loading details: ' + (err.message || err)));
+                    }).catch(err => showError('Error loading details: ' + (err.message || err)));
                 });
                 btn._bound = true;
             }
@@ -182,7 +182,7 @@ if (document.getElementById('complaintForm')) {
                         })
                         .catch(err => {
                             console.error('Error loading complaint details:', err);
-                            alert('Error loading complaint details: ' + (err.message || err));
+                            showError('Error loading complaint details: ' + (err.message || err));
                         });
                 });
                 btn._bound = true;
@@ -394,7 +394,7 @@ if (document.getElementById('complaintForm')) {
         .then(parseJsonResponse)
         .then(data => {
             if (data.success) {
-                alert(data.message || 'Saved');
+                showSuccess(data.message || 'Complaint saved successfully');
                 // If server returned the record data, update the DOM accordingly
                 if (data.data) {
                     if (complaintId) {
@@ -419,12 +419,12 @@ if (document.getElementById('complaintForm')) {
                 document.getElementById('modalTitle').textContent = 'Add New Complaint';
                 document.getElementById('submitBtn').textContent = 'Submit';
             } else {
-                alert('Error: ' + (data.message || 'Failed to save complaint'));
+                showError(data.message || 'Failed to save complaint');
             }
         })
         .catch(err => {
             console.error('Error saving complaint:', err);
-            alert('Error saving complaint: ' + (err.message || err));
+            showError('Error saving complaint: ' + (err.message || err));
         });
     });
     
@@ -449,13 +449,31 @@ if (document.getElementById('complaintForm')) {
         const statusLabel = statusSelect.options[statusSelect.selectedIndex].text;
 
         if (statusId == 3) {
-            if (!confirm('Are you sure you want to mark this complaint as RESOLVED? This action cannot be undone and the status will be locked.')) {
-                return;
-            }
+            // Store data for confirmation
+            window.pendingStatusUpdate = { complaintId, statusId, statusLabel };
+            const resolveModal = new bootstrap.Modal(document.getElementById('resolveConfirmModal'));
+            resolveModal.show();
+            return;
         }
 
+        // If not resolving, proceed directly
+        performStatusUpdate(complaintId, statusId, statusLabel);
+    };
+
+    // Confirm resolve status function
+    window.confirmResolveStatus = function() {
+        const data = window.pendingStatusUpdate;
+        if (!data) return;
+        
+        bootstrap.Modal.getInstance(document.getElementById('resolveConfirmModal')).hide();
+        performStatusUpdate(data.complaintId, data.statusId, data.statusLabel);
+        window.pendingStatusUpdate = null;
+    };
+
+    // Perform the actual status update
+    function performStatusUpdate(complaintId, statusId, statusLabel) {
+
         const formData = new FormData();
-        // AdminController expects 'id' and 'status_id'
         formData.append('id', complaintId);
         formData.append('status_id', statusId);
 
@@ -466,7 +484,7 @@ if (document.getElementById('complaintForm')) {
         .then(parseJsonResponse)
         .then(data => {
             if (data.success) {
-                alert('Status updated successfully to: ' + statusLabel);
+                showSuccess('Status updated to: ' + statusLabel);
                 // Update counts if stats returned
                 if (data.stats) {
                     const totalEl = document.querySelector('.gradient-card-blue h2');
@@ -488,14 +506,14 @@ if (document.getElementById('complaintForm')) {
                     if (badge) badge.className = 'status-badge status-' + statusLabel.toLowerCase();
                 }
             } else {
-                alert('Error: ' + (data.error || data.message || 'Failed to update status'));
+                showError(data.error || data.message || 'Failed to update status');
             }
         })
         .catch(err => {
             console.error('Error updating status:', err);
-            alert('Error updating status: ' + (err.message || err));
+            showError('Error updating status: ' + (err.message || err));
         });
-    };
+    }
     
     // Filtering functionality
     if (document.getElementById('statusFilter')) {

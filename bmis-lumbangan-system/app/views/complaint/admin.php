@@ -9,6 +9,69 @@ include __DIR__ . '/../../components/admin_components/header-admin.php';
 ?>
 <!-- Admin Complaint Page CSS -->
 <link rel="stylesheet" href="<?php echo BASE_URL . 'assets/css/complaint/admin.css'; ?>">
+
+<!-- Custom Tooltip Styles -->
+<style>
+.case-type-tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.case-type-tooltip .tooltip-text {
+    visibility: hidden;
+    width: 320px;
+    background-color: #ffffff;
+    color: #333;
+    text-align: left;
+    border-radius: 8px;
+    padding: 16px;
+    position: absolute;
+    z-index: 1000;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -160px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 13px;
+    line-height: 1.6;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: 1px solid #e0e0e0;
+}
+
+.case-type-tooltip .tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -6px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: #ffffff transparent transparent transparent;
+}
+
+.case-type-tooltip .tooltip-text::before {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -7px;
+    border-width: 7px;
+    border-style: solid;
+    border-color: #e0e0e0 transparent transparent transparent;
+}
+
+.case-type-tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+.tooltip-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #0d6efd;
+    font-size: 14px;
+}
+</style>
 <?php
 
 /**
@@ -402,17 +465,50 @@ if (!isset($complaints) || !isset($statistics) || !isset($statuses) || !isset($c
                                                 <div class="d-flex gap-4">
                                                     <div class="form-check">
                                                         <input class="form-check-input" type="radio" name="case_type_id" id="criminalCase" value="1" required>
-                                                        <label class="form-check-label" for="criminalCase">Criminal</label>
+                                                        <label class="form-check-label" for="criminalCase">
+                                                            Criminal 
+                                                            <span class="case-type-tooltip">
+                                                                <i class="fas fa-info-circle text-primary" style="font-size: 0.9em; cursor: help;"></i>
+                                                                <span class="tooltip-text">
+                                                                    <div class="tooltip-title">Criminal Cases</div>
+                                                                    Violations of law punishable by the state.<br>
+                                                                    <strong>Examples:</strong> Theft, assault, robbery, physical injuries, trespassing
+                                                                </span>
+                                                            </span>
+                                                        </label>
                                                     </div>
                                                     <div class="form-check">
                                                         <input class="form-check-input" type="radio" name="case_type_id" id="civilCase" value="2">
-                                                        <label class="form-check-label" for="civilCase">Civil</label>
+                                                        <label class="form-check-label" for="civilCase">
+                                                            Civil 
+                                                            <span class="case-type-tooltip">
+                                                                <i class="fas fa-info-circle text-primary" style="font-size: 0.9em; cursor: help;"></i>
+                                                                <span class="tooltip-text">
+                                                                    <div class="tooltip-title">Civil Cases</div>
+                                                                    Disputes between individuals or entities.<br>
+                                                                    <strong>Examples:</strong> Property disputes, debt collection, contract violations, boundary disputes
+                                                                </span>
+                                                            </span>
+                                                        </label>
                                                     </div>
                                                     <div class="form-check">
                                                         <input class="form-check-input" type="radio" name="case_type_id" id="othersCase" value="3">
-                                                        <label class="form-check-label" for="othersCase">Others</label>
+                                                        <label class="form-check-label" for="othersCase">
+                                                            Others 
+                                                            <span class="case-type-tooltip">
+                                                                <i class="fas fa-info-circle text-primary" style="font-size: 0.9em; cursor: help;"></i>
+                                                                <span class="tooltip-text">
+                                                                    <div class="tooltip-title">Other Cases</div>
+                                                                    Complaints that don't fit criminal or civil categories.<br>
+                                                                    <strong>Examples:</strong> Noise complaints, public nuisance, community concerns
+                                                                </span>
+                                                            </span>
+                                                        </label>
                                                     </div>
                                                 </div>
+                                                <small class="text-muted d-block mt-2">
+                                                    <i class="fas fa-lightbulb"></i> Hover over the info icons to see descriptions
+                                                </small>
                                             </div>
 
                                             <div class="col-md-6">
@@ -504,6 +600,28 @@ if (!isset($complaints) || !isset($statistics) || !isset($statuses) || !isset($c
                     <i class="fas fa-exclamation-circle text-danger" style="font-size: 3rem;"></i>
                     <h5 class="mt-3 mb-2">Error!</h5>
                     <p class="mb-0 text-muted" id="errorMessage"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resolve Confirmation Modal -->
+    <div class="modal fade" id="resolveConfirmModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-white">
+                    <h5 class="modal-title">Mark as Resolved</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to mark this complaint as <strong>RESOLVED</strong>?</p>
+                    <p class="text-danger"><strong>This action cannot be undone and the status will be locked!</strong></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-warning" onclick="confirmResolveStatus()">
+                        <i class="fas fa-check"></i> Mark as Resolved
+                    </button>
                 </div>
             </div>
         </div>

@@ -217,12 +217,48 @@ class AuthController {
             'marital_status' => $marital_status
         ];
 
+        // Handle face embedding and image
+        $faceEmbedding = null;
+        $faceImagePath = null;
+
+        $faceEmbeddingRaw = trim($_POST['face_embedding'] ?? '');
+        $faceImageB64     = trim($_POST['face_image_b64'] ?? '');
+
+        if (!empty($faceEmbeddingRaw)) {
+            $decoded = json_decode($faceEmbeddingRaw, true);
+            if (is_array($decoded) && count($decoded) === 128) {
+                $faceEmbedding = $faceEmbeddingRaw;
+            }
+        }
+
+        // Save face image if provided
+        if (!empty($faceImageB64) && $faceEmbedding) {
+            try {
+                $uploadDir = dirname(__DIR__) . '/uploads/faces/';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+                // Strip data URI prefix
+                $imgData = preg_replace('/^data:image\/\w+;base64,/', '', $faceImageB64);
+                $imgBytes = base64_decode($imgData);
+                if ($imgBytes !== false) {
+                    $filename = 'face_' . uniqid('', true) . '.jpg';
+                    file_put_contents($uploadDir . $filename, $imgBytes);
+                    $faceImagePath = 'faces/' . $filename;
+                }
+            } catch (Exception $imgEx) {
+                error_log('Face image save error: ' . $imgEx->getMessage());
+            }
+        }
+
         // Prepare user data
         $userData = [
-            'username' => $username,
-            'email' => $email,
-            'mobile' => $mobile ?: null,
-            'password_hash' => password_hash($password, PASSWORD_DEFAULT)
+            'username'       => $username,
+            'email'          => $email,
+            'mobile'         => $mobile ?: null,
+            'password_hash'  => password_hash($password, PASSWORD_DEFAULT),
+            'face_embedding' => $faceEmbedding,
+            'face_image_path'=> $faceImagePath,
         ];
 
         // Create user

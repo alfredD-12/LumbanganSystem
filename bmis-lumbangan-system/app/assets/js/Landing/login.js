@@ -175,30 +175,30 @@ document.getElementById('signupForm')?.addEventListener('submit', async function
         return;
     }
     
-    // Close login modal properly
+    // Keep the login modal open — face scan swaps content inside it
     const loginModal = document.getElementById('loginModal');
-    if (loginModal) {
-        loginModal.style.display = 'none';
-        loginModal.classList.remove('show');
-    }
-    
-    // Reset body scroll
-    document.body.style.overflow = 'auto';
-    
-    // Small delay to ensure modal closes, then open verification modal
+
+    // Small delay to ensure modal closes, then open face scan inline
     setTimeout(() => {
-        // Open email verification modal with the registration data
-        if (typeof openEmailVerificationModal === 'function') {
+        if (typeof openFaceScanInline === 'function') {
+            // Face scan inside the modal → on success → email verification
+            openFaceScanInline(formData, function () {
+                if (typeof openEmailVerificationModal === 'function') {
+                    openEmailVerificationModal(formData);
+                } else {
+                    showRegisterError('Email verification system not available. Please try again.');
+                }
+            });
+        } else if (typeof openEmailVerificationModal === 'function') {
+            // Fallback — no face scan
             openEmailVerificationModal(formData);
         } else {
-            console.error('Email verification function not found');
-            // Fallback: show login modal again
             if (loginModal) {
                 loginModal.style.display = 'flex';
                 loginModal.classList.add('show');
                 document.body.style.overflow = 'hidden';
             }
-            showRegisterError('Email verification system not available. Please try again.');
+            showRegisterError('Verification system not available. Please try again.');
         }
     }, 100);
 });

@@ -90,15 +90,17 @@ class User {
     /**
      * Create new user (registration)
      * Returns the new user ID or false on failure
+     *
+     * $userData may optionally include:
+     *   'face_embedding'  — JSON string of 128 floats
+     *   'face_image_path' — relative path to stored face image
+     *   'face_verified_at'— datetime string
      */
     public function create($personData, $userData) {
         try {
             $this->conn->beginTransaction();
 
             // 1. Create person record.
-            // household_id is NULL and family_id is 0 (or a designated 'unassigned' ID)
-            // as the user is not yet part of a household/family.
-            // is_head is 0 by default.
             $person_query = "INSERT INTO persons 
                             (family_id, household_id, last_name, first_name, middle_name, suffix, sex, birthdate, 
                              marital_status, is_head, created_at, updated_at) 
@@ -118,18 +120,31 @@ class User {
             $person_stmt->execute();
             $person_id = $this->conn->lastInsertId();
 
-            // 2. Create user account
+            // 2. Create user account (with optional face columns)
+            $faceEmbedding   = $userData['face_embedding']   ?? null;
+            $faceImagePath   = $userData['face_image_path']  ?? null;
+            $faceVerifiedAt  = $faceEmbedding ? date('Y-m-d H:i:s') : null;
+            $faceEnrolled    = $faceEmbedding ? 1 : 0;
+
             $user_query = "INSERT INTO users 
-                          (person_id, username, email, mobile, password_hash, status, created_at, updated_at) 
+                          (person_id, username, email, mobile, password_hash, status,
+                           face_embedding, face_image_path, face_verified_at, face_enrolled,
+                           created_at, updated_at) 
                           VALUES 
-                          (:person_id, :username, :email, :mobile, :password_hash, 'active', NOW(), NOW())";
+                          (:person_id, :username, :email, :mobile, :password_hash, 'active',
+                           :face_embedding, :face_image_path, :face_verified_at, :face_enrolled,
+                           NOW(), NOW())";
             
             $user_stmt = $this->conn->prepare($user_query);
-            $user_stmt->bindParam(':person_id', $person_id);
-            $user_stmt->bindParam(':username', $userData['username']);
-            $user_stmt->bindParam(':email', $userData['email']);
-            $user_stmt->bindParam(':mobile', $userData['mobile']);
-            $user_stmt->bindParam(':password_hash', $userData['password_hash']);
+            $user_stmt->bindParam(':person_id',       $person_id);
+            $user_stmt->bindParam(':username',        $userData['username']);
+            $user_stmt->bindParam(':email',           $userData['email']);
+            $user_stmt->bindParam(':mobile',          $userData['mobile']);
+            $user_stmt->bindParam(':password_hash',   $userData['password_hash']);
+            $user_stmt->bindValue(':face_embedding',  $faceEmbedding,  $faceEmbedding  ? PDO::PARAM_STR : PDO::PARAM_NULL);
+            $user_stmt->bindValue(':face_image_path', $faceImagePath,  $faceImagePath  ? PDO::PARAM_STR : PDO::PARAM_NULL);
+            $user_stmt->bindValue(':face_verified_at',$faceVerifiedAt, $faceVerifiedAt ? PDO::PARAM_STR : PDO::PARAM_NULL);
+            $user_stmt->bindParam(':face_enrolled',   $faceEnrolled,   PDO::PARAM_INT);
             $user_stmt->execute();
             $user_id = $this->conn->lastInsertId();
 
@@ -141,5 +156,16 @@ class User {
             error_log("User registration error: " . $e->getMessage());
             return false;
         }
+    }
+
+    /**
+     * Fetch all face embeddings for duplicate checking
+     */
+    public function getAllFaceEmbeddings() {
+        $stmt = $this->conn->prepare(
+            "SELECT id, face_embedding FROM users WHERE face_embedding IS NOT NULL AND face_embedding != ''"
+        );
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

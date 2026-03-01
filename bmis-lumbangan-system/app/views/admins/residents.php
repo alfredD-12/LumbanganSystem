@@ -2,7 +2,7 @@
 // Admin Residents View
 if (!defined('BASE_URL')) require_once dirname(__DIR__, 2) . '/config/config.php';
 $pageTitle = 'Residents';
-$pageSubtitle = 'List of residents (searchable)';
+$pageSubtitle = 'List of ';
 require_once dirname(__DIR__, 2) . '/components/admin_components/header-admin.php';
 
 // include residents specific stylesheet
@@ -244,7 +244,8 @@ document.addEventListener('DOMContentLoaded', function(){
 // preload assessments json (exposed to JS file)
 $assessmentsJson = json_encode($assessmentsByPerson ?? []);
 echo '<script>window.assessmentsByPerson = ' . $assessmentsJson . ';</script>' . "\n";
-
+// expose BASE_URL to client scripts (ensures API paths resolve correctly)
+echo '<script>window.BASE_URL = ' . json_encode(rtrim(BASE_URL, '/')) . ';</script>' . "\n";
 // include residents specific script
 echo '<script src="' . BASE_URL . 'assets/js/admins/residents.js"></script>' . "\n";
 

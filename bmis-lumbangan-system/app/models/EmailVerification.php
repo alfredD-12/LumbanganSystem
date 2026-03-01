@@ -126,9 +126,10 @@ class EmailVerification {
      * Delete pending verifications for an email
      */
     private function deletePendingByEmail($email) {
+        // Delete ALL verification records for this email (pending AND verified)
+        // so old verified rows don't cause a duplicate-entry error on re-registration attempts
         $query = "DELETE FROM " . $this->table . " 
-                  WHERE email = :email 
-                  AND verified_at IS NULL";
+                  WHERE email = :email";
         
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':email', $email);

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 27, 2025 at 03:44 AM
+-- Generation Time: Nov 28, 2025 at 12:36 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -66,7 +66,7 @@ INSERT INTO `angina_stroke_screening` (`id`, `cvd_id`, `q1_chest_discomfort`, `q
 (18, 18, 0, 1, 1, 0, 1, 0, 1, 1, '2025-10-30 08:05:00'),
 (19, 19, 0, 0, 0, 0, 0, 0, 0, 0, '2025-09-25 13:38:00'),
 (20, 20, 0, 0, 0, 0, 0, 0, 0, 0, '2025-08-28 07:25:00'),
-(21, 24, 0, 0, 0, 0, 0, 0, 0, 0, '2025-11-24 19:01:32'),
+(21, 24, 0, 0, 0, 0, 0, 1, 0, 0, '2025-11-24 19:01:32'),
 (22, 25, 1, 1, 1, 1, 1, 1, 0, 0, '2025-11-26 09:28:29');
 
 -- --------------------------------------------------------
@@ -100,6 +100,64 @@ INSERT INTO `announcements` (`id`, `title`, `message`, `image`, `audience`, `sta
 --
 -- Triggers `announcements`
 --
+DELIMITER $$
+CREATE TRIGGER `notify_announcement_update` AFTER UPDATE ON `announcements` FOR EACH ROW BEGIN
+    DECLARE target_type VARCHAR(10);
+    DECLARE old_target_type VARCHAR(10);
+    
+    -- Only process if announcement is published
+    IF NEW.status = 'published' THEN
+        -- Map NEW audience to notification user_type
+        SET target_type = CASE NEW.audience
+            WHEN 'residents' THEN 'user'
+            WHEN 'officials' THEN 'official'
+            ELSE 'all'
+        END;
+        
+        -- Map OLD audience to notification user_type
+        SET old_target_type = CASE OLD.audience
+            WHEN 'residents' THEN 'user'
+            WHEN 'officials' THEN 'official'
+            ELSE 'all'
+        END;
+        
+        -- If audience changed, delete old notifications and create new ones
+        IF OLD.audience <> NEW.audience THEN
+            -- Delete old notifications for the previous audience
+            DELETE FROM `notifications` 
+            WHERE notification_type = 'announcement' 
+            AND reference_id = NEW.id 
+            AND user_type = old_target_type;
+            
+            -- Create new notification for the new audience
+            INSERT INTO `notifications` 
+            (`user_id`, `user_type`, `notification_type`, `title`, `message`, `link`, `reference_id`)
+            VALUES 
+            (NULL, target_type, 'announcement', 
+             CONCAT('New Announcement: ', NEW.title),
+             LEFT(NEW.message, 150),
+             CONCAT('?page=public_announcement#announcement-', NEW.id),
+             NEW.id);
+        
+        -- If audience didn't change but title or message changed, update existing notification
+        ELSEIF OLD.title <> NEW.title OR OLD.message <> NEW.message THEN
+            UPDATE `notifications` 
+            SET title = CONCAT('Updated Announcement: ', NEW.title),
+                message = LEFT(NEW.message, 150)
+            WHERE notification_type = 'announcement' 
+            AND reference_id = NEW.id 
+            AND user_type = target_type;
+        END IF;
+    
+    -- If status changed from published to draft/archived, delete all notifications
+    ELSEIF OLD.status = 'published' AND NEW.status <> 'published' THEN
+        DELETE FROM `notifications` 
+        WHERE notification_type = 'announcement' 
+        AND reference_id = NEW.id;
+    END IF;
+END
+$$
+DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER `notify_new_announcement` AFTER INSERT ON `announcements` FOR EACH ROW BEGIN
     DECLARE target_type VARCHAR(10);
@@ -194,7 +252,7 @@ INSERT INTO `cvd_ncd_risk_assessments` (`id`, `person_id`, `answered_at`, `surve
 (1, 1, '2025-11-22 11:18:07', 2, '2025-11-22', 'Monthly check', 1, 19, '2025-11-22 12:00:00', 'OK'),
 (2, 2, '2025-10-05 09:05:00', 3, '2025-10-05', 'October monthly - visit 1', 1, 20, '2025-10-05 10:00:00', 'Approved'),
 (3, 2, '2025-10-27 14:12:00', 4, '2025-10-27', 'October monthly - visit 2', 1, 21, '2025-10-27 15:00:00', 'Approved - duplicate'),
-(4, 3, '2025-10-01 09:10:00', 5, '2025-10-01', 'Initial entry', 0, NULL, NULL, NULL),
+(4, 3, '2025-11-01 09:10:00', 5, '2025-10-01', 'Initial entry', 0, NULL, NULL, NULL),
 (5, 4, '2025-09-15 14:22:00', 6, '2025-09-15', 'Follow-up', 1, 22, '2025-09-15 15:00:00', 'Reviewed'),
 (6, 5, '2025-08-20 08:30:00', 2, '2025-08-20', 'Monthly', 0, NULL, NULL, NULL),
 (7, 6, '2025-07-05 10:05:00', 7, '2025-07-05', 'Baseline', 1, 23, '2025-07-05 11:00:00', 'OK'),
@@ -214,7 +272,7 @@ INSERT INTO `cvd_ncd_risk_assessments` (`id`, `person_id`, `answered_at`, `surve
 (21, 18, '2025-10-30 08:00:00', 15, '2025-10-30', 'Follow-up', 1, 19, '2025-10-30 09:00:00', 'Follow up required'),
 (22, 19, '2025-09-25 13:33:00', 16, '2025-09-25', 'Community screening', 0, NULL, NULL, NULL),
 (23, 20, '2025-08-28 07:22:00', 17, '2025-08-28', 'Monthly', 1, 21, '2025-08-28 08:00:00', NULL),
-(24, 51, '2025-11-24 18:58:51', NULL, '2025-11-24', NULL, 0, NULL, NULL, NULL),
+(24, 51, '2025-11-24 18:58:51', NULL, '2025-11-24', NULL, 1, NULL, '2025-11-28 07:10:06', NULL),
 (25, 53, '2025-11-26 09:26:27', NULL, '2025-11-26', NULL, 0, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
@@ -284,7 +342,7 @@ INSERT INTO `diabetes_screening` (`id`, `cvd_id`, `known_diabetes`, `on_medicati
 (18, 18, 0, 0, 1, 0, 0, 0, 0, 125.00, 115.00, 6.90, NULL, NULL, 0, '2025-10-30 08:03:00'),
 (19, 19, 0, 0, 0, 0, 0, 0, 0, 99.00, 94.00, 5.30, NULL, NULL, 0, '2025-09-25 13:35:00'),
 (20, 20, 0, 0, 0, 0, 0, 0, 0, 88.00, 83.00, 4.80, NULL, NULL, 0, '2025-08-28 07:23:00'),
-(21, 24, 0, 0, 0, 0, 0, 0, 0, 70.00, 70.00, 5.00, 0, 0, NULL, '2025-11-25 19:28:39'),
+(21, 24, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-28 07:10:06'),
 (24, 25, 1, 1, 1, 1, 1, 1, 1, 70.00, 70.00, 5.00, 1, 1, NULL, '2025-11-26 09:35:27');
 
 -- --------------------------------------------------------
@@ -423,6 +481,31 @@ CREATE TABLE `document_types` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `email_verifications`
+--
+
+CREATE TABLE `email_verifications` (
+  `id` int(11) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `code` varchar(6) NOT NULL,
+  `token` varchar(64) NOT NULL,
+  `person_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT 'Stores first_name, last_name, middle_name, suffix, sex, birthdate, marital_status' CHECK (json_valid(`person_data`)),
+  `user_data` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT 'Stores username, email, mobile, password_hash' CHECK (json_valid(`user_data`)),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `expires_at` timestamp NOT NULL DEFAULT (current_timestamp() + interval 1 hour),
+  `verified_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Stores temporary email verification data during registration';
+
+--
+-- Dumping data for table `email_verifications`
+--
+
+INSERT INTO `email_verifications` (`id`, `email`, `code`, `token`, `person_data`, `user_data`, `created_at`, `expires_at`, `verified_at`) VALUES
+(1, 'hyphetv@gmail.com', '536506', 'c71996e20970fc6b4f67e1b4e2af0c4f800f80cde5c33e6193c738f53be4f671', '{\"first_name\":\"Nicca Kate\",\"last_name\":\"Arroyo\",\"middle_name\":\"A\",\"suffix\":null,\"sex\":null,\"birthdate\":null,\"marital_status\":\"Single\"}', '{\"username\":\"aryoooo\",\"email\":\"hyphetv@gmail.com\",\"mobile\":\"\",\"password_hash\":\"$2y$10$dtwsMk8Cr7Q.J24SI7MNU.q7rL\\/SoZeuAQ2n4c1bhLyaOP2jlqdpG\"}', '2025-11-27 23:33:30', '2025-11-28 00:33:30', NULL);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `families`
 --
 
@@ -459,7 +542,7 @@ INSERT INTO `families` (`id`, `household_id`, `family_number`, `head_person_id`,
 (13, 13, 'FAM-13', 41, 'Permanent', NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
 (14, 14, 'FAM-14', 43, 'Permanent', NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
 (15, 15, 'FAM-15', 46, 'Permanent', NULL, NULL, NULL, '2025-11-24 10:59:44', '2025-11-24 10:59:44'),
-(16, 16, '0995-3373-692', 51, 'Permanent', 26, 'davidgludo@gmail.com', '2025-11-26', '2025-11-24 19:02:38', '2025-11-26 11:10:36'),
+(16, 16, '0995-3373-692', 51, 'Permanent', 26, 'davidgludo@gmail.com', '2025-11-27', '2025-11-24 19:02:38', '2025-11-28 03:15:07'),
 (31, 31, '0995-3373-693', 53, 'Permanent', 36, 'ley@gmail.com', '2025-11-26', '2025-11-26 11:11:25', '2025-11-26 11:11:25');
 
 -- --------------------------------------------------------
@@ -544,7 +627,7 @@ INSERT INTO `health_family_history` (`id`, `person_id`, `hypertension`, `stroke`
 (18, 18, 0, 0, 0, 0, 0, 0, 0, '2025-10-30'),
 (19, 19, 0, 0, 0, 0, 0, 0, 0, '2025-09-25'),
 (20, 20, 0, 0, 0, 0, 0, 0, 0, '2025-08-28'),
-(21, 51, 0, 0, 0, 0, 1, 0, 1, '2025-11-26'),
+(21, 51, 0, 0, 0, 0, 0, 0, 0, '2025-11-28'),
 (22, 53, 0, 0, 0, 0, 1, 0, 1, '2025-11-26');
 
 -- --------------------------------------------------------
@@ -611,6 +694,7 @@ INSERT INTO `households` (`id`, `purok_id`, `household_no`, `address`, `latitude
 
 CREATE TABLE `incidents` (
   `id` int(11) NOT NULL,
+  `user_id` bigint(20) UNSIGNED DEFAULT NULL COMMENT 'Foreign key to users table for registered complainants',
   `incident_title` varchar(255) NOT NULL,
   `blotter_type` varchar(50) NOT NULL,
   `case_type_id` int(11) NOT NULL,
@@ -639,18 +723,18 @@ CREATE TABLE `incidents` (
 -- Dumping data for table `incidents`
 --
 
-INSERT INTO `incidents` (`id`, `incident_title`, `blotter_type`, `case_type_id`, `complainant_name`, `complainant_type`, `complainant_contact`, `complainant_gender`, `complainant_birthday`, `complainant_address`, `offender_type`, `offender_gender`, `offender_name`, `offender_address`, `offender_description`, `date_of_incident`, `time_of_incident`, `location`, `narrative`, `status_id`, `created_at`, `updated_at`, `resolved_at`) VALUES
-(1, 'Illegal Parking', 'Complaint', 2, 'Gerald Mendoza', 'Resident', '09473428871', 'male', '2025-11-19', 'Sagbat Lumbangan', 'resident', 'female', 'Janna Mae', 'Elpaso', 'Near at sambungan house location', '2025-11-12', '10:50:00', 'Tabing bahay', 'Nakiparada si Janna sa tapat ng bahay nila Gerald', 1, '2025-11-19 00:46:38', '2025-11-19 00:46:38', NULL),
-(2, 'Unpaid Rents', 'Complaint', 2, 'Aling Puring', 'Resident', '09342516635', 'male', '2025-11-10', 'Role Subdivision', 'resident', 'male', 'Joseph', 'Role Subdivision', 'Secret', '2025-11-19', '10:00:00', 'Role Covered Court', 'Ilang buwan na hindi nagbabayad si Joesph kaya binabarangay na ni Aling Puring', 3, '2025-11-19 01:00:54', '2025-11-19 04:53:15', '2025-11-19 11:16:06'),
-(3, 'Carnappings', 'Complaint', 2, 'Joselito ', 'Resident', '09453789346', 'male', '2025-11-19', 'Lumbangan, Nasugbu Batangas', 'resident', 'male', 'Johnmark Marqi', 'Cogunan', 'Payat', '2025-11-19', '15:00:00', 'Sa tabing highway ', 'BAHALAA SILAAA', 1, '2025-11-19 05:28:23', '2025-11-19 16:16:59', NULL),
-(4, 'Drag Racing ', 'Complaint', 2, 'Melany', 'Resident', '12345678912', 'female', '2025-11-19', 'Role ', 'non-resident', 'male', '', '', '', '2025-11-18', '12:00:00', 'Lumbangan Highway', 'HAHAHAHAHAHAHAHA', 1, '2025-11-19 16:34:34', '2025-11-20 01:48:57', NULL),
-(5, 'HAHAJBCHBD', 'Complaint', 2, 'GGDHHHH', 'Resident', '1445565', 'male', '2025-11-19', 'TRTERYETYTY', 'resident', 'male', 'TTRYTRY', 'TFRU', 'YRYUTR', '2025-11-19', '10:07:00', 'TFTGFUUUYR', 'TRRUYTRURUY', 1, '2025-11-20 02:05:07', '2025-11-20 02:05:07', NULL),
-(6, 'Illegal Parking', 'Complaint', 2, 'Joel Salanguit', 'Resident', '09342516257', 'male', '2025-11-05', 'Sagbat Lumbangan', 'resident', 'male', 'Myla Mallari', 'Role Subdivision', 'taga looban ang  bahay', '2025-11-01', '02:16:00', 'Sagbat ', 'SIJBIHBCIHBIHSDBCIHSDBCIHBHISBHISBICBS', 2, '2025-11-20 04:15:06', '2025-11-20 05:39:24', NULL),
-(7, 'Test Complaint 2025-11-20 15:23:55', 'Complaint', 1, 'Test Complainant', 'Resident', NULL, 'male', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-20', '15:23:00', 'Test Location', 'This is a test complaint to verify the save functionality', 1, '2025-11-20 15:23:55', '2025-11-20 15:23:55', NULL),
-(9, 'HAHAHAHAHAHA', 'Complaint', 2, 'hahahahaha', 'Resident', '347847556352', 'male', '2025-11-12', 'HAHAHAHAHAHAHA', 'resident', 'male', 'hahahahahaha', 'AHAHAHAHAHAHA', 'hahahahaha', '2025-11-13', '11:45:00', 'HAHAHAHAHA', 'hahahahaha', 1, '2025-11-20 15:41:23', '2025-11-20 15:41:23', NULL),
-(10, 'Johnnjn', 'Complaint', 2, 'HAHAHAHAAHA', 'Resident', '0485945949854', 'male', '2025-11-19', 'hahahahaha', 'resident', 'male', 'HAHAHAHAHAHAA', 'hahahahaha', 'HAHAHAHAHA', '2025-11-19', '00:44:00', 'hahahahaha', 'HAHAHAHA', 1, '2025-11-20 15:43:47', '2025-11-20 15:43:47', NULL),
-(11, 'gfhjfgdhsfghfghfhf', 'Complaint', 1, 'asadasdsadasdasda', 'Resident', '67867867967969', 'male', '2025-11-19', 'sdjkgiergfuigesbdcgifg', 'resident', 'male', 'asdsadasas', 'asdadasdasdada', 'asdadasddsad', '2025-11-20', '09:58:00', 'asdasdwerwergeggsdfsdg', 'asdasdasdasdsadsdasdasdsasafa', 3, '2025-11-21 01:58:38', '2025-11-21 01:58:51', '2025-11-21 09:58:51'),
-(12, 'RALLYs', 'Complaint', 2, 'bato', 'Resident', '898957485445', 'male', '2025-11-05', 'Graba', 'resident', 'male', 'Marcos', 'HAHAHAHAHAHA', 'hahahahah', '2025-11-07', '10:50:00', 'HAHAHAHAHA DIKO ALAM', 'hahahahahahahaha ean', 2, '2025-11-21 14:49:54', '2025-11-22 05:35:40', NULL);
+INSERT INTO `incidents` (`id`, `user_id`, `incident_title`, `blotter_type`, `case_type_id`, `complainant_name`, `complainant_type`, `complainant_contact`, `complainant_gender`, `complainant_birthday`, `complainant_address`, `offender_type`, `offender_gender`, `offender_name`, `offender_address`, `offender_description`, `date_of_incident`, `time_of_incident`, `location`, `narrative`, `status_id`, `created_at`, `updated_at`, `resolved_at`) VALUES
+(1, NULL, 'Illegal Parking', 'Complaint', 2, 'Gerald Mendoza', 'Resident', '09473428871', 'male', '2025-11-19', 'Sagbat Lumbangan', 'resident', 'female', 'Janna Mae', 'Elpaso', 'Near at sambungan house location', '2025-11-12', '10:50:00', 'Tabing bahay', 'Nakiparada si Janna sa tapat ng bahay nila Gerald', 1, '2025-11-19 00:46:38', '2025-11-19 00:46:38', NULL),
+(2, NULL, 'Unpaid Rents', 'Complaint', 2, 'Aling Puring', 'Resident', '09342516635', 'male', '2025-11-10', 'Role Subdivision', 'resident', 'male', 'Joseph', 'Role Subdivision', 'Secret', '2025-11-19', '10:00:00', 'Role Covered Court', 'Ilang buwan na hindi nagbabayad si Joesph kaya binabarangay na ni Aling Puring', 3, '2025-11-19 01:00:54', '2025-11-19 04:53:15', '2025-11-19 11:16:06'),
+(3, NULL, 'Carnappings', 'Complaint', 2, 'Joselito ', 'Resident', '09453789346', 'male', '2025-11-19', 'Lumbangan, Nasugbu Batangas', 'resident', 'male', 'Johnmark Marqi', 'Cogunan', 'Payat', '2025-11-19', '15:00:00', 'Sa tabing highway ', 'BAHALAA SILAAA', 1, '2025-11-19 05:28:23', '2025-11-19 16:16:59', NULL),
+(4, NULL, 'Drag Racing ', 'Complaint', 2, 'Melany', 'Resident', '12345678912', 'female', '2025-11-19', 'Role ', 'non-resident', 'male', '', '', '', '2025-11-18', '12:00:00', 'Lumbangan Highway', 'HAHAHAHAHAHAHAHA', 1, '2025-11-19 16:34:34', '2025-11-20 01:48:57', NULL),
+(5, NULL, 'HAHAJBCHBD', 'Complaint', 2, 'GGDHHHH', 'Resident', '1445565', 'male', '2025-11-19', 'TRTERYETYTY', 'resident', 'male', 'TTRYTRY', 'TFRU', 'YRYUTR', '2025-11-19', '10:07:00', 'TFTGFUUUYR', 'TRRUYTRURUY', 1, '2025-11-20 02:05:07', '2025-11-20 02:05:07', NULL),
+(6, NULL, 'Illegal Parking', 'Complaint', 2, 'Joel Salanguit', 'Resident', '09342516257', 'male', '2025-11-05', 'Sagbat Lumbangan', 'resident', 'male', 'Myla Mallari', 'Role Subdivision', 'taga looban ang  bahay', '2025-11-01', '02:16:00', 'Sagbat ', 'SIJBIHBCIHBIHSDBCIHSDBCIHBHISBHISBICBS', 2, '2025-11-20 04:15:06', '2025-11-20 05:39:24', NULL),
+(7, NULL, 'Test Complaint 2025-11-20 15:23:55', 'Complaint', 1, 'Test Complainant', 'Resident', NULL, 'male', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-20', '15:23:00', 'Test Location', 'This is a test complaint to verify the save functionality', 1, '2025-11-20 15:23:55', '2025-11-20 15:23:55', NULL),
+(9, NULL, 'HAHAHAHAHAHA', 'Complaint', 2, 'hahahahaha', 'Resident', '347847556352', 'male', '2025-11-12', 'HAHAHAHAHAHAHA', 'resident', 'male', 'hahahahahaha', 'AHAHAHAHAHAHA', 'hahahahaha', '2025-11-13', '11:45:00', 'HAHAHAHAHA', 'hahahahaha', 1, '2025-11-20 15:41:23', '2025-11-20 15:41:23', NULL),
+(10, NULL, 'Johnnjn', 'Complaint', 2, 'HAHAHAHAAHA', 'Resident', '0485945949854', 'male', '2025-11-19', 'hahahahaha', 'resident', 'male', 'HAHAHAHAHAHAA', 'hahahahaha', 'HAHAHAHAHA', '2025-11-19', '00:44:00', 'hahahahaha', 'HAHAHAHA', 2, '2025-11-20 15:43:47', '2025-11-26 13:03:44', NULL),
+(11, NULL, 'gfhjfgdhsfghfghfhf', 'Complaint', 1, 'asadasdsadasdasda', 'Resident', '67867867967969', 'male', '2025-11-19', 'sdjkgiergfuigesbdcgifg', 'resident', 'male', 'asdsadasas', 'asdadasdasdada', 'asdadasddsad', '2025-11-20', '09:58:00', 'asdasdwerwergeggsdfsdg', 'asdasdasdasdsadsdasdasdsasafa', 3, '2025-11-21 01:58:38', '2025-11-21 01:58:51', '2025-11-21 09:58:51'),
+(12, NULL, 'RALLYs', 'Complaint', 2, 'bato', 'Resident', '898957485445', 'male', '2025-11-05', 'Graba', 'resident', 'male', 'Marcos', 'HAHAHAHAHAHA', 'hahahahah', '2025-11-07', '10:50:00', 'HAHAHAHAHA DIKO ALAM', 'hahahahahahahaha ean', 3, '2025-11-21 14:49:54', '2025-11-26 11:05:30', '2025-11-26 19:05:30');
 
 --
 -- Triggers `incidents`
@@ -745,7 +829,7 @@ INSERT INTO `lifestyle_risk` (`id`, `cvd_id`, `smoking_status`, `smoking_comment
 (18, 18, 'Stopped_gt_1yr', NULL, 'Former', 0, NULL, 0, 1, 1, 2, 20, 'Light'),
 (19, 19, 'Never', NULL, 'Never', 0, NULL, 0, 1, 1, 3, 30, 'Moderate'),
 (20, 20, 'Never', NULL, 'Never', 0, NULL, 0, 1, 1, 1, 15, 'Light'),
-(21, 24, 'Current', '', 'Never', 1, '', 1, 1, 1, 1, 15, 'Moderate'),
+(21, 24, 'Never', '', 'Never', 1, '', 1, 1, 1, 2, 65, 'Light'),
 (24, 25, 'Passive', '', 'Never', 1, '', 1, 1, 1, 2, 60, 'Moderate');
 
 -- --------------------------------------------------------
@@ -764,6 +848,43 @@ CREATE TABLE `migrations` (
   `notes` text DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `migration_predictions`
+--
+
+CREATE TABLE `migration_predictions` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `person_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `timeframe` enum('day','month','year') NOT NULL,
+  `prediction` tinyint(1) NOT NULL,
+  `probability` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`probability`)),
+  `model_version` varchar(128) DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `ml_migration_dataset_all`
+-- (See below for the actual view)
+--
+CREATE TABLE `ml_migration_dataset_all` (
+`migration_id` bigint(20) unsigned
+,`person_id` bigint(20) unsigned
+,`birthdate` date
+,`sex` enum('M','F')
+,`household_id` bigint(20) unsigned
+,`household_size` bigint(21)
+,`age` bigint(21)
+,`to_purok_id` bigint(20) unsigned
+,`from_purok_id` bigint(20) unsigned
+,`moved_at` date
+,`reason` varchar(255)
+,`is_synthetic` tinyint(1)
+);
 
 -- --------------------------------------------------------
 
@@ -855,7 +976,7 @@ CREATE TABLE `officials` (
 --
 
 INSERT INTO `officials` (`id`, `full_name`, `username`, `password_hash`, `last_login_at`, `role`, `contact_no`, `email`, `photo_url`, `active`, `created_at`, `updated_at`) VALUES
-(1, 'Ramon Santos', 'ramon.santos', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', '2025-11-27 09:44:59', 'Barangay Captain', '09170000001', 'ramon.santos@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-27 09:44:59'),
+(1, 'Ramon Santos', 'ramon.santos', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', '2025-11-28 04:40:34', 'Barangay Captain', '09170000001', 'ramon.santos@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-28 04:40:34'),
 (2, 'Maria Reyes', 'maria.reyes', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Secretary', '09170000002', 'maria.reyes@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
 (3, 'Liza Santos', 'liza.santos', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Health Worker President', '09170000003', 'liza.santos@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
 (4, 'Pedro Ramos', 'pedro.ramos', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', NULL, 'Barangay Conciliation Panel', '09170000004', 'pedro.ramos@example.local', NULL, 1, '2025-11-24 09:37:03', '2025-11-24 09:37:03'),
@@ -987,7 +1108,7 @@ INSERT INTO `persons` (`id`, `family_id`, `household_id`, `last_name`, `first_na
 (48, 15, 15, 'Kendrick', 'Willa', 'A', NULL, 0, 'F', '1995-05-05', 'Single', 'O+', NULL, 'College', 'Writer', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
 (49, 15, 15, 'Lozada', 'Xavier', 'B', NULL, 0, 'M', '1993-03-03', 'Single', 'A+', NULL, 'College', 'Engineer', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
 (50, 15, 15, 'Mata', 'Yolanda', 'C', NULL, 0, 'F', '1987-07-07', 'Married', 'B+', NULL, 'College', 'Administrator', 'Catholic', 0, 0, '2025-11-24 09:26:54', '2025-11-24 10:59:44'),
-(51, 16, 16, 'Vazques', 'John Ley Lucky', 'Medyor', NULL, 1, 'M', '2004-08-12', 'Single', 'O+', NULL, 'College', 'Student', 'Roman Catholic', NULL, 0, '2025-11-24 18:51:37', '2025-11-26 09:50:51'),
+(51, 16, 16, 'Gludo', 'David Alfred', 'Cabali', NULL, 1, 'M', '2004-08-12', 'Single', 'O+', NULL, 'College', 'Student', 'Roman Catholic', NULL, 0, '2025-11-24 18:51:37', '2025-11-28 03:09:12'),
 (52, 16, 16, 'Malata', 'Ronel Lance', 'Sumama', NULL, 0, NULL, NULL, 'Single', NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-24 19:03:16', '2025-11-25 19:28:25'),
 (53, 31, 31, 'Vazques', 'John Ley Lucky', 'Medyor', NULL, 1, 'M', '2004-08-12', 'Single', 'O+', NULL, 'College', 'Student', 'Roman Catholic', NULL, 0, '2025-11-26 09:21:41', '2025-11-26 11:11:25'),
 (54, 0, NULL, 'Condicion', 'Marlo', 'Humarang', NULL, 0, NULL, NULL, 'Single', NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-26 09:23:26', '2025-11-26 09:23:26');
@@ -1172,6 +1293,24 @@ INSERT INTO `puroks` (`id`, `name`, `centroid_lat`, `centroid_lng`, `created_at`
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `resident_migrations`
+--
+
+CREATE TABLE `resident_migrations` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `person_id` bigint(20) UNSIGNED NOT NULL,
+  `from_purok_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `to_purok_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `moved_at` date NOT NULL,
+  `reason` varchar(255) DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `is_synthetic` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `site_profile`
 --
 
@@ -1243,7 +1382,7 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `person_id`, `username`, `email`, `mobile`, `password_hash`, `status`, `last_login_at`, `created_at`, `updated_at`) VALUES
 (1, 1, 'adrian.cruz', 'adrian.cruz01@example.local', '0917-0000-001', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', '2025-11-27 09:57:50', '2025-11-24 09:26:54', '2025-11-27 09:57:50'),
 (2, 2, 'bianca.reyes', 'bianca.reyes02@example.local', '09170000002', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(3, 3, 'carlo.mendoza', 'carlo.mendoza03@example.local', '09170000003', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
+(3, 3, 'carlo.mendoza', 'carlo.mendoza03@example.local', '09170000003', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', '2025-11-28 02:05:56', '2025-11-24 09:26:54', '2025-11-28 02:05:56'),
 (4, 4, 'diana.lopez', 'diana.lopez04@example.local', '09170000004', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
 (5, 5, 'ernesto.garcia', 'ernesto.garcia05@example.local', '09170000005', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
 (6, 6, 'fiona.ramos', 'fiona.ramos06@example.local', '09170000006', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
@@ -1291,7 +1430,7 @@ INSERT INTO `users` (`id`, `person_id`, `username`, `email`, `mobile`, `password
 (48, 48, 'willa.kendrick', 'willa.kendrick48@example.local', '09170000048', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
 (49, 49, 'xavier.lozada', 'xavier.lozada49@example.local', '09170000049', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
 (50, 50, 'yolanda.mata', 'yolanda.mata50@example.local', '09170000050', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(51, 51, 'alf_red_c', 'davidgludo@gmail.com', '0995-3373-692', '$2y$10$TRFluf/ZAo7NSe1862inK.NJ0dz1ZO986wR7/KGoq7LdgFgMPeWHq', 'active', '2025-11-27 09:57:38', '2025-11-24 18:51:37', '2025-11-27 09:57:38'),
+(51, 51, 'alf_red_c', 'davidgludo@gmail.com', '7876876876', '$2y$10$TRFluf/ZAo7NSe1862inK.NJ0dz1ZO986wR7/KGoq7LdgFgMPeWHq', 'active', '2025-11-28 04:27:47', '2025-11-24 18:51:37', '2025-11-28 04:27:47'),
 (52, 52, 'lancey', 'ronel@gmail.com', NULL, '$2y$10$eWxedBtB7eE8QvzqF/cXGOXq0uhLduwvEMZTNGcbgCXgLg1Xh.mSW', 'active', '2025-11-24 20:12:08', '2025-11-24 19:03:16', '2025-11-24 20:12:08'),
 (53, 53, 'vayqiz', 'ley@gmail.com', '0995-3373-693', '$2y$10$PicgUG0gYrOj29JEXRUTkumsqEWW3xnFKhCbQWCMVDLUKjn3ouiIe', 'active', '2025-11-26 11:10:46', '2025-11-26 09:21:41', '2025-11-26 11:10:46'),
 (54, 54, 'condiiii', 'marlo@gmail.com', NULL, '$2y$10$xuG95KX3afPDtjJH/SgXten16JacX.Sv1S8In6VNpNWGoyO9ygXc6', 'active', '2025-11-26 09:43:38', '2025-11-26 09:23:26', '2025-11-26 09:43:38');
@@ -1329,7 +1468,7 @@ INSERT INTO `vitals` (`id`, `cvd_id`, `height_cm`, `weight_kg`, `bmi`, `central_
 (1, 1, 168.00, 70.00, 24.80, 0, 0, 0, 0, 82.00, 110, 75, 74, 16, 36.6),
 (2, 2, 165.00, 95.00, 34.90, 1, 1, 1, 1, 102.00, 150, 95, 88, 18, 37.0),
 (3, 3, 170.00, 75.00, 25.90, 0, 0, 0, 0, 86.00, 118, 78, 72, 16, 36.6),
-(4, 4, 158.00, 60.00, 24.00, 0, 0, 0, 0, 74.00, 115, 76, 70, 16, 36.7),
+(4, 4, NULL, NULL, NULL, 0, 0, 0, 0, NULL, 115, 76, 70, 16, 36.7),
 (5, 5, 172.00, 80.00, 27.00, 0, 0, 0, 0, 88.00, 120, 80, 76, 16, 36.6),
 (6, 6, 160.00, 62.00, 24.20, 0, 0, 0, 0, 78.00, 112, 72, 70, 16, 36.6),
 (7, 7, 168.00, 90.00, 31.90, 1, 1, 1, 1, 96.00, 138, 90, 86, 18, 36.9),
@@ -1346,8 +1485,17 @@ INSERT INTO `vitals` (`id`, `cvd_id`, `height_cm`, `weight_kg`, `bmi`, `central_
 (18, 18, 168.00, 88.00, 31.20, 1, 1, 1, 1, 98.00, 140, 94, 88, 18, 37.0),
 (19, 19, 162.00, 70.00, 26.60, 0, 0, 0, 0, 86.00, 120, 80, 76, 16, 36.6),
 (20, 20, 175.00, 78.00, 25.50, 0, 0, 0, 0, 90.00, 122, 82, 76, 16, 36.6),
-(21, 24, 171.00, 70.00, NULL, NULL, NULL, NULL, NULL, 25.00, 120, 80, 72, 16, 37.0),
+(21, 24, 131.00, 211.00, NULL, NULL, NULL, NULL, NULL, 13.00, 12, 8, 7, -1, 36.0),
 (22, 25, 171.00, 70.00, NULL, NULL, NULL, NULL, NULL, 25.00, 120, 80, 72, 16, 37.0);
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `ml_migration_dataset_all`
+--
+DROP TABLE IF EXISTS `ml_migration_dataset_all`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `ml_migration_dataset_all`  AS SELECT `rm`.`id` AS `migration_id`, `p`.`id` AS `person_id`, `p`.`birthdate` AS `birthdate`, `p`.`sex` AS `sex`, `p`.`household_id` AS `household_id`, coalesce(`hh_count`.`total_members`,1) AS `household_size`, timestampdiff(YEAR,`p`.`birthdate`,`rm`.`moved_at`) AS `age`, `rm`.`to_purok_id` AS `to_purok_id`, `rm`.`from_purok_id` AS `from_purok_id`, `rm`.`moved_at` AS `moved_at`, `rm`.`reason` AS `reason`, `rm`.`is_synthetic` AS `is_synthetic` FROM ((`resident_migrations` `rm` join `persons` `p` on(`p`.`id` = `rm`.`person_id`)) left join (select `persons`.`household_id` AS `household_id`,count(0) AS `total_members` from `persons` group by `persons`.`household_id`) `hh_count` on(`hh_count`.`household_id` = `p`.`household_id`)) ;
 
 --
 -- Indexes for dumped tables
@@ -1427,6 +1575,18 @@ ALTER TABLE `document_types`
   ADD KEY `category_id` (`category_id`);
 
 --
+-- Indexes for table `email_verifications`
+--
+ALTER TABLE `email_verifications`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uk_email` (`email`),
+  ADD UNIQUE KEY `uk_token` (`token`),
+  ADD KEY `idx_code` (`code`),
+  ADD KEY `idx_expires_at` (`expires_at`),
+  ADD KEY `idx_verified_at` (`verified_at`),
+  ADD KEY `idx_pending` (`email`,`verified_at`,`expires_at`);
+
+--
 -- Indexes for table `families`
 --
 ALTER TABLE `families`
@@ -1473,7 +1633,8 @@ ALTER TABLE `incidents`
   ADD KEY `idx_incident_date` (`date_of_incident`),
   ADD KEY `idx_incident_created` (`created_at`),
   ADD KEY `idx_incident_complainant` (`complainant_name`(100)),
-  ADD KEY `idx_incident_location` (`location`(100));
+  ADD KEY `idx_incident_location` (`location`(100)),
+  ADD KEY `idx_incident_user_id` (`user_id`);
 
 --
 -- Indexes for table `lifestyle_risk`
@@ -1490,6 +1651,12 @@ ALTER TABLE `migrations`
   ADD KEY `idx_migrations_person` (`person_id`),
   ADD KEY `idx_migrations_from` (`from_purok_id`),
   ADD KEY `idx_migrations_to` (`to_purok_id`);
+
+--
+-- Indexes for table `migration_predictions`
+--
+ALTER TABLE `migration_predictions`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `morbidity_logs`
@@ -1580,6 +1747,14 @@ ALTER TABLE `puroks`
   ADD UNIQUE KEY `uq_purok_name` (`name`);
 
 --
+-- Indexes for table `resident_migrations`
+--
+ALTER TABLE `resident_migrations`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_moved_at` (`moved_at`),
+  ADD KEY `idx_person` (`person_id`);
+
+--
 -- Indexes for table `site_profile`
 --
 ALTER TABLE `site_profile`
@@ -1653,7 +1828,7 @@ ALTER TABLE `deaths`
 -- AUTO_INCREMENT for table `diabetes_screening`
 --
 ALTER TABLE `diabetes_screening`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
 
 --
 -- AUTO_INCREMENT for table `document_categories`
@@ -1678,6 +1853,12 @@ ALTER TABLE `document_templates`
 --
 ALTER TABLE `document_types`
   MODIFY `document_type_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `email_verifications`
+--
+ALTER TABLE `email_verifications`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `families`
@@ -1713,12 +1894,18 @@ ALTER TABLE `incidents`
 -- AUTO_INCREMENT for table `lifestyle_risk`
 --
 ALTER TABLE `lifestyle_risk`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
 
 --
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `migration_predictions`
+--
+ALTER TABLE `migration_predictions`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
@@ -1782,6 +1969,12 @@ ALTER TABLE `puroks`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
+-- AUTO_INCREMENT for table `resident_migrations`
+--
+ALTER TABLE `resident_migrations`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `statuses`
 --
 ALTER TABLE `statuses`
@@ -1814,7 +2007,8 @@ ALTER TABLE `document_types`
 --
 ALTER TABLE `incidents`
   ADD CONSTRAINT `incidents_ibfk_1` FOREIGN KEY (`status_id`) REFERENCES `statuses` (`id`) ON UPDATE CASCADE,
-  ADD CONSTRAINT `incidents_ibfk_2` FOREIGN KEY (`case_type_id`) REFERENCES `case_types` (`id`) ON UPDATE CASCADE;
+  ADD CONSTRAINT `incidents_ibfk_2` FOREIGN KEY (`case_type_id`) REFERENCES `case_types` (`id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `incidents_ibfk_3` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Constraints for table `notification_deletions`
@@ -1844,3 +2038,4 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+ 

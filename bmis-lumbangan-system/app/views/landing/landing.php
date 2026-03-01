@@ -36,6 +36,7 @@ if (isLoggedIn()) {
   <title>Barangay Lumbangan | Nasugbu, Batangas</title>
 
   <meta name="app-auth-endpoint" content="<?php echo rtrim(BASE_URL, '/'); ?>/controllers/AuthController.php">
+  <meta name="base-url" content="<?php echo rtrim(BASE_URL, '/'); ?>">
 
   <!-- Vendor -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
@@ -659,7 +660,7 @@ if (isLoggedIn()) {
               <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Seal_of_Nasugbu.png/599px-Seal_of_Nasugbu.png" style="width: 39px;">
               <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Bagong_Pilipinas_logo.png" style="width: 41px;">
             </div>
-            <span style="color: #666; font-size: 0.9rem; margin-bottom: 15px; display: block;">Login as User or Official (auto-detected)</span>
+            <span style="color: #666; font-size: 0.9rem; margin-bottom: 15px; display: block;">Login as User or Official</span>
             <input type="text" name="username" placeholder="Username" required>
             <input type="password" name="password" placeholder="Password" required>
             
@@ -692,11 +693,174 @@ if (isLoggedIn()) {
         </div>
 
       </div>
+
+      <!-- ═══════════════════════════════════════════════ -->
+      <!-- FACE SCAN INLINE PANEL (shown after Sign Up)   -->
+      <!-- ═══════════════════════════════════════════════ -->
+      <div id="faceScanInlinePanel" style="display:none; width:100%; max-width:420px; margin:0 auto; padding:30px 30px 20px;">
+
+        <!-- Step Dots -->
+        <div style="display:flex; justify-content:center; gap:8px; margin-bottom:20px;" id="fsiDots">
+          <span class="fsi-dot fsi-dot-active" id="fsiDot1"></span>
+          <span class="fsi-dot" id="fsiDot2"></span>
+          <span class="fsi-dot" id="fsiDot3"></span>
+          <span class="fsi-dot" id="fsiDot4"></span>
+          <span class="fsi-dot" id="fsiDot5"></span>
+        </div>
+
+        <!-- ── STEP A: Consent ─────────────────────────── -->
+        <div id="fsiConsent" style="text-align:center;">
+          <div style="width:72px;height:72px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+            <i class="fas fa-shield-alt" style="font-size:32px;color:#fff;"></i>
+          </div>
+          <h2 style="color:#333;font-size:20px;margin-bottom:8px;">Face Verification</h2>
+          <p style="color:#666;font-size:0.84rem;margin-bottom:18px;line-height:1.55;">
+            To keep this system secure, we require a quick <strong>live face scan</strong> before creating your account. This prevents multiple accounts per person.
+          </p>
+          <div style="background:#f8f9ff;border:1px solid #e0e7ff;border-radius:10px;padding:14px 16px;margin-bottom:18px;text-align:left;">
+            <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:0.83rem;color:#444;line-height:1.45;">
+              <input type="checkbox" id="fsiConsentCheck" style="margin-top:3px;flex-shrink:0;accent-color:#667eea;">
+              I consent to the collection and one-time processing of my facial biometric data solely for duplicate-account prevention for Barangay Lumbangan's BMIS.
+            </label>
+          </div>
+          <div id="fsiConsentErr" style="display:none;color:#d32f2f;font-size:12px;margin-bottom:10px;">
+            <i class="fas fa-exclamation-circle" style="margin-right:5px;"></i>Please check the consent box to continue.
+          </div>
+          <button id="fsiConsentBtn" onclick="fsiStartCamera()" style="width:100%;padding:11px;background:#667eea;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:13px;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;transition:opacity .2s;">
+            Allow Camera &amp; Continue
+          </button>
+          <button onclick="fsiCancel()" style="width:100%;margin-top:10px;background:transparent;color:#667eea;border:none;font-size:13px;font-weight:500;cursor:pointer;text-decoration:underline;">
+            Back
+          </button>
+        </div>
+
+        <!-- ── STEP B: Loading models ──────────────────── -->
+        <div id="fsiLoading" style="display:none;text-align:center;padding:20px 0;">
+          <div style="width:56px;height:56px;border:4px solid #e2e8f0;border-top-color:#667eea;border-radius:50%;margin:0 auto 16px;animation:spin 1s linear infinite;"></div>
+          <p style="color:#555;font-size:0.9rem;margin:0;">Loading face models…</p>
+          <div style="background:#e2e8f0;border-radius:8px;height:6px;overflow:hidden;margin:14px auto 0;max-width:220px;">
+            <div id="fsiLoadBar" style="background:linear-gradient(90deg,#667eea,#764ba2);height:100%;width:0%;transition:width .4s;"></div>
+          </div>
+          <p id="fsiLoadStatus" style="color:#999;font-size:11px;margin-top:6px;"></p>
+          <div id="fsiLoadErr" style="display:none;color:#d32f2f;font-size:12px;margin-top:12px;background:#fff5f5;padding:10px;border-radius:8px;border:1px solid #fed7d7;"></div>
+        </div>
+
+        <!-- ── STEP C: Camera + Liveness ──────────────── -->
+        <div id="fsiCamera" style="display:none;text-align:center;">
+          <!-- Instruction header (swapped per sub-step) -->
+          <div style="margin-bottom:12px;">
+            <h2 id="fsiTitle" style="color:#333;font-size:19px;margin-bottom:4px;"></h2>
+            <p id="fsiSubtitle" style="color:#666;font-size:0.83rem;margin:0;"></p>
+          </div>
+
+          <!-- Video circle -->
+          <div id="fsiVideoWrap" style="position:relative;width:230px;height:230px;border-radius:50%;overflow:hidden;margin:0 auto 14px;box-shadow:0 0 0 3px #667eea,0 6px 24px rgba(102,126,234,.3);">
+            <video id="fsiVideo" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;transform:scaleX(-1);"></video>
+            <canvas id="fsiCanvas" style="position:absolute;inset:0;width:100%;height:100%;transform:scaleX(-1);pointer-events:none;"></canvas>
+            <!-- oval guide -->
+            <svg style="position:absolute;inset:0;pointer-events:none;" width="100%" height="100%" viewBox="0 0 230 230">
+              <ellipse cx="115" cy="115" rx="82" ry="100" fill="none" stroke="rgba(102,126,234,.55)" stroke-width="2" stroke-dasharray="6,4"/>
+            </svg>
+          </div>
+
+          <!-- Blink circles (only visible during blink step) -->
+          <div id="fsiBlinkCircles" style="display:none;justify-content:center;gap:16px;margin-bottom:10px;">
+            <div id="fsiBlink1" style="width:44px;height:44px;border-radius:50%;border:3px solid #e2e8f0;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .3s;">👁</div>
+            <div id="fsiBlink2" style="width:44px;height:44px;border-radius:50%;border:3px solid #e2e8f0;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .3s;">👁</div>
+          </div>
+
+          <!-- ── Warning banner (lighting / accessories) ── -->
+          <div id="fsiWarnBanner" style="display:none;margin:0 auto 10px;max-width:290px;padding:7px 12px;border-radius:10px;background:#fffbeb;border:1.5px solid #f6ad55;color:#7b5800;font-size:0.78rem;font-weight:500;text-align:left;line-height:1.5;animation:fadeInDown .25s ease;">
+            <span id="fsiWarnText"></span>
+          </div>
+
+          <!-- Status badge -->
+          <div id="fsiStatus" style="padding:8px 18px;background:#f8f9ff;border:1px solid #e0e7ff;border-radius:20px;font-size:0.83rem;color:#555;display:inline-block;margin-bottom:12px;"></div>
+
+          <!-- Countdown bar -->
+          <div style="background:#e2e8f0;border-radius:8px;height:5px;overflow:hidden;margin-bottom:14px;">
+            <div id="fsiBar" style="background:linear-gradient(90deg,#667eea,#764ba2);height:100%;width:100%;transition:width 1s linear;"></div>
+          </div>
+
+          <div id="fsiCamErr" style="display:none;color:#d32f2f;font-size:12px;margin-bottom:10px;">
+            <i class="fas fa-exclamation-circle" style="margin-right:5px;"></i><span></span>
+          </div>
+          <button onclick="fsiRetry()" style="background:transparent;color:#667eea;border:none;font-size:12px;font-weight:500;cursor:pointer;text-decoration:underline;">Retry</button>
+
+          <!-- ── DEBUG EAR PANEL (shown only when DEBUG_EAR = true in face_scan.js) ── -->
+          <div id="fsiDebugEar" style="display:none;margin-top:10px;text-align:left;background:#1a1a2e;color:#e2e8f0;border-radius:8px;padding:10px 14px;font-family:monospace;font-size:11px;line-height:1.7;border:1px solid #444;">
+            <div style="color:#a0aec0;font-size:10px;letter-spacing:.8px;text-transform:uppercase;margin-bottom:4px;">⚙ EYE Debug</div>
+            <div>Left&nbsp;&nbsp;: <span id="dbgEarL" style="color:#90cdf4;">—</span></div>
+            <div>Right&nbsp;: <span id="dbgEarR" style="color:#90cdf4;">—</span></div>
+            <div>Avg&nbsp;&nbsp;&nbsp;: <span id="dbgEarAvg" style="font-weight:700;color:#f6ad55;">—</span></div>
+            <div id="dbgEarBar" style="margin:4px 0;height:6px;border-radius:4px;background:#2d3748;overflow:hidden;">
+              <div id="dbgEarBarFill" style="height:100%;width:0%;background:#48bb78;transition:width .08s linear;"></div>
+            </div>
+            <div>State&nbsp;: <span id="dbgEarState" style="font-weight:700;">—</span>
+              &nbsp;|&nbsp; Blinks: <span id="dbgEarBlinks" style="color:#fc8181;">0</span></div>
+            <div style="border-top:1px solid #2d3748;margin-top:4px;padding-top:4px;color:#a0aec0;">
+              Baseline : <span id="dbgEarBase" style="color:#fbd38d;">...</span>
+              &nbsp;|&nbsp; ×0.95/<span style="color:#fc8181;">BLINK</span>=<span id="dbgEarBT" style="color:#fc8181;">—</span>
+              &nbsp;|&nbsp; ×0.98/<span style="color:#68d391;">OPEN</span>=<span id="dbgEarOT" style="color:#68d391;">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── STEP D: Processing ──────────────────────── -->
+        <div id="fsiProcessing" style="display:none;text-align:center;padding:20px 0;">
+          <div style="width:56px;height:56px;border:4px solid #e2e8f0;border-top-color:#667eea;border-radius:50%;margin:0 auto 16px;animation:spin 1s linear infinite;"></div>
+          <h3 style="color:#333;margin-bottom:6px;">Verifying face…</h3>
+          <p style="color:#666;font-size:0.84rem;">Checking for duplicate accounts, please wait.</p>
+        </div>
+
+        <!-- ── STEP E: Duplicate found ─────────────────── -->
+        <div id="fsiDuplicate" style="display:none;text-align:center;padding:10px 0;">
+          <div style="width:80px;height:80px;background:linear-gradient(135deg,#fc8181,#e53e3e);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+            <i class="fas fa-user-times" style="font-size:38px;color:#fff;"></i>
+          </div>
+          <h3 style="color:#c53030;margin-bottom:8px;">Duplicate Account Detected</h3>
+          <p style="color:#666;font-size:0.84rem;margin-bottom:18px;">A matching face already exists in the system. Only one account per person is allowed.</p>
+          <button onclick="fsiCancel()" style="width:100%;padding:11px;background:#e53e3e;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;letter-spacing:.5px;text-transform:uppercase;">Close</button>
+        </div>
+
+        <!-- ── STEP F: Error ───────────────────────────── -->
+        <div id="fsiError" style="display:none;text-align:center;padding:10px 0;">
+          <div style="width:72px;height:72px;background:linear-gradient(135deg,#fc8181,#e53e3e);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+            <i class="fas fa-exclamation-triangle" style="font-size:32px;color:#fff;"></i>
+          </div>
+          <h3 style="color:#c53030;margin-bottom:8px;">Verification Failed</h3>
+          <p id="fsiErrorMsg" style="color:#666;font-size:0.84rem;margin-bottom:18px;"></p>
+          <button onclick="fsiRetry()" style="width:100%;padding:11px;background:#667eea;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;letter-spacing:.5px;text-transform:uppercase;">Try Again</button>
+          <button onclick="fsiCancel()" style="width:100%;margin-top:8px;background:transparent;color:#999;border:none;font-size:12px;font-weight:500;cursor:pointer;text-decoration:underline;">Cancel Registration</button>
+        </div>
+
+      </div>
+      <!-- /faceScanInlinePanel -->
+
     </div>
   </div>
+</div>
+
+<style>
+.fsi-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: #e2e8f0; display: inline-block;
+  transition: all .25s;
+}
+.fsi-dot-active { background: #667eea; transform: scale(1.35); }
+.fsi-dot-done   { background: #48bb78; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+</style>
 
   <!-- Email Verification Modal -->
   <?php require_once dirname(__DIR__, 2) . '/components/resident_components/email_verify_modal.php'; ?>
+
+  <!-- Face Scan Modal -->
+  <?php require_once dirname(__DIR__, 2) . '/components/resident_components/face_scan_modal.php'; ?>
 
   <!-- Image Lightbox -->
   <div id="imageLightbox" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:99999; justify-content:center; align-items:center; cursor:pointer;" onclick="closeImageLightbox()">
@@ -972,6 +1136,9 @@ if (isLoggedIn()) {
   
   <script src="<?php echo BASE_URL; ?>/assets/js/Landing/Landing.js?v=2"></script>
   <script src="<?php echo BASE_URL; ?>/assets/js/email_verification.js?v=<?php echo time(); ?>"></script>
+  <!-- Face API & Face Scan -->
+  <script src="<?php echo BASE_URL; ?>/assets/js/face-api/face-api.js"></script>
+  <script src="<?php echo BASE_URL; ?>/assets/js/face_scan.js?v=<?php echo time(); ?>"></script>
   <script src="<?php echo BASE_URL; ?>/assets/js/Landing/login.js?v=2"></script>
   
   <!-- Announcement Modal for Landing -->
@@ -1505,6 +1672,9 @@ if (isLoggedIn()) {
       anchor.addEventListener('click', function (e) {
         e.preventDefault();
         const targetId = this.getAttribute('href');
+
+        // Skip bare '#' links (e.g. social icon placeholders)
+        if (!targetId || targetId === '#') return;
         
         // If clicking home, scroll to top
         if (targetId === '#home') {

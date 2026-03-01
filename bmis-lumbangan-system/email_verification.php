@@ -4,7 +4,10 @@
  * Handles AJAX requests for email verification during registration
  */
 
-// Suppress errors in output
+// Buffer all output so stray notices/warnings never corrupt the JSON response
+ob_start();
+
+// Suppress error display in output
 error_reporting(0);
 ini_set('display_errors', 0);
 
@@ -14,6 +17,9 @@ $controller = new EmailVerificationController();
 
 // Get action from request
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
+
+// Discard any stray output produced by includes before writing JSON
+ob_end_clean();
 
 switch ($action) {
     case 'send_code':

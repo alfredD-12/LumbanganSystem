@@ -164,10 +164,16 @@ class EmailVerificationController {
                 ]);
             }
         } catch (Exception $e) {
-            echo json_encode([
-                'success' => false,
-                'message' => 'An error occurred. Please try again.'
-            ]);
+            error_log('[EmailVerification::sendVerificationCode] ' . $e->getMessage());
+            // Give a user-friendly message for common constraint errors
+            if (strpos($e->getMessage(), '1062') !== false || strpos($e->getMessage(), 'Duplicate') !== false) {
+                echo json_encode(['success' => false, 'message' => 'This email is already registered. Please log in instead.']);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'An error occurred: ' . $e->getMessage()
+                ]);
+            }
         }
     }
 
@@ -262,18 +268,61 @@ class EmailVerificationController {
 
             // Create user record - handle empty mobile and email fields
             $mobile = !empty($userData['mobile']) ? $userData['mobile'] : NULL;
-            $email = !empty($userData['email']) ? $userData['email'] : NULL;
-            
-            $userQuery = "INSERT INTO users (person_id, username, email, mobile, password_hash) 
-                         VALUES (:person_id, :username, :email, :mobile, :password_hash)";
-            
+            $email  = !empty($userData['email'])  ? $userData['email']  : NULL;
+
+            // ── Face data (forwarded from face scan) ──────────────────────
+            $faceEmbedding = null;
+            $faceImagePath = null;
+            $faceEnrolled  = 0;
+            $faceVerifiedAt = null;
+
+            $faceEmbeddingRaw = trim($_POST['face_embedding'] ?? '');
+            $faceImageB64     = trim($_POST['face_image_b64'] ?? '');
+
+            if (!empty($faceEmbeddingRaw)) {
+                $decoded = json_decode($faceEmbeddingRaw, true);
+                if (is_array($decoded) && count($decoded) === 128) {
+                    $faceEmbedding  = $faceEmbeddingRaw;
+                    $faceEnrolled   = 1;
+                    $faceVerifiedAt = date('Y-m-d H:i:s');
+                }
+            }
+
+            if (!empty($faceImageB64) && $faceEmbedding) {
+                try {
+                    $uploadDir = dirname(__DIR__) . '/uploads/faces/';
+                    if (!is_dir($uploadDir)) { mkdir($uploadDir, 0755, true); }
+                    $imgData  = preg_replace('/^data:image\/\w+;base64,/', '', $faceImageB64);
+                    $imgBytes = base64_decode($imgData);
+                    if ($imgBytes !== false) {
+                        $filename      = 'face_' . uniqid('', true) . '.jpg';
+                        file_put_contents($uploadDir . $filename, $imgBytes);
+                        $faceImagePath = 'faces/' . $filename;
+                    }
+                } catch (Exception $imgEx) {
+                    error_log('Face image save error: ' . $imgEx->getMessage());
+                }
+            }
+            // ─────────────────────────────────────────────────────────────
+
+            $userQuery = "INSERT INTO users
+                             (person_id, username, email, mobile, password_hash,
+                              face_embedding, face_image_path, face_verified_at, face_enrolled)
+                         VALUES
+                             (:person_id, :username, :email, :mobile, :password_hash,
+                              :face_embedding, :face_image_path, :face_verified_at, :face_enrolled)";
+
             $userStmt = $this->db->prepare($userQuery);
-            $userStmt->bindParam(':person_id', $personId);
-            $userStmt->bindParam(':username', $userData['username']);
-            $userStmt->bindParam(':email', $email);
-            $userStmt->bindParam(':mobile', $mobile);
-            $userStmt->bindParam(':password_hash', $userData['password_hash']);
-            
+            $userStmt->bindParam(':person_id',      $personId);
+            $userStmt->bindParam(':username',       $userData['username']);
+            $userStmt->bindParam(':email',          $email);
+            $userStmt->bindParam(':mobile',         $mobile);
+            $userStmt->bindParam(':password_hash',  $userData['password_hash']);
+            $userStmt->bindValue(':face_embedding',  $faceEmbedding,  $faceEmbedding  ? PDO::PARAM_STR : PDO::PARAM_NULL);
+            $userStmt->bindValue(':face_image_path', $faceImagePath,  $faceImagePath  ? PDO::PARAM_STR : PDO::PARAM_NULL);
+            $userStmt->bindValue(':face_verified_at',$faceVerifiedAt, $faceVerifiedAt ? PDO::PARAM_STR : PDO::PARAM_NULL);
+            $userStmt->bindParam(':face_enrolled',  $faceEnrolled,   PDO::PARAM_INT);
+
             if (!$userStmt->execute()) {
                 throw new Exception('Failed to create user record');
             }
@@ -326,7 +375,8 @@ class EmailVerificationController {
             if ($this->db->inTransaction()) {
                 $this->db->rollBack();
             }
-            echo json_encode(['success' => false, 'message' => 'Registration failed. Please try again.']);
+            error_log('[EmailVerification::completeRegistration] ' . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Registration failed: ' . $e->getMessage()]);
         }
     }
 

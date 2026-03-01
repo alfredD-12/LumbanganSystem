@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 01, 2026 at 04:36 AM
+-- Generation Time: Mar 01, 2026 at 01:42 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -501,7 +501,8 @@ CREATE TABLE `email_verifications` (
 --
 
 INSERT INTO `email_verifications` (`id`, `email`, `code`, `token`, `person_data`, `user_data`, `created_at`, `expires_at`, `verified_at`) VALUES
-(1, 'hyphetv@gmail.com', '536506', 'c71996e20970fc6b4f67e1b4e2af0c4f800f80cde5c33e6193c738f53be4f671', '{\"first_name\":\"Nicca Kate\",\"last_name\":\"Arroyo\",\"middle_name\":\"A\",\"suffix\":null,\"sex\":null,\"birthdate\":null,\"marital_status\":\"Single\"}', '{\"username\":\"aryoooo\",\"email\":\"hyphetv@gmail.com\",\"mobile\":\"\",\"password_hash\":\"$2y$10$dtwsMk8Cr7Q.J24SI7MNU.q7rL\\/SoZeuAQ2n4c1bhLyaOP2jlqdpG\"}', '2025-11-27 23:33:30', '2025-11-28 00:33:30', NULL);
+(11, 'davidalfredgludo@gmail.com', '463892', 'e02a33b9745632e7a964975ec06322093759ca595ebd8db04e65f451f16aa44e', '{\"first_name\":\"David Alfred\",\"last_name\":\"Gludo\",\"middle_name\":\"Cabali\",\"suffix\":null,\"sex\":null,\"birthdate\":null,\"marital_status\":\"Single\"}', '{\"username\":\"alf_red_c2\",\"email\":\"davidalfredgludo@gmail.com\",\"mobile\":\"\",\"password_hash\":\"$2y$10$RBsrQZuyd.Gn\\/cBjkmwux.BAR2lkNxVatrPwncQ96uzWBi42771xK\"}', '2026-03-01 10:27:43', '2026-03-01 11:27:43', '2026-03-01 10:28:08'),
+(12, 'hyphetv@gmail.com', '197990', '5b4119a76942e4c8fb0dbcd3ab85baad12f758c9316726fc8611ad541fc322d4', '{\"first_name\":\"David Alfred\",\"last_name\":\"Gludo\",\"middle_name\":\"Cabali\",\"suffix\":null,\"sex\":null,\"birthdate\":null,\"marital_status\":\"Single\"}', '{\"username\":\"arf_arf_arf\",\"email\":\"hyphetv@gmail.com\",\"mobile\":\"\",\"password_hash\":\"$2y$10$QSbsHV6ORtEvWfoMkObFMeeH4uggErKR\\/4SkZkkQ6uMkNz1Mxnp5e\"}', '2026-03-01 12:33:00', '2026-03-01 13:33:00', '2026-03-01 12:33:54');
 
 -- --------------------------------------------------------
 
@@ -1111,7 +1112,8 @@ INSERT INTO `persons` (`id`, `family_id`, `household_id`, `last_name`, `first_na
 (51, 16, 16, 'Gludo', 'David Alfred', 'Cabali', NULL, 1, 'M', '2004-08-12', 'Single', 'O+', NULL, 'College', 'Student', 'Roman Catholic', NULL, 0, '2025-11-24 18:51:37', '2025-11-28 03:09:12'),
 (52, 16, 16, 'Malata', 'Ronel Lance', 'Sumama', NULL, 0, NULL, NULL, 'Single', NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-24 19:03:16', '2025-11-25 19:28:25'),
 (53, 31, 31, 'Vazques', 'John Ley Lucky', 'Medyor', NULL, 1, 'M', '2004-08-12', 'Single', 'O+', NULL, 'College', 'Student', 'Roman Catholic', NULL, 0, '2025-11-26 09:21:41', '2025-11-26 11:11:25'),
-(54, 0, NULL, 'Condicion', 'Marlo', 'Humarang', NULL, 0, NULL, NULL, 'Single', NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-26 09:23:26', '2025-11-26 09:23:26');
+(54, 0, NULL, 'Condicion', 'Marlo', 'Humarang', NULL, 0, NULL, NULL, 'Single', NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-26 09:23:26', '2025-11-26 09:23:26'),
+(58, NULL, NULL, 'Gludo', 'David Alfred', 'Cabali', NULL, 0, NULL, NULL, 'Single', NULL, NULL, NULL, NULL, NULL, NULL, 0, '2026-03-01 20:33:54', '2026-03-01 20:33:54');
 
 -- --------------------------------------------------------
 
@@ -1372,68 +1374,79 @@ CREATE TABLE `users` (
   `status` enum('active','disabled') NOT NULL DEFAULT 'active',
   `last_login_at` datetime DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `face_embedding` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '128-float face descriptor from face-api.js' CHECK (json_valid(`face_embedding`)),
+  `face_image_path` varchar(255) DEFAULT NULL COMMENT 'Relative path to saved face capture, e.g. uploads/faces/42.jpg',
+  `face_verified_at` datetime DEFAULT NULL,
+  `face_enrolled` tinyint(1) NOT NULL DEFAULT 0,
+  `face_attempts` int(11) NOT NULL DEFAULT 0,
+  `face_locked_until` datetime DEFAULT NULL,
+  `face_registered_at` datetime DEFAULT NULL COMMENT 'Timestamp when face was first scanned and stored',
+  `face_verified` tinyint(1) NOT NULL DEFAULT 0 COMMENT '1 = face scan step completed during signup',
+  `face_consent_given` tinyint(1) NOT NULL DEFAULT 0 COMMENT '1 = user explicitly consented to biometric data collection',
+  `face_consent_at` datetime DEFAULT NULL COMMENT 'Timestamp when biometric consent was given'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `person_id`, `username`, `email`, `mobile`, `password_hash`, `status`, `last_login_at`, `created_at`, `updated_at`) VALUES
-(1, 1, 'adrian.cruz', 'adrian.cruz01@example.local', '0917-0000-001', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', '2026-03-01 10:29:20', '2025-11-24 09:26:54', '2026-03-01 10:29:20'),
-(2, 2, 'bianca.reyes', 'bianca.reyes02@example.local', '09170000002', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(3, 3, 'carlo.mendoza', 'carlo.mendoza03@example.local', '09170000003', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', '2025-11-28 02:05:56', '2025-11-24 09:26:54', '2025-11-28 02:05:56'),
-(4, 4, 'diana.lopez', 'diana.lopez04@example.local', '09170000004', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(5, 5, 'ernesto.garcia', 'ernesto.garcia05@example.local', '09170000005', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(6, 6, 'fiona.ramos', 'fiona.ramos06@example.local', '09170000006', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(7, 7, 'gabriel.aquino', 'gabriel.aquino07@example.local', '09170000007', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(8, 8, 'hannah.castillo', 'hannah.castillo08@example.local', '09170000008', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(9, 9, 'ian.delossantos', 'ian.delossantos09@example.local', '09170000009', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', '2025-11-24 18:25:16', '2025-11-24 09:26:54', '2025-11-24 18:25:16'),
-(10, 10, 'jasmine.flores', 'jasmine.flores10@example.local', '09170000010', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(11, 11, 'kevin.navarro', 'kevin.navarro11@example.local', '09170000011', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(12, 12, 'liza.mercado', 'liza.mercado12@example.local', '09170000012', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(13, 13, 'miguel.domingo', 'miguel.domingo13@example.local', '09170000013', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(14, 14, 'nicole.valdez', 'nicole.valdez14@example.local', '09170000014', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(15, 15, 'oscar.pineda', 'oscar.pineda15@example.local', '09170000015', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(16, 16, 'paula.santos', 'paula.santos16@example.local', '09170000016', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(17, 17, 'quincy.torres', 'quincy.torres17@example.local', '09170000017', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(18, 18, 'rhea.gonzales', 'rhea.gonzales18@example.local', '09170000018', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(19, 19, 'samuel.herrera', 'samuel.herrera19@example.local', '09170000019', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(20, 20, 'teresita.ilagan', 'teresita.ilagan20@example.local', '09170000020', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(21, 21, 'ulysses.jacinto', 'ulysses.jacinto21@example.local', '09170000021', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(22, 22, 'valeria.kahulugan', 'valeria.kahulugan22@example.local', '09170000022', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(23, 23, 'wesley.lorenzo', 'wesley.lorenzo23@example.local', '09170000023', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(24, 24, 'xandra.manalo', 'xandra.manalo24@example.local', '09170000024', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(25, 25, 'yves.noble', 'yves.noble25@example.local', '09170000025', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(26, 26, 'zara.ortega', 'zara.ortega26@example.local', '09170000026', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(27, 27, 'aaron.padilla', 'aaron.padilla27@example.local', '09170000027', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(28, 28, 'bea.quintos', 'bea.quintos28@example.local', '09170000028', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(29, 29, 'cesar.rafael', 'cesar.rafael29@example.local', '09170000029', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(30, 30, 'denise.serrano', 'denise.serrano30@example.local', '09170000030', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(31, 31, 'ethan.taboada', 'ethan.taboada31@example.local', '09170000031', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(32, 32, 'faith.uban', 'faith.uban32@example.local', '09170000032', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(33, 33, 'gabrielle.velez', 'gabrielle.velez33@example.local', '09170000033', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(34, 34, 'hector.wong', 'hector.wong34@example.local', '09170000034', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(35, 35, 'isla.xavier', 'isla.xavier35@example.local', '09170000035', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(36, 36, 'jason.yap', 'jason.yap36@example.local', '09170000036', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(37, 37, 'katrina.zamora', 'katrina.zamora37@example.local', '09170000037', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(38, 38, 'loren.alcantara', 'loren.alcantara38@example.local', '09170000038', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(39, 39, 'maya.barrameda', 'maya.barrameda39@example.local', '09170000039', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(40, 40, 'noel.cabal', 'noel.cabal40@example.local', '09170000040', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(41, 41, 'olivia.dizon', 'olivia.dizon41@example.local', '09170000041', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(42, 42, 'paul.eusebio', 'paul.eusebio42@example.local', '09170000042', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(43, 43, 'rico.floresca', 'rico.floresca43@example.local', '09170000043', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(44, 44, 'sonia.gamboa', 'sonia.gamboa44@example.local', '09170000044', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(45, 45, 'tristan.hidalgo', 'tristan.hidalgo45@example.local', '09170000045', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(46, 46, 'ursula.ibarra', 'ursula.ibarra46@example.local', '09170000046', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(47, 47, 'victor.julian', 'victor.julian47@example.local', '09170000047', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(48, 48, 'willa.kendrick', 'willa.kendrick48@example.local', '09170000048', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(49, 49, 'xavier.lozada', 'xavier.lozada49@example.local', '09170000049', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(50, 50, 'yolanda.mata', 'yolanda.mata50@example.local', '09170000050', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54'),
-(51, 51, 'alf_red_c', 'davidgludo@gmail.com', '7876876876', '$2y$10$TRFluf/ZAo7NSe1862inK.NJ0dz1ZO986wR7/KGoq7LdgFgMPeWHq', 'active', '2025-12-05 14:29:33', '2025-11-24 18:51:37', '2025-12-05 14:29:33'),
-(52, 52, 'lancey', 'ronel@gmail.com', NULL, '$2y$10$eWxedBtB7eE8QvzqF/cXGOXq0uhLduwvEMZTNGcbgCXgLg1Xh.mSW', 'active', '2025-11-24 20:12:08', '2025-11-24 19:03:16', '2025-11-24 20:12:08'),
-(53, 53, 'vayqiz', 'ley@gmail.com', '0995-3373-693', '$2y$10$PicgUG0gYrOj29JEXRUTkumsqEWW3xnFKhCbQWCMVDLUKjn3ouiIe', 'active', '2025-11-26 11:10:46', '2025-11-26 09:21:41', '2025-11-26 11:10:46'),
-(54, 54, 'condiiii', 'marlo@gmail.com', NULL, '$2y$10$xuG95KX3afPDtjJH/SgXten16JacX.Sv1S8In6VNpNWGoyO9ygXc6', 'active', '2025-11-26 09:43:38', '2025-11-26 09:23:26', '2025-11-26 09:43:38');
+INSERT INTO `users` (`id`, `person_id`, `username`, `email`, `mobile`, `password_hash`, `status`, `last_login_at`, `created_at`, `updated_at`, `face_embedding`, `face_image_path`, `face_verified_at`, `face_enrolled`, `face_attempts`, `face_locked_until`, `face_registered_at`, `face_verified`, `face_consent_given`, `face_consent_at`) VALUES
+(1, 1, 'adrian.cruz', 'adrian.cruz01@example.local', '0917-0000-001', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', '2026-03-01 10:29:20', '2025-11-24 09:26:54', '2026-03-01 10:29:20', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(2, 2, 'bianca.reyes', 'bianca.reyes02@example.local', '09170000002', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(3, 3, 'carlo.mendoza', 'carlo.mendoza03@example.local', '09170000003', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', '2025-11-28 02:05:56', '2025-11-24 09:26:54', '2025-11-28 02:05:56', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(4, 4, 'diana.lopez', 'diana.lopez04@example.local', '09170000004', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(5, 5, 'ernesto.garcia', 'ernesto.garcia05@example.local', '09170000005', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(6, 6, 'fiona.ramos', 'fiona.ramos06@example.local', '09170000006', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(7, 7, 'gabriel.aquino', 'gabriel.aquino07@example.local', '09170000007', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(8, 8, 'hannah.castillo', 'hannah.castillo08@example.local', '09170000008', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(9, 9, 'ian.delossantos', 'ian.delossantos09@example.local', '09170000009', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', '2025-11-24 18:25:16', '2025-11-24 09:26:54', '2025-11-24 18:25:16', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(10, 10, 'jasmine.flores', 'jasmine.flores10@example.local', '09170000010', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(11, 11, 'kevin.navarro', 'kevin.navarro11@example.local', '09170000011', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(12, 12, 'liza.mercado', 'liza.mercado12@example.local', '09170000012', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(13, 13, 'miguel.domingo', 'miguel.domingo13@example.local', '09170000013', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(14, 14, 'nicole.valdez', 'nicole.valdez14@example.local', '09170000014', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(15, 15, 'oscar.pineda', 'oscar.pineda15@example.local', '09170000015', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(16, 16, 'paula.santos', 'paula.santos16@example.local', '09170000016', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(17, 17, 'quincy.torres', 'quincy.torres17@example.local', '09170000017', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(18, 18, 'rhea.gonzales', 'rhea.gonzales18@example.local', '09170000018', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(19, 19, 'samuel.herrera', 'samuel.herrera19@example.local', '09170000019', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(20, 20, 'teresita.ilagan', 'teresita.ilagan20@example.local', '09170000020', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(21, 21, 'ulysses.jacinto', 'ulysses.jacinto21@example.local', '09170000021', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(22, 22, 'valeria.kahulugan', 'valeria.kahulugan22@example.local', '09170000022', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(23, 23, 'wesley.lorenzo', 'wesley.lorenzo23@example.local', '09170000023', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(24, 24, 'xandra.manalo', 'xandra.manalo24@example.local', '09170000024', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(25, 25, 'yves.noble', 'yves.noble25@example.local', '09170000025', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(26, 26, 'zara.ortega', 'zara.ortega26@example.local', '09170000026', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(27, 27, 'aaron.padilla', 'aaron.padilla27@example.local', '09170000027', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(28, 28, 'bea.quintos', 'bea.quintos28@example.local', '09170000028', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(29, 29, 'cesar.rafael', 'cesar.rafael29@example.local', '09170000029', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(30, 30, 'denise.serrano', 'denise.serrano30@example.local', '09170000030', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(31, 31, 'ethan.taboada', 'ethan.taboada31@example.local', '09170000031', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(32, 32, 'faith.uban', 'faith.uban32@example.local', '09170000032', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(33, 33, 'gabrielle.velez', 'gabrielle.velez33@example.local', '09170000033', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(34, 34, 'hector.wong', 'hector.wong34@example.local', '09170000034', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(35, 35, 'isla.xavier', 'isla.xavier35@example.local', '09170000035', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(36, 36, 'jason.yap', 'jason.yap36@example.local', '09170000036', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(37, 37, 'katrina.zamora', 'katrina.zamora37@example.local', '09170000037', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(38, 38, 'loren.alcantara', 'loren.alcantara38@example.local', '09170000038', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(39, 39, 'maya.barrameda', 'maya.barrameda39@example.local', '09170000039', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(40, 40, 'noel.cabal', 'noel.cabal40@example.local', '09170000040', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(41, 41, 'olivia.dizon', 'olivia.dizon41@example.local', '09170000041', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(42, 42, 'paul.eusebio', 'paul.eusebio42@example.local', '09170000042', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(43, 43, 'rico.floresca', 'rico.floresca43@example.local', '09170000043', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(44, 44, 'sonia.gamboa', 'sonia.gamboa44@example.local', '09170000044', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(45, 45, 'tristan.hidalgo', 'tristan.hidalgo45@example.local', '09170000045', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(46, 46, 'ursula.ibarra', 'ursula.ibarra46@example.local', '09170000046', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(47, 47, 'victor.julian', 'victor.julian47@example.local', '09170000047', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(48, 48, 'willa.kendrick', 'willa.kendrick48@example.local', '09170000048', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(49, 49, 'xavier.lozada', 'xavier.lozada49@example.local', '09170000049', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(50, 50, 'yolanda.mata', 'yolanda.mata50@example.local', '09170000050', '$2y$10$OJoXuFUCQJLBRRuJ3SZRZutkiKj9tNLneLj9CqBHN8XF/Y7z6Hqk2', 'active', NULL, '2025-11-24 09:26:54', '2025-11-24 09:26:54', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(51, 51, 'alf_red_c', 'davidgludo@gmail.com', '7876876876', '$2y$10$TRFluf/ZAo7NSe1862inK.NJ0dz1ZO986wR7/KGoq7LdgFgMPeWHq', 'active', '2025-12-05 14:29:33', '2025-11-24 18:51:37', '2025-12-05 14:29:33', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(52, 52, 'lancey', 'ronel@gmail.com', NULL, '$2y$10$eWxedBtB7eE8QvzqF/cXGOXq0uhLduwvEMZTNGcbgCXgLg1Xh.mSW', 'active', '2025-11-24 20:12:08', '2025-11-24 19:03:16', '2025-11-24 20:12:08', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(53, 53, 'vayqiz', 'ley@gmail.com', '0995-3373-693', '$2y$10$PicgUG0gYrOj29JEXRUTkumsqEWW3xnFKhCbQWCMVDLUKjn3ouiIe', 'active', '2025-11-26 11:10:46', '2025-11-26 09:21:41', '2025-11-26 11:10:46', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(54, 54, 'condiiii', 'marlo@gmail.com', NULL, '$2y$10$xuG95KX3afPDtjJH/SgXten16JacX.Sv1S8In6VNpNWGoyO9ygXc6', 'active', '2025-11-26 09:43:38', '2025-11-26 09:23:26', '2025-11-26 09:43:38', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
+(58, 58, 'arf_arf_arf', 'hyphetv@gmail.com', NULL, '$2y$10$QSbsHV6ORtEvWfoMkObFMeeH4uggErKR/4SkZkkQ6uMkNz1Mxnp5e', 'active', NULL, '2026-03-01 20:33:54', '2026-03-01 20:33:54', '[-0.24352514743804932,0.10002434998750687,0.07331377267837524,-0.03939744830131531,-0.10241727530956268,-0.034891385585069656,0.03952961601316929,-0.1286325417459011,0.17086130380630493,-0.09426214545965195,0.2204045131802559,-0.001507369801402092,-0.1999666765332222,-0.0524742528796196,-0.005135257495567203,0.1860853210091591,-0.13916027545928955,-0.10791133344173431,-0.10304799675941467,-0.026712747290730476,-0.013575052726082504,-0.03014968801289797,0.08092028275132179,0.07148820906877518,-0.0871451087296009,-0.39386674761772156,-0.09222617372870445,-0.07422023080289364,-0.012513539288192987,-0.0011154644889757037,-0.0341183221898973,0.04657290503382683,-0.190805122256279,-0.07202639430761337,-0.013519064988940954,0.09271039068698883,-0.04574740491807461,-0.018728151451796293,0.2065815031528473,-0.02064688131213188,-0.246706523001194,-0.030430570477619767,0.04241803288459778,0.2885264456272125,0.1888805702328682,0.027050101198256016,0.03683185297995806,-0.025632143951952457,0.03843995463103056,-0.1998298540711403,0.06037401221692562,0.066269651055336,0.14784494787454605,0.0165048367343843,0.022809473797678947,-0.136921688914299,-0.0020128190517425537,0.11312158405780792,-0.11792369186878204,-0.036377616226673126,0.024188461946323514,-0.09118673205375671,-0.059521207585930824,-0.03897077776491642,0.31402240693569183,0.16923974454402924,-0.15488118678331375,-0.07462254539132118,0.14665763825178146,-0.07852034643292427,-0.005098094814456999,0.028805386275053024,-0.1724642813205719,-0.18455715477466583,-0.3123972415924072,0.06924098543822765,0.44871310889720917,0.0936586745083332,-0.20074860006570816,-0.037272339686751366,-0.11179948970675468,0.0502111054956913,0.07631846144795418,0.16828875988721848,-0.09009318798780441,0.009098502807319164,-0.05727576091885567,0.014888349338434637,0.13126222044229507,-0.026691860985010862,-0.10078996047377586,0.18336640298366547,0.035124062560498714,0.017599855549633503,-0.009653779910877347,0.03629429964348674,-0.031171534210443497,-0.0000678827054798603,-0.12720591202378273,-0.012614280916750431,0.06708653457462788,-0.003422949055675417,0.012354776263237,0.12680498510599136,-0.22490251809358597,0.12160862982273102,0.032043734565377235,0.023669978603720665,0.061811795458197594,0.0411446001380682,-0.05866352841258049,-0.0914771519601345,0.07696965709328651,-0.24952690303325653,0.1635880544781685,0.2186734974384308,-0.07552657648921013,0.1785358563065529,0.0723750963807106,0.054328758269548416,0.024812269024550915,0.05113152973353863,-0.1423424705862999,-0.009500540560111403,0.15818023681640625,-0.035443926230072975,0.11183662340044975,0.04071498569101095]', 'faces/face_69a43232428899.47217969.jpg', '2026-03-01 13:33:54', 1, 0, NULL, NULL, 0, 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -1858,7 +1871,7 @@ ALTER TABLE `document_types`
 -- AUTO_INCREMENT for table `email_verifications`
 --
 ALTER TABLE `email_verifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `families`
@@ -1948,7 +1961,7 @@ ALTER TABLE `password_resets`
 -- AUTO_INCREMENT for table `persons`
 --
 ALTER TABLE `persons`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
 
 --
 -- AUTO_INCREMENT for table `person_relationships`
@@ -1984,7 +1997,7 @@ ALTER TABLE `statuses`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
 
 --
 -- AUTO_INCREMENT for table `vitals`

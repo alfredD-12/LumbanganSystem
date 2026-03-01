@@ -787,7 +787,7 @@ if (isLoggedIn()) {
           </div>
           <button onclick="fsiRetry()" style="background:transparent;color:#667eea;border:none;font-size:12px;font-weight:500;cursor:pointer;text-decoration:underline;">Retry</button>
 
-          <!-- ── DEBUG EAR PANEL (shown only when DEBUG_EAR = true in face_scan.js) ── -->
+          <!-- ── DEBUG EAR PANEL (Space×5) ── -->
           <div id="fsiDebugEar" style="display:none;margin-top:10px;text-align:left;background:#1a1a2e;color:#e2e8f0;border-radius:8px;padding:10px 14px;font-family:monospace;font-size:11px;line-height:1.7;border:1px solid #444;">
             <div style="color:#a0aec0;font-size:10px;letter-spacing:.8px;text-transform:uppercase;margin-bottom:4px;">⚙ EYE Debug</div>
             <div>Left&nbsp;&nbsp;: <span id="dbgEarL" style="color:#90cdf4;">—</span></div>
@@ -802,6 +802,21 @@ if (isLoggedIn()) {
               Baseline : <span id="dbgEarBase" style="color:#fbd38d;">...</span>
               &nbsp;|&nbsp; ×0.95/<span style="color:#fc8181;">BLINK</span>=<span id="dbgEarBT" style="color:#fc8181;">—</span>
               &nbsp;|&nbsp; ×0.98/<span style="color:#68d391;">OPEN</span>=<span id="dbgEarOT" style="color:#68d391;">—</span>
+            </div>
+          </div>
+
+          <!-- ── DEBUG FLOW PANEL (D×5) ─────────────────────────────── -->
+          <div id="fsiDbgFlow" style="display:none;margin-top:8px;text-align:left;background:#0d1117;color:#8b949e;border-radius:8px;padding:10px 14px;font-family:monospace;font-size:10px;line-height:1.6;border:1px solid #30363d;">
+            <div style="color:#58a6ff;font-size:10px;letter-spacing:.8px;text-transform:uppercase;margin-bottom:4px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;">
+              <span>🔍 FLOW Debug</span>
+              <span>Step: <span id="dbgFlow_step" style="color:#e3b341;">—</span></span>
+            </div>
+            <div>Video&nbsp;&nbsp;: <span id="dbgFlow_video" style="color:#7ee787;">—</span></div>
+            <div>Frames&nbsp;: <span id="dbgFlow_frames" style="color:#79c0ff;">—</span></div>
+            <div style="word-break:break-all;">API&nbsp;&nbsp;&nbsp;&nbsp;: <span id="dbgFlow_api" style="color:#e3b341;">—</span></div>
+            <div style="border-top:1px solid #21262d;margin-top:5px;padding-top:4px;">
+              <div style="color:#8b949e;margin-bottom:2px;">Log (newest first):</div>
+              <div id="dbgFlowLog" style="max-height:130px;overflow-y:auto;"></div>
             </div>
           </div>
         </div>

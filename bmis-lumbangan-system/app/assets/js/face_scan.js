@@ -440,11 +440,25 @@
             }
 
             if (data.duplicate) {
-                console.log(`[FaceScan] Duplicate detected, distance=${data.distance}`);
+                console.group('[FaceScan] ⚠ DUPLICATE detected');
+                console.log('Distance     :', data.closest_dist);
+                console.log('Reason       :', data.reason);
+                console.log('Dyn threshold:', data.dynamic_threshold);
+                console.log('Hard ceiling :', data.hard_ceiling);
+                console.log('Hard floor   :', data.hard_floor);
+                if (data.distances) console.table(data.distances);
+                console.groupEnd();
                 showDuplicateScreen();
                 return;
             }
-            console.log(`[FaceScan] No duplicate. Closest stored face distance=${data.closest_dist ?? 'N/A'}`);
+
+            console.group('[FaceScan] ✓ New face accepted');
+            console.log('Closest dist :', data.closest_dist);
+            console.log('Dyn threshold:', data.dynamic_threshold);
+            console.log('Reason       :', data.reason);
+            console.log('Compared     :', data.total_compared, 'stored faces');
+            if (data.distances) console.table(data.distances);
+            console.groupEnd();
 
             // All good — show success, pass data to callback
             showSuccessScreen();
@@ -678,7 +692,8 @@
         return meta ? meta.content.replace(/\/app\/?$/, '') : '';
     })();
 
-    const DEBUG_EAR           = false;   // ← set false to hide the EAR debug panel
+    let DEBUG_EAR             = false;   // toggled by pressing Space 5× consecutively
+    let DEBUG_FLOW            = false;   // toggled by pressing D     5× consecutively
 
     // Adaptive blink thresholds — derived from each user's own baseline EAR.
     // face-api landmarks only produce a ~5-8% EAR drop on a real blink
@@ -769,13 +784,17 @@
         const started = await _startCamera();
         if (!started) return;
 
-        _subStep = SUB.POSITION;
-        _earSamples  = [];
-        _baselineEAR = null;
-        _blinkThresh = EAR_FALLBACK_BLINK;
-        _openThresh  = EAR_FALLBACK_OPEN;
+        _subStep      = SUB.POSITION;
+        _blinkCount   = 0;            // ← reset blink state so person 2 starts clean
+        _lastEye      = 'open';
+        _earSamples   = [];
+        _baselineEAR  = null;
+        _blinkThresh  = EAR_FALLBACK_BLINK;
+        _openThresh   = EAR_FALLBACK_OPEN;
         _noFaceStreak = 0;
         _clearWarn();
+        _dbgLog('Camera started, state reset for new user');
+        _dbgSet('step', 'position');
         _showScreen('camera');
         _setCameraStep(SUB.POSITION);
         _startPositionLoop();
@@ -851,6 +870,89 @@
         if (_stream) { _stream.getTracks().forEach(t => t.stop()); _stream = null; }
         const v = document.getElementById('fsiVideo');
         if (v) { v.srcObject = null; }
+    }
+
+    // ── Key shortcuts: Space×5 = EAR debug | D×5 = Flow debug ───────────────────────
+    (() => {
+        // — Space ×5 toggles EAR debug panel —
+        let _sc = 0, _st = null;
+        // — D ×5 toggles Flow debug panel —
+        let _dc = 0, _dt = null;
+
+        function _flashToast(label, on) {
+            const toast = document.createElement('div');
+            toast.textContent = on ? `⚡ ${label} ON` : `⚡ ${label} OFF`;
+            Object.assign(toast.style, {
+                position:'fixed', bottom:'24px', left:'50%', transform:'translateX(-50%)',
+                background: on ? '#2d3748' : '#718096',
+                color:'#e2e8f0', padding:'6px 18px', borderRadius:'20px',
+                fontSize:'12px', fontFamily:'monospace', zIndex:'99999',
+                opacity:'1', transition:'opacity .4s ease'
+            });
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; }, 1200);
+            setTimeout(() => { toast.remove(); }, 1700);
+        }
+
+        document.addEventListener('keydown', e => {
+            const panel = document.getElementById('faceScanInlinePanel');
+            if (!panel || panel.style.display === 'none') { _sc = 0; _dc = 0; return; }
+
+            if (e.code === 'Space') {
+                e.preventDefault();
+                _dc = 0; clearTimeout(_dt);
+                _sc++;
+                clearTimeout(_st);
+                _st = setTimeout(() => { _sc = 0; }, 800);
+                if (_sc >= 5) {
+                    _sc = 0;
+                    DEBUG_EAR = !DEBUG_EAR;
+                    const dbg = document.getElementById('fsiDebugEar');
+                    if (dbg) dbg.style.display = DEBUG_EAR ? 'block' : 'none';
+                    _flashToast('EYE Debug', DEBUG_EAR);
+                    console.log('[FaceScanInline] EYE Debug toggled:', DEBUG_EAR);
+                }
+            } else if (e.key === 'd' || e.key === 'D') {
+                _sc = 0; clearTimeout(_st);
+                _dc++;
+                clearTimeout(_dt);
+                _dt = setTimeout(() => { _dc = 0; }, 800);
+                if (_dc >= 5) {
+                    _dc = 0;
+                    DEBUG_FLOW = !DEBUG_FLOW;
+                    const fp = document.getElementById('fsiDbgFlow');
+                    if (fp) fp.style.display = DEBUG_FLOW ? 'block' : 'none';
+                    _flashToast('FLOW Debug', DEBUG_FLOW);
+                    console.log('[FaceScanInline] FLOW Debug toggled:', DEBUG_FLOW);
+                }
+            } else {
+                _sc = 0; _dc = 0;
+                clearTimeout(_st); clearTimeout(_dt);
+            }
+        });
+    })();
+
+    // ── Flow debug helpers ─────────────────────────────────────────────────────────
+    function _dbgSet(key, val) {
+        if (!DEBUG_FLOW) return;
+        const el = document.getElementById('dbgFlow_' + key);
+        if (el) el.textContent = val;
+    }
+    function _dbgLog(msg) {
+        const ts = new Date().toISOString().slice(11, 23);
+        console.log(`[FlowDbg ${ts}] ${msg}`);
+        if (!DEBUG_FLOW) return;
+        const log = document.getElementById('dbgFlowLog');
+        if (!log) return;
+        const row = document.createElement('div');
+        row.textContent = `${ts} ${msg}`;
+        row.style.color = msg.startsWith('✗') ? '#f87171'
+                        : msg.startsWith('⚠') ? '#fbbf24'
+                        : msg.startsWith('✓') ? '#4ade80'
+                        : '#c9d1d9';
+        log.insertBefore(row, log.firstChild); // newest first
+        // cap at 40 entries
+        while (log.children.length > 40) log.removeChild(log.lastChild);
     }
 
     // ── Debug EAR overlay helper ──────────────────────────────────────────────
@@ -1010,6 +1112,8 @@
                     _baselineEAR = sorted[Math.floor(sorted.length / 2)];
                     _blinkThresh = _baselineEAR * EAR_BLINK_RATIO;
                     _openThresh  = _baselineEAR * EAR_OPEN_RATIO;
+                    _dbgLog(`✓ baseline calibrated: ${_baselineEAR.toFixed(3)}  blink<${_blinkThresh.toFixed(3)}  open>${_openThresh.toFixed(3)}`);
+                    _dbgSet('step', 'position—calibrated');
                     console.log(`[FaceScanInline] baseline=${_baselineEAR.toFixed(3)} blink<${_blinkThresh.toFixed(3)} open>${_openThresh.toFixed(3)}`);
                 }
 
@@ -1018,6 +1122,7 @@
 
                 if (!facePresent && _baselineEAR) {
                     facePresent = true;
+                    _dbgLog('✓ face+calibration ready, advancing to blink step in 0.8s');
                     // Auto-advance to blink step once face detected AND calibration complete
                     setTimeout(() => {
                         if (_subStep === SUB.POSITION && _baselineEAR) {
@@ -1026,6 +1131,8 @@
                             _dotActive(2);
                             _blinkCount = 0;
                             _lastEye    = 'open';
+                            _dbgSet('step', 'blink');
+                            _dbgLog('→ blink loop started');
                             _setCameraStep(SUB.BLINK);
                             _updateBlinkCircles();
                             _startTimeout(() => {
@@ -1072,9 +1179,11 @@
 
             if (ear < _blinkThresh && _lastEye === 'open') {
                 _lastEye = 'closed';
+                _dbgLog(`↓ EAR closed: min=${ear.toFixed(3)} thresh=${_blinkThresh.toFixed(3)}`);
             } else if (ear > _openThresh && _lastEye === 'closed') {
                 _lastEye = 'open';
                 _blinkCount++;
+                _dbgLog(`↑ blink #${_blinkCount} registered (EAR re-open: min=${ear.toFixed(3)} thresh=${_openThresh.toFixed(3)})`);
                 _updateBlinkCircles();
                 if (status) status.textContent = `Blink ${_blinkCount} of ${BLINKS_REQUIRED} ✓`;
                 if (_blinkCount >= BLINKS_REQUIRED) {
@@ -1083,6 +1192,8 @@
                     setTimeout(() => {
                         _subStep = SUB.LEFT;
                         _dotActive(3);
+                        _dbgSet('step', 'head-left');
+                        _dbgLog(`✓ ${BLINKS_REQUIRED} blinks done → head-left`);
                         _setCameraStep(SUB.LEFT);
                         _startTimeout(() => {
                             _stopLoop();
@@ -1118,10 +1229,13 @@
             if (direction === SUB.LEFT && offset > HEAD_TURN_THRESHOLD && !detected) {
                 detected = true;
                 _stopTimeout(); _stopLoop();
+                _dbgLog(`✓ head-left detected (offset=${offset.toFixed(3)})`);
                 if (status) status.textContent = '✓ Turn left detected!';
                 setTimeout(() => {
                     _subStep = SUB.RIGHT;
                     _dotActive(4);
+                    _dbgSet('step', 'head-right');
+                    _dbgLog('→ head-right loop started');
                     _setCameraStep(SUB.RIGHT);
                     _startTimeout(() => {
                         _stopLoop();
@@ -1133,6 +1247,8 @@
             } else if (direction === SUB.RIGHT && offset < -HEAD_TURN_THRESHOLD && !detected) {
                 detected = true;
                 _stopTimeout(); _stopLoop();
+                _dbgLog(`✓ head-right detected (offset=${offset.toFixed(3)}) → extractAndFinish`);
+                _dbgSet('step', 'extracting');
                 if (status) status.textContent = '✓ Turn right detected!';
                 setTimeout(() => _extractAndFinish(), 500);
             } else {
@@ -1198,20 +1314,48 @@
             _stopCamera();
             _showScreen('processing');
 
-            const resp = await fetch(BASE_API + '/api/check_face_duplicate.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ face_embedding: embedding, sample_count: descriptors.length })
-            });
-            const data = await resp.json();
+            const apiUrl  = BASE_API + '/api/check_face_duplicate.php';
+            let rawText   = '';
+            let data      = null;
+            try {
+                const resp = await fetch(apiUrl, {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body:    JSON.stringify({ face_embedding: embedding, sample_count: descriptors.length })
+                });
+                rawText = await resp.text();
+                data    = JSON.parse(rawText);
+            } catch (fetchErr) {
+                _dbgLog(`✗ fetch/parse error: ${fetchErr.message}  raw: ${rawText.slice(0,200)}`);
+                console.error('[FaceScanInline] fetch/parse error:', fetchErr, '\nRaw:', rawText);
+                _showFinalErr('Network error — open browser console (F12) for details.');
+                return;
+            }
 
             if (!data.success) { _showFinalErr(data.message || 'Server error.'); return; }
+
             if (data.duplicate) {
-                console.log(`[FaceScanInline] Duplicate detected, distance=${data.distance}`);
+                console.group('[FaceScanInline] ⚠ DUPLICATE detected');
+                console.log('Distance     :', data.closest_dist);
+                console.log('Reason       :', data.reason);
+                console.log('Dyn threshold:', data.dynamic_threshold);
+                console.log('Hard ceiling :', data.hard_ceiling);
+                console.log('Hard floor   :', data.hard_floor);
+                if (data.distances) console.table(data.distances);
+                console.groupEnd();
+                _dbgLog(`⚠ DUPLICATE dist=${data.closest_dist} reason=${data.reason}`);
                 _showScreen('duplicate');
                 return;
             }
-            console.log(`[FaceScanInline] No duplicate. Closest stored face distance=${data.closest_dist ?? 'N/A'}`);
+
+            console.group('[FaceScanInline] ✓ New face accepted');
+            console.log('Closest dist :', data.closest_dist);
+            console.log('Dyn threshold:', data.dynamic_threshold);
+            console.log('Reason       :', data.reason);
+            console.log('Compared     :', data.total_compared, 'stored faces');
+            if (data.distances) console.table(data.distances);
+            console.groupEnd();
+            _dbgLog(`✓ new face  dist=${data.closest_dist}  thresh=${data.dynamic_threshold}  reason=${data.reason}`);
 
             // Success — append averaged face data to formData and call callback
             if (_formData) {

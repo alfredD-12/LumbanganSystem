@@ -14,6 +14,4 @@ define('SMTP_PASSWORD', 'zicx hbyy lviu cyqj');     // Change this to your App P
 // Default sender email (should be your Gmail address)
 define('SENDER_EMAIL', 'bmis.lumbangan@gmail.com');   // Change this
 define('SENDER_NAME', 'Barangay Lumbangan');
-
-
-?>
+define('SECURITY_ALERT_EMAIL', 'bmis.lumbangan@gmail.com');

@@ -1,9 +1,9 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 5.2.3
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 01, 2026 at 01:42 PM
+-- Generation Time: Mar 08, 2026 at 05:32 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -20,6 +20,31 @@ SET time_zone = "+00:00";
 --
 -- Database: `lumbangansystem`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `account_lockouts`
+--
+
+CREATE TABLE `account_lockouts` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `username` varchar(64) NOT NULL,
+  `consecutive_failures` int(10) UNSIGNED NOT NULL DEFAULT 0,
+  `locked_until` datetime DEFAULT NULL,
+  `lockout_count` int(10) UNSIGNED NOT NULL DEFAULT 0,
+  `last_failure_at` datetime DEFAULT NULL,
+  `last_success_at` datetime DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `account_lockouts`
+--
+
+INSERT INTO `account_lockouts` (`id`, `username`, `consecutive_failures`, `locked_until`, `lockout_count`, `last_failure_at`, `last_success_at`, `created_at`, `updated_at`) VALUES
+(1, 'niks', 0, '2026-03-08 13:46:32', 1, '2026-03-08 13:31:32', '2026-03-08 13:30:58', '2026-03-08 13:30:58', '2026-03-08 13:31:32');
 
 -- --------------------------------------------------------
 
@@ -203,6 +228,29 @@ CREATE TABLE `births` (
   `remarks` varchar(255) DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `brute_force_alerts`
+--
+
+CREATE TABLE `brute_force_alerts` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `alert_type` enum('ip_threshold','account_lockout','distributed_attack') NOT NULL,
+  `target` varchar(64) NOT NULL,
+  `attempt_count` int(10) UNSIGNED NOT NULL,
+  `alert_sent_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `email_sent` tinyint(1) NOT NULL DEFAULT 0,
+  `details` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `brute_force_alerts`
+--
+
+INSERT INTO `brute_force_alerts` (`id`, `alert_type`, `target`, `attempt_count`, `alert_sent_at`, `email_sent`, `details`) VALUES
+(1, 'account_lockout', 'niks', 5, '2026-03-08 13:31:36', 1, 'Username niks was temporarily locked after repeated failures from IP ::1.');
 
 -- --------------------------------------------------------
 
@@ -502,7 +550,8 @@ CREATE TABLE `email_verifications` (
 
 INSERT INTO `email_verifications` (`id`, `email`, `code`, `token`, `person_data`, `user_data`, `created_at`, `expires_at`, `verified_at`) VALUES
 (11, 'davidalfredgludo@gmail.com', '463892', 'e02a33b9745632e7a964975ec06322093759ca595ebd8db04e65f451f16aa44e', '{\"first_name\":\"David Alfred\",\"last_name\":\"Gludo\",\"middle_name\":\"Cabali\",\"suffix\":null,\"sex\":null,\"birthdate\":null,\"marital_status\":\"Single\"}', '{\"username\":\"alf_red_c2\",\"email\":\"davidalfredgludo@gmail.com\",\"mobile\":\"\",\"password_hash\":\"$2y$10$RBsrQZuyd.Gn\\/cBjkmwux.BAR2lkNxVatrPwncQ96uzWBi42771xK\"}', '2026-03-01 10:27:43', '2026-03-01 11:27:43', '2026-03-01 10:28:08'),
-(12, 'hyphetv@gmail.com', '197990', '5b4119a76942e4c8fb0dbcd3ab85baad12f758c9316726fc8611ad541fc322d4', '{\"first_name\":\"David Alfred\",\"last_name\":\"Gludo\",\"middle_name\":\"Cabali\",\"suffix\":null,\"sex\":null,\"birthdate\":null,\"marital_status\":\"Single\"}', '{\"username\":\"arf_arf_arf\",\"email\":\"hyphetv@gmail.com\",\"mobile\":\"\",\"password_hash\":\"$2y$10$QSbsHV6ORtEvWfoMkObFMeeH4uggErKR\\/4SkZkkQ6uMkNz1Mxnp5e\"}', '2026-03-01 12:33:00', '2026-03-01 13:33:00', '2026-03-01 12:33:54');
+(12, 'hyphetv@gmail.com', '197990', '5b4119a76942e4c8fb0dbcd3ab85baad12f758c9316726fc8611ad541fc322d4', '{\"first_name\":\"David Alfred\",\"last_name\":\"Gludo\",\"middle_name\":\"Cabali\",\"suffix\":null,\"sex\":null,\"birthdate\":null,\"marital_status\":\"Single\"}', '{\"username\":\"arf_arf_arf\",\"email\":\"hyphetv@gmail.com\",\"mobile\":\"\",\"password_hash\":\"$2y$10$QSbsHV6ORtEvWfoMkObFMeeH4uggErKR\\/4SkZkkQ6uMkNz1Mxnp5e\"}', '2026-03-01 12:33:00', '2026-03-01 13:33:00', '2026-03-01 12:33:54'),
+(13, 'nikkocausapin61@gmail.com', '160442', 'ad3235c6ea2fc67e8d46b0c24725221a1a35fb3232508e27d871c1b88cfd5f85', '{\"first_name\":\"Nikko\",\"last_name\":\"Causapin\",\"middle_name\":\"Mendoza\",\"suffix\":null,\"sex\":null,\"birthdate\":null,\"marital_status\":\"Single\"}', '{\"username\":\"niks\",\"email\":\"nikkocausapin61@gmail.com\",\"mobile\":\"\",\"password_hash\":\"$2y$10$ynwfjM\\/.uLBrCulEpzpiDeTQz.\\/ocPY0ETsjWKik.i4OlZVyz25bO\"}', '2026-03-01 12:46:30', '2026-03-01 13:46:30', '2026-03-01 12:47:02');
 
 -- --------------------------------------------------------
 
@@ -786,6 +835,20 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `ip_rate_limits`
+--
+
+CREATE TABLE `ip_rate_limits` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `ip_address` varchar(45) NOT NULL,
+  `attempt_count` int(10) UNSIGNED NOT NULL DEFAULT 1,
+  `window_start` datetime NOT NULL DEFAULT current_timestamp(),
+  `last_attempt_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `lifestyle_risk`
 --
 
@@ -832,6 +895,35 @@ INSERT INTO `lifestyle_risk` (`id`, `cvd_id`, `smoking_status`, `smoking_comment
 (20, 20, 'Never', NULL, 'Never', 0, NULL, 0, 1, 1, 1, 15, 'Light'),
 (21, 24, 'Never', '', 'Never', 1, '', 1, 1, 1, 2, 65, 'Light'),
 (24, 25, 'Passive', '', 'Never', 1, '', 1, 1, 1, 2, 60, 'Moderate');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `login_attempts`
+--
+
+CREATE TABLE `login_attempts` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `username` varchar(64) NOT NULL,
+  `ip_address` varchar(45) NOT NULL,
+  `user_agent` varchar(255) DEFAULT NULL,
+  `attempt_result` enum('success','failure') NOT NULL,
+  `failure_reason` varchar(100) DEFAULT NULL,
+  `geolocation_hint` varchar(100) DEFAULT NULL,
+  `attempted_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `login_attempts`
+--
+
+INSERT INTO `login_attempts` (`id`, `username`, `ip_address`, `user_agent`, `attempt_result`, `failure_reason`, `geolocation_hint`, `attempted_at`) VALUES
+(1, 'niks', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'success', NULL, NULL, '2026-03-08 13:30:58'),
+(2, 'niks', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'failure', 'invalid_credentials', NULL, '2026-03-08 13:31:12'),
+(3, 'niks', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'failure', 'invalid_credentials', NULL, '2026-03-08 13:31:16'),
+(4, 'niks', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'failure', 'invalid_credentials', NULL, '2026-03-08 13:31:21'),
+(5, 'niks', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'failure', 'invalid_credentials', NULL, '2026-03-08 13:31:24'),
+(6, 'niks', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36', 'failure', 'invalid_credentials', NULL, '2026-03-08 13:31:32');
 
 -- --------------------------------------------------------
 
@@ -1113,7 +1205,8 @@ INSERT INTO `persons` (`id`, `family_id`, `household_id`, `last_name`, `first_na
 (52, 16, 16, 'Malata', 'Ronel Lance', 'Sumama', NULL, 0, NULL, NULL, 'Single', NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-24 19:03:16', '2025-11-25 19:28:25'),
 (53, 31, 31, 'Vazques', 'John Ley Lucky', 'Medyor', NULL, 1, 'M', '2004-08-12', 'Single', 'O+', NULL, 'College', 'Student', 'Roman Catholic', NULL, 0, '2025-11-26 09:21:41', '2025-11-26 11:11:25'),
 (54, 0, NULL, 'Condicion', 'Marlo', 'Humarang', NULL, 0, NULL, NULL, 'Single', NULL, NULL, NULL, NULL, NULL, NULL, 0, '2025-11-26 09:23:26', '2025-11-26 09:23:26'),
-(58, NULL, NULL, 'Gludo', 'David Alfred', 'Cabali', NULL, 0, NULL, NULL, 'Single', NULL, NULL, NULL, NULL, NULL, NULL, 0, '2026-03-01 20:33:54', '2026-03-01 20:33:54');
+(58, NULL, NULL, 'Gludo', 'David Alfred', 'Cabali', NULL, 0, NULL, NULL, 'Single', NULL, NULL, NULL, NULL, NULL, NULL, 0, '2026-03-01 20:33:54', '2026-03-01 20:33:54'),
+(59, NULL, NULL, 'Causapin', 'Nikko', 'Mendoza', NULL, 0, NULL, NULL, 'Single', NULL, NULL, NULL, NULL, NULL, NULL, 0, '2026-03-01 20:47:02', '2026-03-01 20:47:02');
 
 -- --------------------------------------------------------
 
@@ -1446,7 +1539,8 @@ INSERT INTO `users` (`id`, `person_id`, `username`, `email`, `mobile`, `password
 (52, 52, 'lancey', 'ronel@gmail.com', NULL, '$2y$10$eWxedBtB7eE8QvzqF/cXGOXq0uhLduwvEMZTNGcbgCXgLg1Xh.mSW', 'active', '2025-11-24 20:12:08', '2025-11-24 19:03:16', '2025-11-24 20:12:08', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
 (53, 53, 'vayqiz', 'ley@gmail.com', '0995-3373-693', '$2y$10$PicgUG0gYrOj29JEXRUTkumsqEWW3xnFKhCbQWCMVDLUKjn3ouiIe', 'active', '2025-11-26 11:10:46', '2025-11-26 09:21:41', '2025-11-26 11:10:46', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
 (54, 54, 'condiiii', 'marlo@gmail.com', NULL, '$2y$10$xuG95KX3afPDtjJH/SgXten16JacX.Sv1S8In6VNpNWGoyO9ygXc6', 'active', '2025-11-26 09:43:38', '2025-11-26 09:23:26', '2025-11-26 09:43:38', NULL, NULL, NULL, 0, 0, NULL, NULL, 0, 0, NULL),
-(58, 58, 'arf_arf_arf', 'hyphetv@gmail.com', NULL, '$2y$10$QSbsHV6ORtEvWfoMkObFMeeH4uggErKR/4SkZkkQ6uMkNz1Mxnp5e', 'active', NULL, '2026-03-01 20:33:54', '2026-03-01 20:33:54', '[-0.24352514743804932,0.10002434998750687,0.07331377267837524,-0.03939744830131531,-0.10241727530956268,-0.034891385585069656,0.03952961601316929,-0.1286325417459011,0.17086130380630493,-0.09426214545965195,0.2204045131802559,-0.001507369801402092,-0.1999666765332222,-0.0524742528796196,-0.005135257495567203,0.1860853210091591,-0.13916027545928955,-0.10791133344173431,-0.10304799675941467,-0.026712747290730476,-0.013575052726082504,-0.03014968801289797,0.08092028275132179,0.07148820906877518,-0.0871451087296009,-0.39386674761772156,-0.09222617372870445,-0.07422023080289364,-0.012513539288192987,-0.0011154644889757037,-0.0341183221898973,0.04657290503382683,-0.190805122256279,-0.07202639430761337,-0.013519064988940954,0.09271039068698883,-0.04574740491807461,-0.018728151451796293,0.2065815031528473,-0.02064688131213188,-0.246706523001194,-0.030430570477619767,0.04241803288459778,0.2885264456272125,0.1888805702328682,0.027050101198256016,0.03683185297995806,-0.025632143951952457,0.03843995463103056,-0.1998298540711403,0.06037401221692562,0.066269651055336,0.14784494787454605,0.0165048367343843,0.022809473797678947,-0.136921688914299,-0.0020128190517425537,0.11312158405780792,-0.11792369186878204,-0.036377616226673126,0.024188461946323514,-0.09118673205375671,-0.059521207585930824,-0.03897077776491642,0.31402240693569183,0.16923974454402924,-0.15488118678331375,-0.07462254539132118,0.14665763825178146,-0.07852034643292427,-0.005098094814456999,0.028805386275053024,-0.1724642813205719,-0.18455715477466583,-0.3123972415924072,0.06924098543822765,0.44871310889720917,0.0936586745083332,-0.20074860006570816,-0.037272339686751366,-0.11179948970675468,0.0502111054956913,0.07631846144795418,0.16828875988721848,-0.09009318798780441,0.009098502807319164,-0.05727576091885567,0.014888349338434637,0.13126222044229507,-0.026691860985010862,-0.10078996047377586,0.18336640298366547,0.035124062560498714,0.017599855549633503,-0.009653779910877347,0.03629429964348674,-0.031171534210443497,-0.0000678827054798603,-0.12720591202378273,-0.012614280916750431,0.06708653457462788,-0.003422949055675417,0.012354776263237,0.12680498510599136,-0.22490251809358597,0.12160862982273102,0.032043734565377235,0.023669978603720665,0.061811795458197594,0.0411446001380682,-0.05866352841258049,-0.0914771519601345,0.07696965709328651,-0.24952690303325653,0.1635880544781685,0.2186734974384308,-0.07552657648921013,0.1785358563065529,0.0723750963807106,0.054328758269548416,0.024812269024550915,0.05113152973353863,-0.1423424705862999,-0.009500540560111403,0.15818023681640625,-0.035443926230072975,0.11183662340044975,0.04071498569101095]', 'faces/face_69a43232428899.47217969.jpg', '2026-03-01 13:33:54', 1, 0, NULL, NULL, 0, 0, NULL);
+(58, 58, 'arf_arf_arf', 'hyphetv@gmail.com', NULL, '$2y$10$QSbsHV6ORtEvWfoMkObFMeeH4uggErKR/4SkZkkQ6uMkNz1Mxnp5e', 'active', NULL, '2026-03-01 20:33:54', '2026-03-01 20:33:54', '[-0.24352514743804932,0.10002434998750687,0.07331377267837524,-0.03939744830131531,-0.10241727530956268,-0.034891385585069656,0.03952961601316929,-0.1286325417459011,0.17086130380630493,-0.09426214545965195,0.2204045131802559,-0.001507369801402092,-0.1999666765332222,-0.0524742528796196,-0.005135257495567203,0.1860853210091591,-0.13916027545928955,-0.10791133344173431,-0.10304799675941467,-0.026712747290730476,-0.013575052726082504,-0.03014968801289797,0.08092028275132179,0.07148820906877518,-0.0871451087296009,-0.39386674761772156,-0.09222617372870445,-0.07422023080289364,-0.012513539288192987,-0.0011154644889757037,-0.0341183221898973,0.04657290503382683,-0.190805122256279,-0.07202639430761337,-0.013519064988940954,0.09271039068698883,-0.04574740491807461,-0.018728151451796293,0.2065815031528473,-0.02064688131213188,-0.246706523001194,-0.030430570477619767,0.04241803288459778,0.2885264456272125,0.1888805702328682,0.027050101198256016,0.03683185297995806,-0.025632143951952457,0.03843995463103056,-0.1998298540711403,0.06037401221692562,0.066269651055336,0.14784494787454605,0.0165048367343843,0.022809473797678947,-0.136921688914299,-0.0020128190517425537,0.11312158405780792,-0.11792369186878204,-0.036377616226673126,0.024188461946323514,-0.09118673205375671,-0.059521207585930824,-0.03897077776491642,0.31402240693569183,0.16923974454402924,-0.15488118678331375,-0.07462254539132118,0.14665763825178146,-0.07852034643292427,-0.005098094814456999,0.028805386275053024,-0.1724642813205719,-0.18455715477466583,-0.3123972415924072,0.06924098543822765,0.44871310889720917,0.0936586745083332,-0.20074860006570816,-0.037272339686751366,-0.11179948970675468,0.0502111054956913,0.07631846144795418,0.16828875988721848,-0.09009318798780441,0.009098502807319164,-0.05727576091885567,0.014888349338434637,0.13126222044229507,-0.026691860985010862,-0.10078996047377586,0.18336640298366547,0.035124062560498714,0.017599855549633503,-0.009653779910877347,0.03629429964348674,-0.031171534210443497,-0.0000678827054798603,-0.12720591202378273,-0.012614280916750431,0.06708653457462788,-0.003422949055675417,0.012354776263237,0.12680498510599136,-0.22490251809358597,0.12160862982273102,0.032043734565377235,0.023669978603720665,0.061811795458197594,0.0411446001380682,-0.05866352841258049,-0.0914771519601345,0.07696965709328651,-0.24952690303325653,0.1635880544781685,0.2186734974384308,-0.07552657648921013,0.1785358563065529,0.0723750963807106,0.054328758269548416,0.024812269024550915,0.05113152973353863,-0.1423424705862999,-0.009500540560111403,0.15818023681640625,-0.035443926230072975,0.11183662340044975,0.04071498569101095]', 'faces/face_69a43232428899.47217969.jpg', '2026-03-01 13:33:54', 1, 0, NULL, NULL, 0, 0, NULL),
+(59, 59, 'niks', 'nikkocausapin61@gmail.com', NULL, '$2y$10$ynwfjM/.uLBrCulEpzpiDeTQz./ocPY0ETsjWKik.i4OlZVyz25bO', 'active', '2026-03-08 13:30:58', '2026-03-01 20:47:02', '2026-03-08 13:30:58', '[-0.06401104405522347,0.07105836048722267,0.058761364221572875,-0.03297033049166202,-0.1311340168118477,-0.017512509226799013,-0.048097442090511325,-0.05366409942507744,0.13362171202898027,-0.07868044003844261,0.20692408084869385,-0.0328627847135067,-0.2268616646528244,-0.0029139818623661997,-0.005284321401268244,0.13922722786664962,-0.16339026838541032,-0.10867633521556855,-0.10383692532777786,-0.01877633580006659,0.047929718345403674,0.06027774028480053,0.026048654690384865,0.07212664783000947,-0.12157433182001114,-0.30601105093955994,-0.072134730219841,-0.09385843612253666,0.02685901913791895,-0.08135479912161828,-0.07460853904485702,0.012341476511210203,-0.20640859603881836,-0.03807218708097935,0.027730286121368408,0.03439000658690929,-0.044328295066952704,-0.07452131956815719,0.15205163061618804,0.004450511373579502,-0.2671468883752823,0.014269046671688556,0.028385349153541028,0.21966291069984437,0.20520401298999785,0.01976794919464737,-0.01364879314787686,-0.09102601408958436,0.11585043519735336,-0.24971030950546264,0.05755725055932999,0.1489803224802017,0.08463301509618759,0.07389246076345443,0.009687742171809077,-0.1640246570110321,-0.008040216565132142,0.14347218573093415,-0.1344260573387146,0.026643243804574012,0.050784855335950854,-0.05360538326203823,-0.01781974746263586,-0.09835784584283828,0.2205255776643753,0.0841886505484581,-0.13538763374090196,-0.17647430598735808,0.1187767431139946,-0.1512211501598358,-0.05788723230361938,0.11955368220806122,-0.1402343764901161,-0.20238543152809144,-0.2730586022138596,0.068227469176054,0.39348532557487487,0.10234753489494323,-0.19981280267238616,0.01504230173304677,-0.07685097567737102,0.005533255077898503,0.035970295406877996,0.10927115380764008,-0.04575381362810731,0.043405997660011054,-0.08578125834465027,0.024440911784768104,0.22869714200496674,-0.08138497099280358,0.0026976374327205123,0.2635219216346741,-0.0024706813506782054,0.04275681674480438,0.041209902986884116,0.052199775958433746,-0.07400767127983272,-0.010647598002105952,-0.15174276679754256,-0.0018734758719801902,0.03873894885182381,-0.061556311696767806,-0.029061364009976387,0.11772131621837616,-0.16647626757621764,0.14328940212726593,-0.009678529738448561,-0.01797832939773798,0.009387666219845414,-0.015536690503358841,-0.09925113320350647,-0.08017581095919013,0.15676060914993287,-0.23220386505126953,0.19861935675144196,0.15673648715019226,0.09233864024281502,0.12460506856441497,0.0694708488881588,0.07085671722888946,-0.0196467787027359,-0.017641422525048255,-0.18425863683223725,-0.024284553434699773,0.13820472210645676,-0.05682838261127472,0.018104423955082893,-0.0051837492734193805]', 'faces/face_69a435462209a8.07123028.jpg', '2026-03-01 12:47:02', 1, 0, NULL, NULL, 0, 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -1501,18 +1595,17 @@ INSERT INTO `vitals` (`id`, `cvd_id`, `height_cm`, `weight_kg`, `bmi`, `central_
 (21, 24, 131.00, 211.00, NULL, NULL, NULL, NULL, NULL, 13.00, 12, 8, 7, -1, 36.0),
 (22, 25, 171.00, 70.00, NULL, NULL, NULL, NULL, NULL, 25.00, 120, 80, 72, 16, 37.0);
 
--- --------------------------------------------------------
-
---
--- Structure for view `ml_migration_dataset_all`
---
-DROP TABLE IF EXISTS `ml_migration_dataset_all`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `ml_migration_dataset_all`  AS SELECT `rm`.`id` AS `migration_id`, `p`.`id` AS `person_id`, `p`.`birthdate` AS `birthdate`, `p`.`sex` AS `sex`, `p`.`household_id` AS `household_id`, coalesce(`hh_count`.`total_members`,1) AS `household_size`, timestampdiff(YEAR,`p`.`birthdate`,`rm`.`moved_at`) AS `age`, `rm`.`to_purok_id` AS `to_purok_id`, `rm`.`from_purok_id` AS `from_purok_id`, `rm`.`moved_at` AS `moved_at`, `rm`.`reason` AS `reason`, `rm`.`is_synthetic` AS `is_synthetic` FROM ((`resident_migrations` `rm` join `persons` `p` on(`p`.`id` = `rm`.`person_id`)) left join (select `persons`.`household_id` AS `household_id`,count(0) AS `total_members` from `persons` group by `persons`.`household_id`) `hh_count` on(`hh_count`.`household_id` = `p`.`household_id`)) ;
-
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `account_lockouts`
+--
+ALTER TABLE `account_lockouts`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uk_username` (`username`),
+  ADD KEY `idx_locked_until` (`locked_until`);
 
 --
 -- Indexes for table `angina_stroke_screening`
@@ -1532,6 +1625,13 @@ ALTER TABLE `announcements`
 --
 ALTER TABLE `births`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `brute_force_alerts`
+--
+ALTER TABLE `brute_force_alerts`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_alert_type_time` (`alert_type`,`alert_sent_at`);
 
 --
 -- Indexes for table `case_types`
@@ -1650,11 +1750,28 @@ ALTER TABLE `incidents`
   ADD KEY `idx_incident_user_id` (`user_id`);
 
 --
+-- Indexes for table `ip_rate_limits`
+--
+ALTER TABLE `ip_rate_limits`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uk_ip_address` (`ip_address`),
+  ADD KEY `idx_window_start` (`window_start`);
+
+--
 -- Indexes for table `lifestyle_risk`
 --
 ALTER TABLE `lifestyle_risk`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uq_lifestyle_cvd` (`cvd_id`);
+
+--
+-- Indexes for table `login_attempts`
+--
+ALTER TABLE `login_attempts`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_username_time` (`username`,`attempted_at`),
+  ADD KEY `idx_ip_time` (`ip_address`,`attempted_at`),
+  ADD KEY `idx_result_time` (`attempt_result`,`attempted_at`);
 
 --
 -- Indexes for table `migrations`
@@ -1802,6 +1919,12 @@ ALTER TABLE `vitals`
 --
 
 --
+-- AUTO_INCREMENT for table `account_lockouts`
+--
+ALTER TABLE `account_lockouts`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `angina_stroke_screening`
 --
 ALTER TABLE `angina_stroke_screening`
@@ -1818,6 +1941,12 @@ ALTER TABLE `announcements`
 --
 ALTER TABLE `births`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `brute_force_alerts`
+--
+ALTER TABLE `brute_force_alerts`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `case_types`
@@ -1871,7 +2000,7 @@ ALTER TABLE `document_types`
 -- AUTO_INCREMENT for table `email_verifications`
 --
 ALTER TABLE `email_verifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `families`
@@ -1904,10 +2033,22 @@ ALTER TABLE `incidents`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
+-- AUTO_INCREMENT for table `ip_rate_limits`
+--
+ALTER TABLE `ip_rate_limits`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `lifestyle_risk`
 --
 ALTER TABLE `lifestyle_risk`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
+
+--
+-- AUTO_INCREMENT for table `login_attempts`
+--
+ALTER TABLE `login_attempts`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `migrations`
@@ -1961,7 +2102,7 @@ ALTER TABLE `password_resets`
 -- AUTO_INCREMENT for table `persons`
 --
 ALTER TABLE `persons`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
 
 --
 -- AUTO_INCREMENT for table `person_relationships`
@@ -1997,13 +2138,22 @@ ALTER TABLE `statuses`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
 
 --
 -- AUTO_INCREMENT for table `vitals`
 --
 ALTER TABLE `vitals`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `ml_migration_dataset_all`
+--
+DROP TABLE IF EXISTS `ml_migration_dataset_all`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `ml_migration_dataset_all`  AS SELECT `rm`.`id` AS `migration_id`, `p`.`id` AS `person_id`, `p`.`birthdate` AS `birthdate`, `p`.`sex` AS `sex`, `p`.`household_id` AS `household_id`, coalesce(`hh_count`.`total_members`,1) AS `household_size`, timestampdiff(YEAR,`p`.`birthdate`,`rm`.`moved_at`) AS `age`, `rm`.`to_purok_id` AS `to_purok_id`, `rm`.`from_purok_id` AS `from_purok_id`, `rm`.`moved_at` AS `moved_at`, `rm`.`reason` AS `reason`, `rm`.`is_synthetic` AS `is_synthetic` FROM ((`resident_migrations` `rm` join `persons` `p` on(`p`.`id` = `rm`.`person_id`)) left join (select `persons`.`household_id` AS `household_id`,count(0) AS `total_members` from `persons` group by `persons`.`household_id`) `hh_count` on(`hh_count`.`household_id` = `p`.`household_id`)) ;
 
 --
 -- Constraints for dumped tables

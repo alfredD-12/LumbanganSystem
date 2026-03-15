@@ -103,15 +103,15 @@ class AuthController
 
             $captchaRequired = CaptchaHelper::shouldRequireCaptcha($this->loginAttemptLogger, $username, $ipAddress);
             if ($captchaRequired) {
-                $captchaOk = CaptchaHelper::verifyToken($captchaToken, $ipAddress);
+                $captchaOk = CaptchaHelper::verifyToken($captchaToken, $ipAddress, 'login');
                 if (!$captchaOk) {
                     $this->rateLimitService->recordAttempt($ipAddress);
                     $this->loginAttemptLogger->logAttempt($username, $ipAddress, $userAgent, 'failure', 'captcha_failed');
                     echo json_encode([
                         'success' => false,
                         'code' => 'captcha_required',
-                        'captcha_mode' => 'v3',
-                        'message' => 'Additional verification is required. Please submit again.'
+                        'captcha_mode' => 'v2_checkbox',
+                        'message' => 'Additional verification is required. Please complete the reCAPTCHA challenge.'
                     ]);
                     return;
                 }

@@ -698,6 +698,9 @@ if (isLoggedIn()) {
             <input type="text" name="username" placeholder="Username" required>
             <input type="password" name="password" placeholder="Password" required>
             <input type="hidden" name="captcha_token" id="loginCaptchaToken" value="">
+            <div id="loginRecaptchaContainer" style="display: none; margin: 10px 0 14px;">
+              <div id="loginRecaptchaWidget"></div>
+            </div>
 
             <!-- Login Error Alert (above Forget Password) -->
             <div id="loginErrorAlert" class="alert alert-danger py-2 px-3" role="alert" style="display: none; margin: 15px 0; font-size: 13px; font-weight: 500;">
@@ -1210,7 +1213,7 @@ if (isLoggedIn()) {
   <script src="<?php echo BASE_URL; ?>/assets/js/Landing/Landing.js?v=2"></script>
   <script src="<?php echo BASE_URL; ?>/assets/js/email_verification.js?v=<?php echo time(); ?>"></script>
   <?php if (defined('RECAPTCHA_SITE_KEY') && RECAPTCHA_SITE_KEY !== ''): ?>
-    <script src="https://www.google.com/recaptcha/api.js?render=<?php echo urlencode(RECAPTCHA_SITE_KEY); ?>"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
   <?php endif; ?>
   <!-- Face API & Face Scan -->
   <script src="<?php echo BASE_URL; ?>/assets/js/face-api/face-api.js"></script>

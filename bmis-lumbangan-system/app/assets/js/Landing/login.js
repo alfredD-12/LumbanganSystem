@@ -1,21 +1,97 @@
 const container = document.getElementById("loginContainer");
 const registerBtn = document.getElementById("modalRegisterBtn");
 const loginBtn = document.getElementById("modalLoginBtn");
+let loginCaptchaWidgetId = null;
+let loginCaptchaRequired = false;
 
-async function getRecaptchaToken(siteKey, action = "login") {
-  if (!siteKey || typeof grecaptcha === "undefined") {
-    return "";
+async function ensureRecaptchaLoaded(siteKey) {
+  if (!siteKey) {
+    return false;
+  }
+
+  if (typeof grecaptcha !== "undefined" && typeof grecaptcha.ready === "function") {
+    return true;
+  }
+
+  const scriptSelector = 'script[src*="recaptcha/api.js"]';
+  let recaptchaScript = document.querySelector(scriptSelector);
+
+  if (!recaptchaScript) {
+    recaptchaScript = document.createElement("script");
+    recaptchaScript.src = "https://www.google.com/recaptcha/api.js";
+    recaptchaScript.async = true;
+    recaptchaScript.defer = true;
+    document.head.appendChild(recaptchaScript);
+  }
+
+  const timeoutMs = 6000;
+  const pollMs = 100;
+  const start = Date.now();
+
+  while (Date.now() - start < timeoutMs) {
+    if (typeof grecaptcha !== "undefined" && typeof grecaptcha.ready === "function") {
+      return true;
+    }
+    await new Promise((resolve) => setTimeout(resolve, pollMs));
+  }
+
+  return false;
+}
+
+async function ensureVisibleLoginCaptcha(siteKey) {
+  const loaded = await ensureRecaptchaLoaded(siteKey);
+  if (!loaded) {
+    return false;
   }
 
   await new Promise((resolve) => {
     grecaptcha.ready(resolve);
   });
 
+  const containerEl = document.getElementById("loginRecaptchaContainer");
+  const widgetEl = document.getElementById("loginRecaptchaWidget");
+  if (!containerEl || !widgetEl) {
+    return false;
+  }
+
+  containerEl.style.display = "block";
+
+  if (loginCaptchaWidgetId !== null) {
+    return true;
+  }
+
   try {
-    return await grecaptcha.execute(siteKey, { action });
+    loginCaptchaWidgetId = grecaptcha.render(widgetEl, {
+      sitekey: siteKey,
+      theme: "light",
+    });
+    return true;
   } catch (err) {
-    console.error("reCAPTCHA execute error:", err);
+    console.error("reCAPTCHA widget render error:", err);
+    return false;
+  }
+}
+
+function getVisibleLoginCaptchaToken() {
+  if (loginCaptchaWidgetId === null || typeof grecaptcha === "undefined") {
     return "";
+  }
+
+  try {
+    return grecaptcha.getResponse(loginCaptchaWidgetId) || "";
+  } catch (err) {
+    console.error("reCAPTCHA getResponse error:", err);
+    return "";
+  }
+}
+
+function resetVisibleLoginCaptcha() {
+  if (loginCaptchaWidgetId !== null && typeof grecaptcha !== "undefined") {
+    try {
+      grecaptcha.reset(loginCaptchaWidgetId);
+    } catch (err) {
+      console.error("reCAPTCHA reset error:", err);
+    }
   }
 }
 
@@ -76,14 +152,19 @@ document
     const submitBtn = this.querySelector('button[type="submit"]');
     const originalText = submitBtn.innerHTML;
 
-    if (isProtectionEnabled && recaptchaSiteKey) {
-      const captchaToken = await getRecaptchaToken(recaptchaSiteKey, "login");
+    if (loginCaptchaRequired) {
+      const visibleToken = getVisibleLoginCaptchaToken();
+      if (!visibleToken) {
+        showLoginError("Please complete the reCAPTCHA challenge before signing in.");
+        return;
+      }
       if (captchaTokenInput) {
-        captchaTokenInput.value = captchaToken;
+        captchaTokenInput.value = visibleToken;
       }
-      if (captchaToken) {
-        formData.set("captcha_token", captchaToken);
-      }
+      formData.set("captcha_token", visibleToken);
+    } else if (captchaTokenInput) {
+      captchaTokenInput.value = "";
+      formData.delete("captcha_token");
     }
 
     // Disable submit button
@@ -115,16 +196,32 @@ document
         let message = result.message || "Invalid username or password";
 
         if ((result.code || "") === "captcha_required") {
+          loginCaptchaRequired = true;
+
           if (!recaptchaSiteKey) {
             message =
               "CAPTCHA is required, but site key is missing in configuration. Contact administrator.";
           } else {
-            message =
-              "Security verification is now active. reCAPTCHA v3 is invisible; submit again and it will be verified in the background.";
+            const rendered = await ensureVisibleLoginCaptcha(recaptchaSiteKey);
+            if (!rendered) {
+              message =
+                "Unable to load reCAPTCHA challenge. Please refresh and try again.";
+            } else {
+              message =
+                "Too many failed attempts. Please complete reCAPTCHA, then sign in again.";
+            }
           }
         }
 
         showLoginError(message, result.code || "", retryAfter);
+
+        if (loginCaptchaRequired && (result.code || "") !== "captcha_required") {
+          resetVisibleLoginCaptcha();
+          if (captchaTokenInput) {
+            captchaTokenInput.value = "";
+          }
+        }
+
         console.error("Login failed:", result.message);
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalText;

@@ -15,8 +15,10 @@ bmis-lumbangan-system/public/uploads/generated_pdfs/
 # But DO commit .env.example as template for team members
 !.env.example
 
-# Ignore API folder with sensitive data (API keys, credentials)
-bmis-lumbangan-system/api/
+# Ignore PHP files in API folder (API keys, credentials, etc.)
+# (the directory itself must NOT be ignored so exceptions can work)
 bmis-lumbangan-system/api/*.php
+# Exception: face duplicate check is not sensitive and must be tracked
+!bmis-lumbangan-system/api/check_face_duplicate.php
 
 bmis-lumbangan-system/.github/

@@ -15,16 +15,16 @@ $publicAnnouncements = $announcementModel->getPublicAnnouncements('residents');
 $landingAnnouncements = array_slice($publicAnnouncements, 0, 3);
 
 if (isLoggedIn()) {
-    if (isUser()) {
-          $redirect = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=dashboard_resident';
-          header('Location: ' . $redirect);
-        exit();
-    } elseif (isOfficial()) {
-      // Redirect officials to the routed official dashboard handled by the front controller
-      $redirect = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=dashboard_official';
-      header('Location: ' . $redirect);
-      exit();
-    }
+  if (isUser()) {
+    $redirect = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=dashboard_resident';
+    header('Location: ' . $redirect);
+    exit();
+  } elseif (isOfficial()) {
+    // Redirect officials to the routed official dashboard handled by the front controller
+    $redirect = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=dashboard_official';
+    header('Location: ' . $redirect);
+    exit();
+  }
 }
 
   $csrfToken = csrf_token();
@@ -35,15 +35,19 @@ if (isLoggedIn()) {
 <?php render_favicon(); ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Barangay Lumbangan | Nasugbu, Batangas</title>
 
   <meta name="app-auth-endpoint" content="<?php echo rtrim(BASE_URL, '/'); ?>/controllers/AuthController.php">
   <meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
   <meta name="csrf-header" content="<?php echo htmlspecialchars($csrfHeader, ENT_QUOTES, 'UTF-8'); ?>">
   <meta name="csrf-field" content="<?php echo htmlspecialchars($csrfField, ENT_QUOTES, 'UTF-8'); ?>">
+  <meta name="base-url" content="<?php echo rtrim(BASE_URL, '/'); ?>">
+  <meta name="bf-protection-enabled" content="<?php echo (defined('BRUTE_FORCE_PROTECTION_ENABLED') && BRUTE_FORCE_PROTECTION_ENABLED) ? '1' : '0'; ?>">
+  <meta name="recaptcha-site-key" content="<?php echo defined('RECAPTCHA_SITE_KEY') ? htmlspecialchars(RECAPTCHA_SITE_KEY, ENT_QUOTES, 'UTF-8') : ''; ?>">
 
   <!-- Vendor -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
@@ -57,6 +61,7 @@ if (isLoggedIn()) {
   <!-- Optional news fetcher -->
   <script src="<?php echo BASE_URL; ?>/assets/js/Landing/batangas-news.js?v=2" defer></script>
 </head>
+
 <body>
   <!-- Floating Background Shapes -->
   <div class="floating-shapes">
@@ -100,14 +105,14 @@ if (isLoggedIn()) {
         <!-- Government Seals -->
         <div class="d-none d-lg-flex align-items-center gap-2 me-3 gov-seals">
           <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Bagong_Pilipinas_logo.png"
-               alt="Bagong Pilipinas" title="Bagong Pilipinas"
-               class="seal-img">
+            alt="Bagong Pilipinas" title="Bagong Pilipinas"
+            class="seal-img">
           <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Seal_of_Nasugbu.png/599px-Seal_of_Nasugbu.png"
-               alt="Nasugbu Seal" title="Municipality of Nasugbu"
-               class="seal-img">
+            alt="Nasugbu Seal" title="Municipality of Nasugbu"
+            class="seal-img">
           <img src="https://upload.wikimedia.org/wikipedia/commons/0/0c/Seal_of_Batangas.png"
-               alt="Batangas Seal" title="Province of Batangas"
-               class="seal-img">
+            alt="Batangas Seal" title="Province of Batangas"
+            class="seal-img">
         </div>
 
         <!-- Login Button -->
@@ -127,8 +132,8 @@ if (isLoggedIn()) {
       <div class="hero-content">
         <div class="mb-4 hero-logos-wrapper" style="animation: fadeInUp 1s ease;">
           <img src="https://portal.batangas.gov.ph/wp-content/uploads/2025/06/batangaslogo2025.png"
-               alt="Matatag Batangas"
-               class="matatag-logo-hero">
+            alt="Matatag Batangas"
+            class="matatag-logo-hero">
         </div>
 
         <div class="hero-badge">🏛️ OFFICIAL GOVERNMENT PORTAL</div>
@@ -140,7 +145,7 @@ if (isLoggedIn()) {
           <a href="#about" class="btn btn-custom btn-outline-white">Discover More</a>
         </div>
       </div>
-      
+
       <!-- Scroll Down Indicator -->
       <a href="#about" class="scroll-down-indicator">
         <div class="mouse-icon">
@@ -152,11 +157,11 @@ if (isLoggedIn()) {
     <div class="wave-animation">
       <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
         <path d="M0,0 C150,60 350,0 600,50 C850,100 1050,50 1200,0 L1200,120 L0,120 Z"
-              fill="rgba(30, 58, 95, 0.1)">
+          fill="rgba(30, 58, 95, 0.1)">
           <animate attributeName="d" dur="10s" repeatCount="indefinite"
             values="M0,0 C150,60 350,0 600,50 C850,100 1050,50 1200,0 L1200,120 L0,120 Z;
                     M0,50 C150,0 350,100 600,50 C850,0 1050,100 1200,50 L1200,120 L0,120 Z;
-                    M0,0 C150,60 350,0 600,50 C850,100 1050,50 1200,0 L1200,120 L0,120 Z"/>
+                    M0,0 C150,60 350,0 600,50 C850,100 1050,50 1200,0 L1200,120 L0,120 Z" />
         </path>
       </svg>
     </div>
@@ -166,10 +171,30 @@ if (isLoggedIn()) {
   <section class="stats-section">
     <div class="container">
       <div class="row">
-        <div class="col-lg-3 col-md-6"><div class="stat-card"><div class="stat-number"><i class="fas fa-users"></i> 5,000+</div><div class="stat-label">Residents</div></div></div>
-        <div class="col-lg-3 col-md-6"><div class="stat-card"><div class="stat-number"><i class="fas fa-project-diagram"></i> 25+</div><div class="stat-label">Active Projects</div></div></div>
-        <div class="col-lg-3 col-md-6"><div class="stat-card"><div class="stat-number"><i class="fas fa-calendar-check"></i> 50+</div><div class="stat-label">Events Yearly</div></div></div>
-        <div class="col-lg-3 col-md-6"><div class="stat-card"><div class="stat-number"><i class="fas fa-award"></i> 10+</div><div class="stat-label">Awards</div></div></div>
+        <div class="col-lg-3 col-md-6">
+          <div class="stat-card">
+            <div class="stat-number"><i class="fas fa-users"></i> 5,000+</div>
+            <div class="stat-label">Residents</div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="stat-card">
+            <div class="stat-number"><i class="fas fa-project-diagram"></i> 25+</div>
+            <div class="stat-label">Active Projects</div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="stat-card">
+            <div class="stat-number"><i class="fas fa-calendar-check"></i> 50+</div>
+            <div class="stat-label">Events Yearly</div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="stat-card">
+            <div class="stat-number"><i class="fas fa-award"></i> 10+</div>
+            <div class="stat-label">Awards</div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -186,15 +211,23 @@ if (isLoggedIn()) {
         <div class="col-lg-6">
           <div class="about-img-wrapper">
             <img src="<?php echo BASE_URL; ?>uploads/BarangayHall.png"
-                 alt="Barangay Hall" class="about-img">
+              alt="Barangay Hall" class="about-img">
           </div>
         </div>
         <div class="col-lg-6 about-content">
           <p class="about-text">Barangay Lumbangan is one of the progressive barangays of Nasugbu, Batangas, known for its peaceful community and hardworking residents. Our barangay is committed to providing excellent public service and fostering a safe, clean, and prosperous environment for all residents.</p>
           <p class="about-text">Through collaborative efforts and transparent governance, we strive to implement programs that enhance the quality of life of every family in Lumbangan.</p>
           <div class="mission-vision-grid">
-            <div class="mv-card"><div class="mv-icon"><i class="fas fa-bullseye"></i></div><h5 class="mv-title">Mission</h5><p class="mv-text">To provide responsive, transparent, and inclusive governance that empowers every resident and promotes sustainable community development.</p></div>
-            <div class="mv-card"><div class="mv-icon"><i class="fas fa-eye"></i></div><h5 class="mv-title">Vision</h5><p class="mv-text">A progressive, peaceful, and united Barangay Lumbangan where every resident enjoys a high quality of life.</p></div>
+            <div class="mv-card">
+              <div class="mv-icon"><i class="fas fa-bullseye"></i></div>
+              <h5 class="mv-title">Mission</h5>
+              <p class="mv-text">To provide responsive, transparent, and inclusive governance that empowers every resident and promotes sustainable community development.</p>
+            </div>
+            <div class="mv-card">
+              <div class="mv-icon"><i class="fas fa-eye"></i></div>
+              <h5 class="mv-title">Vision</h5>
+              <p class="mv-text">A progressive, peaceful, and united Barangay Lumbangan where every resident enjoys a high quality of life.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -210,24 +243,24 @@ if (isLoggedIn()) {
         <p class="section-subtitle">Building a better tomorrow through strategic initiatives and programs</p>
       </div>
       <?php
-        // Filter public announcements for those with type 'project'
-        $projectAnnouncementsAll = array_filter($publicAnnouncements, function($a) {
-            return isset($a['type']) && strtolower(trim($a['type'])) === 'project';
-        });
-        // Re-index and take up to 3
-        $projectAnnouncements = array_slice(array_values($projectAnnouncementsAll), 0, 3);
+      // Filter public announcements for those with type 'project'
+      $projectAnnouncementsAll = array_filter($publicAnnouncements, function ($a) {
+        return isset($a['type']) && strtolower(trim($a['type'])) === 'project';
+      });
+      // Re-index and take up to 3
+      $projectAnnouncements = array_slice(array_values($projectAnnouncementsAll), 0, 3);
       ?>
       <div class="row">
         <?php if (!empty($projectAnnouncements)): ?>
           <?php foreach ($projectAnnouncements as $a): ?>
             <?php
-              $id = htmlspecialchars($a['id']);
-              $title = htmlspecialchars($a['title']);
-              $message = htmlspecialchars($a['message']);
-              $excerpt = htmlspecialchars(strlen($a['message']) > 120 ? substr($a['message'], 0, 120) . '...' : $a['message']);
-              $date = htmlspecialchars(date('F j, Y', strtotime($a['created_at'])));
-              $icon = !empty($a['image']) ? 'fas fa-image' : 'fas fa-bullhorn';
-              $bgImage = !empty($a['image']) ? 'style="background-image: url(' . BASE_URL . 'uploads/announcementimage/' . htmlspecialchars($a['image']) . ');"' : '';
+            $id = htmlspecialchars($a['id']);
+            $title = htmlspecialchars($a['title']);
+            $message = htmlspecialchars($a['message']);
+            $excerpt = htmlspecialchars(strlen($a['message']) > 120 ? substr($a['message'], 0, 120) . '...' : $a['message']);
+            $date = htmlspecialchars(date('F j, Y', strtotime($a['created_at'])));
+            $icon = !empty($a['image']) ? 'fas fa-image' : 'fas fa-bullhorn';
+            $bgImage = !empty($a['image']) ? 'style="background-image: url(' . BASE_URL . 'uploads/announcementimage/' . htmlspecialchars($a['image']) . ');"' : '';
             ?>
             <div class="col-lg-4 col-md-6">
               <div class="announcement-card">
@@ -240,10 +273,10 @@ if (isLoggedIn()) {
                   <div style="display:flex; justify-content: space-between; align-items: center;">
                     <div class="announcement-date"><?php echo $date; ?></div>
                     <button class="btn btn-custom btn-outline-custom" onclick="landingReadMore(this)"
-                            data-id="<?php echo $id; ?>"
-                            data-title="<?php echo $title; ?>"
-                            data-message="<?php echo $message; ?>"
-                            data-image="<?php echo htmlspecialchars($a['image']); ?>">
+                      data-id="<?php echo $id; ?>"
+                      data-title="<?php echo $title; ?>"
+                      data-message="<?php echo $message; ?>"
+                      data-image="<?php echo htmlspecialchars($a['image']); ?>">
                       Read More
                     </button>
                   </div>
@@ -254,11 +287,11 @@ if (isLoggedIn()) {
         <?php else: ?>
           <!-- No Projects -->
           <div class="col-12">
-              <div style="text-align: center; padding: 3rem; background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
-                  <i class="fas fa-project-diagram" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
-                  <h4 style="color: #666; font-weight: 600;">No Projects Available</h4>
-                  <p style="color: #999;">Check back later for updates</p>
-              </div>
+            <div style="text-align: center; padding: 3rem; background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+              <i class="fas fa-project-diagram" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+              <h4 style="color: #666; font-weight: 600;">No Projects Available</h4>
+              <p style="color: #999;">Check back later for updates</p>
+            </div>
           </div>
         <?php endif; ?>
       </div>
@@ -273,13 +306,13 @@ if (isLoggedIn()) {
         <h2 class="section-title">Barangay Officials</h2>
         <p class="section-subtitle">Meet the dedicated leaders serving our community with integrity and passion</p>
       </div>
-      
+
       <!-- Officials Carousel -->
       <div class="officials-carousel-wrapper">
         <button class="carousel-nav carousel-prev" onclick="moveOfficialsCarousel(-1)">
           <i class="fas fa-chevron-left"></i>
         </button>
-        
+
         <div class="officials-carousel-container">
           <div class="officials-carousel-track" id="officialsCarouselTrack">
             <!-- Official 1 -->
@@ -332,12 +365,12 @@ if (isLoggedIn()) {
             </div>
           </div>
         </div>
-        
+
         <button class="carousel-nav carousel-next" onclick="moveOfficialsCarousel(1)">
           <i class="fas fa-chevron-right"></i>
         </button>
       </div>
-      
+
       <!-- Carousel Indicators -->
       <div class="carousel-indicators" id="officialsIndicators"></div>
     </div>
@@ -355,13 +388,13 @@ if (isLoggedIn()) {
         <?php if (!empty($landingAnnouncements)): ?>
           <?php foreach ($landingAnnouncements as $a): ?>
             <?php
-              $id = htmlspecialchars($a['id']);
-              $title = htmlspecialchars($a['title']);
-              $message = htmlspecialchars($a['message']);
-              $excerpt = htmlspecialchars(strlen($a['message']) > 120 ? substr($a['message'], 0, 120) . '...' : $a['message']);
-              $date = htmlspecialchars(date('F j, Y', strtotime($a['created_at'])));
-              $icon = !empty($a['image']) ? 'fas fa-image' : 'fas fa-bullhorn';
-              $bgImage = !empty($a['image']) ? 'style="background-image: url(' . BASE_URL . 'uploads/announcementimage/' . htmlspecialchars($a['image']) . ');"' : '';
+            $id = htmlspecialchars($a['id']);
+            $title = htmlspecialchars($a['title']);
+            $message = htmlspecialchars($a['message']);
+            $excerpt = htmlspecialchars(strlen($a['message']) > 120 ? substr($a['message'], 0, 120) . '...' : $a['message']);
+            $date = htmlspecialchars(date('F j, Y', strtotime($a['created_at'])));
+            $icon = !empty($a['image']) ? 'fas fa-image' : 'fas fa-bullhorn';
+            $bgImage = !empty($a['image']) ? 'style="background-image: url(' . BASE_URL . 'uploads/announcementimage/' . htmlspecialchars($a['image']) . ');"' : '';
             ?>
             <div class="col-lg-4 col-md-6">
               <div class="announcement-card">
@@ -374,10 +407,10 @@ if (isLoggedIn()) {
                   <div style="display:flex; justify-content: space-between; align-items: center;">
                     <div class="announcement-date"><?php echo $date; ?></div>
                     <button class="btn btn-custom btn-outline-custom" onclick="landingReadMore(this)"
-                            data-id="<?php echo $id; ?>"
-                            data-title="<?php echo $title; ?>"
-                            data-message="<?php echo $message; ?>"
-                            data-image="<?php echo htmlspecialchars($a['image']); ?>">
+                      data-id="<?php echo $id; ?>"
+                      data-title="<?php echo $title; ?>"
+                      data-message="<?php echo $message; ?>"
+                      data-image="<?php echo htmlspecialchars($a['image']); ?>">
                       Read More
                     </button>
                   </div>
@@ -386,15 +419,15 @@ if (isLoggedIn()) {
             </div>
           <?php endforeach; ?>
         <?php else: ?>
-                    <!-- No Announcements -->
-                    <div class="col-12">
-                        <div style="text-align: center; padding: 3rem; background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
-                            <i class="fas fa-bullhorn" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
-                            <h4 style="color: #666; font-weight: 600;">No Announcements Available</h4>
-                            <p style="color: #999;">Check back later for updates</p>
-                        </div>
-                    </div>
-                <?php endif; ?>
+          <!-- No Announcements -->
+          <div class="col-12">
+            <div style="text-align: center; padding: 3rem; background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+              <i class="fas fa-bullhorn" style="font-size: 3rem; color: #ccc; margin-bottom: 1rem;"></i>
+              <h4 style="color: #666; font-weight: 600;">No Announcements Available</h4>
+              <p style="color: #999;">Check back later for updates</p>
+            </div>
+          </div>
+        <?php endif; ?>
       </div>
     </div>
   </section>
@@ -447,10 +480,10 @@ if (isLoggedIn()) {
         <h2 class="section-title">Gallery</h2>
         <p class="section-subtitle">Capturing moments of community spirit and progress</p>
       </div>
-      
+
       <!-- 3D Gallery Carousel -->
       <div class="gallery-carousel-wrapper">
-        
+
         <!-- Navigation Buttons -->
         <button class="gallery-carousel-nav gallery-carousel-prev" onclick="previousGallery()">
           <i class="fas fa-chevron-left"></i>
@@ -462,7 +495,7 @@ if (isLoggedIn()) {
 
         <!-- Gallery Cards Container -->
         <div class="gallery-carousel-container">
-          
+
           <?php if (empty($galleryItems)): ?>
             <!-- Default placeholder if no gallery items -->
             <div class="gallery-carousel-card active" data-index="0">
@@ -474,9 +507,9 @@ if (isLoggedIn()) {
             </div>
           <?php else: ?>
             <?php foreach ($galleryItems as $index => $item): ?>
-              <?php 
-                $imagePath = dirname(__DIR__, 2) . '/uploads/gallery/' . $item['image_path'];
-                $imageUrl = BASE_URL . 'uploads/gallery/' . $item['image_path'];
+              <?php
+              $imagePath = dirname(__DIR__, 2) . '/uploads/gallery/' . $item['image_path'];
+              $imageUrl = BASE_URL . 'uploads/gallery/' . $item['image_path'];
               ?>
               <div class="gallery-carousel-card <?php echo $index === 0 ? 'active' : ''; ?>" data-index="<?php echo $index; ?>">
                 <div class="gallery-img" style="cursor: pointer;" onclick="openImageLightbox('<?php echo htmlspecialchars($imageUrl); ?>')">
@@ -507,7 +540,7 @@ if (isLoggedIn()) {
           <?php endif; ?>
         </div>
       </div>
-      
+
     </div>
   </section>
 
@@ -621,14 +654,16 @@ if (isLoggedIn()) {
     <div class="login-modal-container" id="loginModalContainer">
       <button class="login-modal-close" id="closeLoginModal"><i class="fas fa-times"></i></button>
       <img src="https://portal.batangas.gov.ph/wp-content/uploads/2025/06/batangaslogo2025.png" alt="batangas-logo" class="modal-main-logo">
-      <div class="modal-sun-wrapper"><div class="modal-decorative-sun"></div></div>
+      <div class="modal-sun-wrapper">
+        <div class="modal-decorative-sun"></div>
+      </div>
 
       <div class="login-container" id="loginContainer">
         <!-- Sign Up -->
         <div class="login-form-container login-sign-up" style="overflow-y: auto;">
           <form id="signupForm" method="POST" action="javascript:void(0);">
             <h1>Create Account</h1>
-            
+
             <!-- Registration Error Alert (after heading) -->
             <div id="registerErrorAlert" style="display: none; color: #d32f2f; margin: 15px 0; font-size: 13px; font-weight: 500;">
               <i class="fas fa-exclamation-circle" style="color: #d32f2f; margin-right: 6px;"></i>
@@ -667,16 +702,20 @@ if (isLoggedIn()) {
               <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Seal_of_Nasugbu.png/599px-Seal_of_Nasugbu.png" style="width: 39px;">
               <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Bagong_Pilipinas_logo.png" style="width: 41px;">
             </div>
-            <span style="color: #666; font-size: 0.9rem; margin-bottom: 15px; display: block;">Login as User or Official (auto-detected)</span>
+            <span style="color: #666; font-size: 0.9rem; margin-bottom: 15px; display: block;">Login as User or Official</span>
             <input type="text" name="username" placeholder="Username" required>
             <input type="password" name="password" placeholder="Password" required>
-            
-            <!-- Login Error Alert (above Forget Password) -->
-            <div id="loginErrorAlert" style="display: none; color: #d32f2f; margin: 15px 0; font-size: 13px; font-weight: 500;">
-              <i class="fas fa-exclamation-circle" style="color: #d32f2f; margin-right: 6px;"></i>
-              <span id="loginErrorMessage" style="color: #d32f2f;"></span>
+            <input type="hidden" name="captcha_token" id="loginCaptchaToken" value="">
+            <div id="loginRecaptchaContainer" style="display: none; margin: 10px 0 14px;">
+              <div id="loginRecaptchaWidget"></div>
             </div>
-            
+
+            <!-- Login Error Alert (above Forget Password) -->
+            <div id="loginErrorAlert" class="alert alert-danger py-2 px-3" role="alert" style="display: none; margin: 15px 0; font-size: 13px; font-weight: 500;">
+              <i class="fas fa-exclamation-circle me-1"></i>
+              <span id="loginErrorMessage"></span>
+            </div>
+
             <a href="#" onclick="openForgetPasswordModal(); return false;">Forget Your Password?</a>
             <button type="submit">Sign In</button>
           </form>
@@ -700,11 +739,212 @@ if (isLoggedIn()) {
         </div>
 
       </div>
+
+      <!-- ═══════════════════════════════════════════════ -->
+      <!-- FACE SCAN INLINE PANEL (shown after Sign Up)   -->
+      <!-- ═══════════════════════════════════════════════ -->
+      <div id="faceScanInlinePanel" style="display:none; width:100%; max-width:420px; margin:0 auto; padding:30px 30px 20px;">
+
+        <!-- Step Dots -->
+        <div style="display:flex; justify-content:center; gap:8px; margin-bottom:20px;" id="fsiDots">
+          <span class="fsi-dot fsi-dot-active" id="fsiDot1"></span>
+          <span class="fsi-dot" id="fsiDot2"></span>
+          <span class="fsi-dot" id="fsiDot3"></span>
+          <span class="fsi-dot" id="fsiDot4"></span>
+          <span class="fsi-dot" id="fsiDot5"></span>
+        </div>
+
+        <!-- ── STEP A: Consent ─────────────────────────── -->
+        <div id="fsiConsent" style="text-align:center;">
+          <div style="width:72px;height:72px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+            <i class="fas fa-shield-alt" style="font-size:32px;color:#fff;"></i>
+          </div>
+          <h2 style="color:#333;font-size:20px;margin-bottom:8px;">Face Verification</h2>
+          <p style="color:#666;font-size:0.84rem;margin-bottom:18px;line-height:1.55;">
+            To keep this system secure, we require a quick <strong>live face scan</strong> before creating your account. This prevents multiple accounts per person.
+          </p>
+          <div style="background:#f8f9ff;border:1px solid #e0e7ff;border-radius:10px;padding:14px 16px;margin-bottom:18px;text-align:left;">
+            <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:0.83rem;color:#444;line-height:1.45;">
+              <input type="checkbox" id="fsiConsentCheck" style="margin-top:3px;flex-shrink:0;accent-color:#667eea;">
+              I consent to the collection and one-time processing of my facial biometric data solely for duplicate-account prevention for Barangay Lumbangan's BMIS.
+            </label>
+          </div>
+          <div id="fsiConsentErr" style="display:none;color:#d32f2f;font-size:12px;margin-bottom:10px;">
+            <i class="fas fa-exclamation-circle" style="margin-right:5px;"></i>Please check the consent box to continue.
+          </div>
+          <button id="fsiConsentBtn" onclick="fsiStartCamera()" style="width:100%;padding:11px;background:#667eea;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:13px;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;transition:opacity .2s;">
+            Allow Camera &amp; Continue
+          </button>
+          <button onclick="fsiCancel()" style="width:100%;margin-top:10px;background:transparent;color:#667eea;border:none;font-size:13px;font-weight:500;cursor:pointer;text-decoration:underline;">
+            Back
+          </button>
+        </div>
+
+        <!-- ── STEP B: Loading models ──────────────────── -->
+        <div id="fsiLoading" style="display:none;text-align:center;padding:20px 0;">
+          <div style="width:56px;height:56px;border:4px solid #e2e8f0;border-top-color:#667eea;border-radius:50%;margin:0 auto 16px;animation:spin 1s linear infinite;"></div>
+          <p style="color:#555;font-size:0.9rem;margin:0;">Loading face models…</p>
+          <div style="background:#e2e8f0;border-radius:8px;height:6px;overflow:hidden;margin:14px auto 0;max-width:220px;">
+            <div id="fsiLoadBar" style="background:linear-gradient(90deg,#667eea,#764ba2);height:100%;width:0%;transition:width .4s;"></div>
+          </div>
+          <p id="fsiLoadStatus" style="color:#999;font-size:11px;margin-top:6px;"></p>
+          <div id="fsiLoadErr" style="display:none;color:#d32f2f;font-size:12px;margin-top:12px;background:#fff5f5;padding:10px;border-radius:8px;border:1px solid #fed7d7;"></div>
+        </div>
+
+        <!-- ── STEP C: Camera + Liveness ──────────────── -->
+        <div id="fsiCamera" style="display:none;text-align:center;">
+          <!-- Instruction header (swapped per sub-step) -->
+          <div style="margin-bottom:12px;">
+            <h2 id="fsiTitle" style="color:#333;font-size:19px;margin-bottom:4px;"></h2>
+            <p id="fsiSubtitle" style="color:#666;font-size:0.83rem;margin:0;"></p>
+          </div>
+
+          <!-- Video circle -->
+          <div id="fsiVideoWrap" style="position:relative;width:230px;height:230px;border-radius:50%;overflow:hidden;margin:0 auto 14px;box-shadow:0 0 0 3px #667eea,0 6px 24px rgba(102,126,234,.3);">
+            <video id="fsiVideo" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover;transform:scaleX(-1);"></video>
+            <canvas id="fsiCanvas" style="position:absolute;inset:0;width:100%;height:100%;transform:scaleX(-1);pointer-events:none;"></canvas>
+            <!-- oval guide -->
+            <svg style="position:absolute;inset:0;pointer-events:none;" width="100%" height="100%" viewBox="0 0 230 230">
+              <ellipse cx="115" cy="115" rx="82" ry="100" fill="none" stroke="rgba(102,126,234,.55)" stroke-width="2" stroke-dasharray="6,4" />
+            </svg>
+          </div>
+
+          <!-- Blink circles (only visible during blink step) -->
+          <div id="fsiBlinkCircles" style="display:none;justify-content:center;gap:16px;margin-bottom:10px;">
+            <div id="fsiBlink1" style="width:44px;height:44px;border-radius:50%;border:3px solid #e2e8f0;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .3s;">👁</div>
+            <div id="fsiBlink2" style="width:44px;height:44px;border-radius:50%;border:3px solid #e2e8f0;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .3s;">👁</div>
+          </div>
+
+          <!-- ── Warning banner (lighting / accessories) ── -->
+          <div id="fsiWarnBanner" style="display:none;margin:0 auto 10px;max-width:290px;padding:7px 12px;border-radius:10px;background:#fffbeb;border:1.5px solid #f6ad55;color:#7b5800;font-size:0.78rem;font-weight:500;text-align:left;line-height:1.5;animation:fadeInDown .25s ease;">
+            <span id="fsiWarnText"></span>
+          </div>
+
+          <!-- Status badge -->
+          <div id="fsiStatus" style="padding:8px 18px;background:#f8f9ff;border:1px solid #e0e7ff;border-radius:20px;font-size:0.83rem;color:#555;display:inline-block;margin-bottom:12px;"></div>
+
+          <!-- Countdown bar -->
+          <div style="background:#e2e8f0;border-radius:8px;height:5px;overflow:hidden;margin-bottom:14px;">
+            <div id="fsiBar" style="background:linear-gradient(90deg,#667eea,#764ba2);height:100%;width:100%;transition:width 1s linear;"></div>
+          </div>
+
+          <div id="fsiCamErr" style="display:none;color:#d32f2f;font-size:12px;margin-bottom:10px;">
+            <i class="fas fa-exclamation-circle" style="margin-right:5px;"></i><span></span>
+          </div>
+          <button onclick="fsiRetry()" style="background:transparent;color:#667eea;border:none;font-size:12px;font-weight:500;cursor:pointer;text-decoration:underline;">Retry</button>
+
+          <!-- ── DEBUG EAR PANEL (Space×5) ── -->
+          <div id="fsiDebugEar" style="display:none;margin-top:10px;text-align:left;background:#1a1a2e;color:#e2e8f0;border-radius:8px;padding:10px 14px;font-family:monospace;font-size:11px;line-height:1.7;border:1px solid #444;">
+            <div style="color:#a0aec0;font-size:10px;letter-spacing:.8px;text-transform:uppercase;margin-bottom:4px;">⚙ EYE Debug</div>
+            <div>Left&nbsp;&nbsp;: <span id="dbgEarL" style="color:#90cdf4;">—</span></div>
+            <div>Right&nbsp;: <span id="dbgEarR" style="color:#90cdf4;">—</span></div>
+            <div>Avg&nbsp;&nbsp;&nbsp;: <span id="dbgEarAvg" style="font-weight:700;color:#f6ad55;">—</span></div>
+            <div id="dbgEarBar" style="margin:4px 0;height:6px;border-radius:4px;background:#2d3748;overflow:hidden;">
+              <div id="dbgEarBarFill" style="height:100%;width:0%;background:#48bb78;transition:width .08s linear;"></div>
+            </div>
+            <div>State&nbsp;: <span id="dbgEarState" style="font-weight:700;">—</span>
+              &nbsp;|&nbsp; Blinks: <span id="dbgEarBlinks" style="color:#fc8181;">0</span></div>
+            <div style="border-top:1px solid #2d3748;margin-top:4px;padding-top:4px;color:#a0aec0;">
+              Baseline : <span id="dbgEarBase" style="color:#fbd38d;">...</span>
+              &nbsp;|&nbsp; ×0.95/<span style="color:#fc8181;">BLINK</span>=<span id="dbgEarBT" style="color:#fc8181;">—</span>
+              &nbsp;|&nbsp; ×0.98/<span style="color:#68d391;">OPEN</span>=<span id="dbgEarOT" style="color:#68d391;">—</span>
+            </div>
+          </div>
+
+          <!-- ── DEBUG FLOW PANEL (D×5) ─────────────────────────────── -->
+          <div id="fsiDbgFlow" style="display:none;margin-top:8px;text-align:left;background:#0d1117;color:#8b949e;border-radius:8px;padding:10px 14px;font-family:monospace;font-size:10px;line-height:1.6;border:1px solid #30363d;">
+            <div style="color:#58a6ff;font-size:10px;letter-spacing:.8px;text-transform:uppercase;margin-bottom:4px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;">
+              <span>🔍 FLOW Debug</span>
+              <span>Step: <span id="dbgFlow_step" style="color:#e3b341;">—</span></span>
+            </div>
+            <div>Video&nbsp;&nbsp;: <span id="dbgFlow_video" style="color:#7ee787;">—</span></div>
+            <div>Frames&nbsp;: <span id="dbgFlow_frames" style="color:#79c0ff;">—</span></div>
+            <div style="word-break:break-all;">API&nbsp;&nbsp;&nbsp;&nbsp;: <span id="dbgFlow_api" style="color:#e3b341;">—</span></div>
+            <div style="border-top:1px solid #21262d;margin-top:5px;padding-top:4px;">
+              <div style="color:#8b949e;margin-bottom:2px;">Log (newest first):</div>
+              <div id="dbgFlowLog" style="max-height:130px;overflow-y:auto;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── STEP D: Processing ──────────────────────── -->
+        <div id="fsiProcessing" style="display:none;text-align:center;padding:20px 0;">
+          <div style="width:56px;height:56px;border:4px solid #e2e8f0;border-top-color:#667eea;border-radius:50%;margin:0 auto 16px;animation:spin 1s linear infinite;"></div>
+          <h3 style="color:#333;margin-bottom:6px;">Verifying face…</h3>
+          <p style="color:#666;font-size:0.84rem;">Checking for duplicate accounts, please wait.</p>
+        </div>
+
+        <!-- ── STEP E: Duplicate found ─────────────────── -->
+        <div id="fsiDuplicate" style="display:none;text-align:center;padding:10px 0;">
+          <div style="width:80px;height:80px;background:linear-gradient(135deg,#fc8181,#e53e3e);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+            <i class="fas fa-user-times" style="font-size:38px;color:#fff;"></i>
+          </div>
+          <h3 style="color:#c53030;margin-bottom:8px;">Duplicate Account Detected</h3>
+          <p style="color:#666;font-size:0.84rem;margin-bottom:18px;">A matching face already exists in the system. Only one account per person is allowed.</p>
+          <button onclick="fsiCancel()" style="width:100%;padding:11px;background:#e53e3e;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;letter-spacing:.5px;text-transform:uppercase;">Close</button>
+        </div>
+
+        <!-- ── STEP F: Error ───────────────────────────── -->
+        <div id="fsiError" style="display:none;text-align:center;padding:10px 0;">
+          <div style="width:72px;height:72px;background:linear-gradient(135deg,#fc8181,#e53e3e);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+            <i class="fas fa-exclamation-triangle" style="font-size:32px;color:#fff;"></i>
+          </div>
+          <h3 style="color:#c53030;margin-bottom:8px;">Verification Failed</h3>
+          <p id="fsiErrorMsg" style="color:#666;font-size:0.84rem;margin-bottom:18px;"></p>
+          <button onclick="fsiRetry()" style="width:100%;padding:11px;background:#667eea;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;letter-spacing:.5px;text-transform:uppercase;">Try Again</button>
+          <button onclick="fsiCancel()" style="width:100%;margin-top:8px;background:transparent;color:#999;border:none;font-size:12px;font-weight:500;cursor:pointer;text-decoration:underline;">Cancel Registration</button>
+        </div>
+
+      </div>
+      <!-- /faceScanInlinePanel -->
+
     </div>
   </div>
+  </div>
+
+  <style>
+    .fsi-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      display: inline-block;
+      transition: all .25s;
+    }
+
+    .fsi-dot-active {
+      background: #667eea;
+      transform: scale(1.35);
+    }
+
+    .fsi-dot-done {
+      background: #48bb78;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
 
   <!-- Email Verification Modal -->
   <?php require_once dirname(__DIR__, 2) . '/components/resident_components/email_verify_modal.php'; ?>
+
+  <!-- Face Scan Modal -->
+  <?php require_once dirname(__DIR__, 2) . '/components/resident_components/face_scan_modal.php'; ?>
 
   <!-- Image Lightbox -->
   <div id="imageLightbox" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:99999; justify-content:center; align-items:center; cursor:pointer;" onclick="closeImageLightbox()">
@@ -713,7 +953,7 @@ if (isLoggedIn()) {
 
   <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-  
+
   <!-- Forget Password Script (Load BEFORE login.js) -->
   <script>
     let forgetPasswordEmailNew = '';
@@ -723,14 +963,14 @@ if (isLoggedIn()) {
     function openForgetPasswordModal() {
       const modal = document.getElementById('forgetPasswordModal');
       const loginModal = document.getElementById('loginModal');
-      
+
       // Hide login modal
       if (loginModal) {
         loginModal.style.display = 'none';
         loginModal.classList.remove('show');
         loginModal.style.pointerEvents = 'none'; // Disable login modal interaction
       }
-      
+
       // Show forget password modal
       if (modal) {
         modal.style.display = 'flex';
@@ -747,40 +987,40 @@ if (isLoggedIn()) {
       document.getElementById('forgetCode').value = '';
       document.getElementById('forgetNewPassword').value = '';
       document.getElementById('forgetConfirmPassword').value = '';
-      
+
       console.log('Forget modal opened');
     }
 
     function closeForgetModal() {
       const modal = document.getElementById('forgetPasswordModal');
       const loginModal = document.getElementById('loginModal');
-      
+
       if (modal) {
         modal.style.display = 'none';
         modal.style.zIndex = '9999';
         modal.style.pointerEvents = 'none'; // Prevent interaction with hidden modal
       }
-      
+
       // Don't show login modal - just close forget modal
       if (loginModal) {
         loginModal.style.pointerEvents = 'none'; // Also disable login modal
         loginModal.style.display = 'none';
       }
-      
+
       // Allow scrolling again
       document.body.style.overflow = 'auto';
-      
+
       // Reset all form fields
       document.getElementById('forgetEmail').value = '';
       document.getElementById('forgetCode').value = '';
       document.getElementById('forgetNewPassword').value = '';
       document.getElementById('forgetConfirmPassword').value = '';
-      
+
       // Reset errors
       const errorDiv1 = document.getElementById('forgetStep1Error');
       const errorDiv2 = document.getElementById('forgetStep2Error');
       const errorDiv3 = document.getElementById('forgetStep3Error');
-      
+
       if (errorDiv1) errorDiv1.style.display = 'none';
       if (errorDiv2) errorDiv2.style.display = 'none';
       if (errorDiv3) errorDiv3.style.display = 'none';
@@ -790,16 +1030,16 @@ if (isLoggedIn()) {
     function backToLoginModal() {
       const forgetModal = document.getElementById('forgetPasswordModal');
       const loginModal = document.getElementById('loginModal');
-      
+
       console.log('Back to login clicked');
-      
+
       // Close forget password modal
       if (forgetModal) {
         forgetModal.style.display = 'none';
         forgetModal.style.pointerEvents = 'none';
         forgetModal.style.zIndex = '9999';
       }
-      
+
       // Open login modal
       if (loginModal) {
         loginModal.style.display = 'flex';
@@ -808,26 +1048,26 @@ if (isLoggedIn()) {
         loginModal.classList.add('show');
         document.body.style.overflow = 'hidden'; // Keep scroll hidden while login modal is open
       }
-      
+
       // Reset forget form
       document.getElementById('forgetEmail').value = '';
       document.getElementById('forgetCode').value = '';
       document.getElementById('forgetNewPassword').value = '';
       document.getElementById('forgetConfirmPassword').value = '';
-      
+
       // Reset forget errors
       const errorDiv1 = document.getElementById('forgetStep1Error');
       const errorDiv2 = document.getElementById('forgetStep2Error');
       const errorDiv3 = document.getElementById('forgetStep3Error');
-      
+
       if (errorDiv1) errorDiv1.style.display = 'none';
       if (errorDiv2) errorDiv2.style.display = 'none';
       if (errorDiv3) errorDiv3.style.display = 'none';
       document.getElementById('forgetStep3Success').style.display = 'none';
-      
+
       // Show step 1
       showForgetStep(1);
-      
+
       console.log('Back to login done');
     }
 
@@ -853,26 +1093,26 @@ if (isLoggedIn()) {
       formData.append('email', email);
 
       fetch('<?php echo (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php'; ?>?action=request_reset', {
-        method: 'POST',
-        body: formData
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          forgetPasswordEmailNew = email;
-          document.getElementById('forgetEmailDisplay').textContent = email;
-          showForgetStep(2);
-          if (errorDiv) errorDiv.style.display = 'none';
-        } else {
-          if (errorMsg) errorMsg.textContent = data.message || 'Failed to send code';
+          method: 'POST',
+          body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            forgetPasswordEmailNew = email;
+            document.getElementById('forgetEmailDisplay').textContent = email;
+            showForgetStep(2);
+            if (errorDiv) errorDiv.style.display = 'none';
+          } else {
+            if (errorMsg) errorMsg.textContent = data.message || 'Failed to send code';
+            if (errorDiv) errorDiv.style.display = 'block';
+          }
+        })
+        .catch(err => {
+          if (errorMsg) errorMsg.textContent = 'An error occurred. Please try again.';
           if (errorDiv) errorDiv.style.display = 'block';
-        }
-      })
-      .catch(err => {
-        if (errorMsg) errorMsg.textContent = 'An error occurred. Please try again.';
-        if (errorDiv) errorDiv.style.display = 'block';
-        console.error('Error:', err);
-      });
+          console.error('Error:', err);
+        });
     }
 
     function submitForgetCodeNew(e) {
@@ -892,25 +1132,25 @@ if (isLoggedIn()) {
       formData.append('code', code);
 
       fetch('<?php echo (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php'; ?>?action=verify_code', {
-        method: 'POST',
-        body: formData
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          forgetPasswordTokenNew = data.token;
-          showForgetStep(3);
-          if (errorDiv) errorDiv.style.display = 'none';
-        } else {
-          if (errorMsg) errorMsg.textContent = data.message || 'Invalid or expired code';
+          method: 'POST',
+          body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            forgetPasswordTokenNew = data.token;
+            showForgetStep(3);
+            if (errorDiv) errorDiv.style.display = 'none';
+          } else {
+            if (errorMsg) errorMsg.textContent = data.message || 'Invalid or expired code';
+            if (errorDiv) errorDiv.style.display = 'block';
+          }
+        })
+        .catch(err => {
+          if (errorMsg) errorMsg.textContent = 'An error occurred. Please try again.';
           if (errorDiv) errorDiv.style.display = 'block';
-        }
-      })
-      .catch(err => {
-        if (errorMsg) errorMsg.textContent = 'An error occurred. Please try again.';
-        if (errorDiv) errorDiv.style.display = 'block';
-        console.error('Error:', err);
-      });
+          console.error('Error:', err);
+        });
     }
 
     function submitResetPasswordNew(e) {
@@ -949,40 +1189,50 @@ if (isLoggedIn()) {
       formData.append('confirm_password', confirmPassword);
 
       fetch('<?php echo (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php'; ?>?action=reset_password', {
-        method: 'POST',
-        body: formData
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          if (successMsg) successMsg.textContent = data.message || 'Password reset successfully!';
-          if (successDiv) successDiv.style.display = 'block';
-          
-          setTimeout(() => {
-            closeForgetModal();
-            document.getElementById('forgetEmail').value = '';
-            document.getElementById('forgetCode').value = '';
-            document.getElementById('forgetNewPassword').value = '';
-            document.getElementById('forgetConfirmPassword').value = '';
-          }, 2000);
-        } else {
-          if (errorMsg) errorMsg.textContent = data.message || 'Failed to reset password';
+          method: 'POST',
+          body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            if (successMsg) successMsg.textContent = data.message || 'Password reset successfully!';
+            if (successDiv) successDiv.style.display = 'block';
+
+            setTimeout(() => {
+              closeForgetModal();
+              document.getElementById('forgetEmail').value = '';
+              document.getElementById('forgetCode').value = '';
+              document.getElementById('forgetNewPassword').value = '';
+              document.getElementById('forgetConfirmPassword').value = '';
+            }, 2000);
+          } else {
+            if (errorMsg) errorMsg.textContent = data.message || 'Failed to reset password';
+            if (errorDiv) errorDiv.style.display = 'block';
+          }
+        })
+        .catch(err => {
+          if (errorMsg) errorMsg.textContent = 'An error occurred. Please try again.';
           if (errorDiv) errorDiv.style.display = 'block';
-        }
-      })
-      .catch(err => {
-        if (errorMsg) errorMsg.textContent = 'An error occurred. Please try again.';
-        if (errorDiv) errorDiv.style.display = 'block';
-        console.error('Error:', err);
-      });
+          console.error('Error:', err);
+        });
     }
   </script>
+<<<<<<< HEAD
   
   <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/security/csrf.js?v=<?php echo filemtime(dirname(__DIR__, 2) . '/assets/js/security/csrf.js'); ?>"></script>
+=======
+
+>>>>>>> 554037b83aa41dd5af2bde8a9ead202e2f981731
   <script src="<?php echo BASE_URL; ?>/assets/js/Landing/Landing.js?v=2"></script>
   <script src="<?php echo BASE_URL; ?>/assets/js/email_verification.js?v=<?php echo time(); ?>"></script>
+  <?php if (defined('RECAPTCHA_SITE_KEY') && RECAPTCHA_SITE_KEY !== ''): ?>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+  <?php endif; ?>
+  <!-- Face API & Face Scan -->
+  <script src="<?php echo BASE_URL; ?>/assets/js/face-api/face-api.js"></script>
+  <script src="<?php echo BASE_URL; ?>/assets/js/face_scan.js?v=<?php echo time(); ?>"></script>
   <script src="<?php echo BASE_URL; ?>/assets/js/Landing/login.js?v=2"></script>
-  
+
   <!-- Announcement Modal for Landing -->
   <div class="modal fade" id="landingAnnouncementModal" tabindex="-1" aria-labelledby="landingAnnouncementModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -1007,7 +1257,7 @@ if (isLoggedIn()) {
       </div>
     </div>
   </div>
-  
+
   <script>
     // Is user logged in? (set server-side)
     const isLoggedIn = <?php echo isLoggedIn() ? 'true' : 'false'; ?>;
@@ -1045,113 +1295,114 @@ if (isLoggedIn()) {
       const modal = new bootstrap.Modal(modalEl);
       modal.show();
     }
+
     function openImageLightbox(imgSrc) {
       document.getElementById('imageLightbox').style.display = 'flex';
       document.getElementById('lightboxImg').src = imgSrc;
       document.body.style.overflow = 'hidden';
     }
-    
+
     function closeImageLightbox() {
       document.getElementById('imageLightbox').style.display = 'none';
       document.body.style.overflow = 'auto';
     }
-    
+
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') closeImageLightbox();
     });
   </script>
-  
+
   <!-- Gallery Carousel Script -->
   <script>
     let currentGalleryIndex = 0;
     const totalGalleryItems = <?php echo !empty($galleryItems) ? count($galleryItems) : 1; ?>;
 
     function updateGalleryCarousel() {
-        const cards = document.querySelectorAll('.gallery-carousel-card');
-        const indicators = document.querySelectorAll('.gallery-indicator');
-        
-        cards.forEach((card, index) => {
-            const dataIndex = parseInt(card.getAttribute('data-index'));
-            let position = dataIndex - currentGalleryIndex;
-            
-            // Handle wrapping
-            if (position > totalGalleryItems / 2) position -= totalGalleryItems;
-            if (position < -totalGalleryItems / 2) position += totalGalleryItems;
-            
-            card.classList.remove('active');
-            
-            if (position === 0) {
-                // Center card - active
-                card.style.transform = 'translateX(0) scale(1) rotateY(0deg)';
-                card.style.zIndex = '3';
-                card.style.opacity = '1';
-                card.style.filter = 'blur(0px)';
-                card.style.pointerEvents = 'auto';
-                card.classList.add('active');
-            } else if (position === 1) {
-                // Right card
-                card.style.transform = 'translateX(550px) scale(0.85) rotateY(-15deg)';
-                card.style.zIndex = '2';
-                card.style.opacity = '0.5';
-                card.style.filter = 'blur(2px)';
-                card.style.pointerEvents = 'none';
-            } else if (position === -1) {
-                // Left card
-                card.style.transform = 'translateX(-550px) scale(0.85) rotateY(15deg)';
-                card.style.zIndex = '2';
-                card.style.opacity = '0.5';
-                card.style.filter = 'blur(2px)';
-                card.style.pointerEvents = 'none';
-            } else {
-                // Hidden cards
-                card.style.transform = position > 0 ? 'translateX(550px) scale(0.7)' : 'translateX(-550px) scale(0.7)';
-                card.style.zIndex = '1';
-                card.style.opacity = '0';
-                card.style.filter = 'blur(3px)';
-                card.style.pointerEvents = 'none';
-            }
-        });
-        
-        // Update indicators
-        indicators.forEach((indicator, index) => {
-            if (index === currentGalleryIndex) {
-                indicator.classList.add('active');
-            } else {
-                indicator.classList.remove('active');
-            }
-        });
+      const cards = document.querySelectorAll('.gallery-carousel-card');
+      const indicators = document.querySelectorAll('.gallery-indicator');
+
+      cards.forEach((card, index) => {
+        const dataIndex = parseInt(card.getAttribute('data-index'));
+        let position = dataIndex - currentGalleryIndex;
+
+        // Handle wrapping
+        if (position > totalGalleryItems / 2) position -= totalGalleryItems;
+        if (position < -totalGalleryItems / 2) position += totalGalleryItems;
+
+        card.classList.remove('active');
+
+        if (position === 0) {
+          // Center card - active
+          card.style.transform = 'translateX(0) scale(1) rotateY(0deg)';
+          card.style.zIndex = '3';
+          card.style.opacity = '1';
+          card.style.filter = 'blur(0px)';
+          card.style.pointerEvents = 'auto';
+          card.classList.add('active');
+        } else if (position === 1) {
+          // Right card
+          card.style.transform = 'translateX(550px) scale(0.85) rotateY(-15deg)';
+          card.style.zIndex = '2';
+          card.style.opacity = '0.5';
+          card.style.filter = 'blur(2px)';
+          card.style.pointerEvents = 'none';
+        } else if (position === -1) {
+          // Left card
+          card.style.transform = 'translateX(-550px) scale(0.85) rotateY(15deg)';
+          card.style.zIndex = '2';
+          card.style.opacity = '0.5';
+          card.style.filter = 'blur(2px)';
+          card.style.pointerEvents = 'none';
+        } else {
+          // Hidden cards
+          card.style.transform = position > 0 ? 'translateX(550px) scale(0.7)' : 'translateX(-550px) scale(0.7)';
+          card.style.zIndex = '1';
+          card.style.opacity = '0';
+          card.style.filter = 'blur(3px)';
+          card.style.pointerEvents = 'none';
+        }
+      });
+
+      // Update indicators
+      indicators.forEach((indicator, index) => {
+        if (index === currentGalleryIndex) {
+          indicator.classList.add('active');
+        } else {
+          indicator.classList.remove('active');
+        }
+      });
     }
 
     function nextGallery() {
-        currentGalleryIndex = (currentGalleryIndex + 1) % totalGalleryItems;
-        updateGalleryCarousel();
+      currentGalleryIndex = (currentGalleryIndex + 1) % totalGalleryItems;
+      updateGalleryCarousel();
     }
 
     function previousGallery() {
-        currentGalleryIndex = (currentGalleryIndex - 1 + totalGalleryItems) % totalGalleryItems;
-        updateGalleryCarousel();
+      currentGalleryIndex = (currentGalleryIndex - 1 + totalGalleryItems) % totalGalleryItems;
+      updateGalleryCarousel();
     }
 
     function goToGallery(index) {
-        currentGalleryIndex = index;
-        updateGalleryCarousel();
+      currentGalleryIndex = index;
+      updateGalleryCarousel();
     }
 
     // Initialize carousel on page load
     document.addEventListener('DOMContentLoaded', function() {
-        updateGalleryCarousel();
-        
-        // Optional: Auto-advance carousel every 5 seconds
-        // setInterval(nextGallery, 5000);
+      updateGalleryCarousel();
+
+      // Optional: Auto-advance carousel every 5 seconds
+      // setInterval(nextGallery, 5000);
     });
 
     // Keyboard navigation
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'ArrowLeft') {
-            previousGallery();
-        } else if (e.key === 'ArrowRight') {
-            nextGallery();
-        }
+      if (e.key === 'ArrowLeft') {
+        previousGallery();
+      } else if (e.key === 'ArrowRight') {
+        nextGallery();
+      }
     });
   </script>
 
@@ -1226,7 +1477,7 @@ if (isLoggedIn()) {
             <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Bagong_Pilipinas_logo.png" style="width: 41px;">
           </div>
           <p style="color: #666; text-align: center; margin-bottom: 30px; font-size: 0.95rem;">Enter your email and we'll send you a reset code</p>
-          
+
           <form onsubmit="submitForgetEmailNew(event)" style="display: flex; flex-direction: column;">
             <input type="email" placeholder="Email address" id="forgetEmail" required style="
               padding: 12px 15px;
@@ -1270,7 +1521,7 @@ if (isLoggedIn()) {
         <div id="forgetStep2" style="display: none;">
           <h1 style="color: #333; text-align: center; margin-bottom: 20px; font-size: 24px;">Verify Code</h1>
           <p style="color: #666; text-align: center; margin-bottom: 30px; font-size: 0.95rem;">Enter the 6-digit code sent to<br><strong id="forgetEmailDisplay" style="color: #333;"></strong></p>
-          
+
           <form onsubmit="submitForgetCodeNew(event)" style="display: flex; flex-direction: column;">
             <input type="text" placeholder="000000" maxlength="6" id="forgetCode" required style="
               padding: 12px 15px;
@@ -1317,7 +1568,7 @@ if (isLoggedIn()) {
         <div id="forgetStep3" style="display: none;">
           <h1 style="color: #333; text-align: center; margin-bottom: 20px; font-size: 24px;">Create New Password</h1>
           <p style="color: #666; text-align: center; margin-bottom: 30px; font-size: 0.95rem;">Password must be at least 6 characters</p>
-          
+
           <form onsubmit="submitResetPasswordNew(event)" style="display: flex; flex-direction: column;">
             <input type="password" placeholder="New Password" id="forgetNewPassword" required style="
               padding: 12px 15px;
@@ -1371,7 +1622,8 @@ if (isLoggedIn()) {
       #forgetPasswordModal {
         padding: 10px !important;
       }
-      #forgetPasswordModal > div {
+
+      #forgetPasswordModal>div {
         padding: 20px !important;
       }
     }
@@ -1380,28 +1632,28 @@ if (isLoggedIn()) {
   <?php include dirname(__DIR__, 2) . '/components/ai_chatbot.php'; ?>
 
   <script src="<?php echo BASE_URL; ?>assets/js/ai_chatbot.js"></script>
-  
+
   <script>
     // Contact form Gmail handler
     document.addEventListener('DOMContentLoaded', function() {
       const contactForm = document.getElementById('contactForm');
-      
+
       if (contactForm) {
         contactForm.addEventListener('submit', function(e) {
           e.preventDefault();
-          
+
           const name = document.getElementById('contactName').value;
           const email = document.getElementById('contactEmail').value;
           const subject = document.getElementById('contactSubject').value;
           const message = document.getElementById('contactMessage').value;
-          
+
           // Build email body
           const bodyText = `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`;
-          
+
           // Open Gmail compose in new tab
           const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=bmis.lumbangan@gmail.com&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
           window.open(gmailUrl, '_blank');
-          
+
           // Reset form
           contactForm.reset();
         });
@@ -1446,9 +1698,9 @@ if (isLoggedIn()) {
       const indicatorsContainer = document.getElementById('officialsIndicators');
       const totalCards = track.children.length;
       const totalSlides = Math.ceil(totalCards / officialsPerSlide);
-      
+
       indicatorsContainer.innerHTML = '';
-      
+
       for (let i = 0; i < totalSlides; i++) {
         const indicator = document.createElement('button');
         indicator.className = 'carousel-indicator';
@@ -1464,15 +1716,15 @@ if (isLoggedIn()) {
       const track = document.getElementById('officialsCarouselTrack');
       const totalCards = track.children.length;
       const totalSlides = Math.ceil(totalCards / officialsPerSlide);
-      
+
       currentOfficialsSlide += direction;
-      
+
       if (currentOfficialsSlide >= totalSlides) {
         currentOfficialsSlide = 0;
       } else if (currentOfficialsSlide < 0) {
         currentOfficialsSlide = totalSlides - 1;
       }
-      
+
       updateOfficialCarousel();
       resetOfficialsAutoplay();
     }
@@ -1488,9 +1740,9 @@ if (isLoggedIn()) {
       const cardWidth = track.children[0].offsetWidth;
       const gap = 25;
       const offset = -(currentOfficialsSlide * (cardWidth + gap) * officialsPerSlide);
-      
+
       track.style.transform = `translateX(${offset}px)`;
-      
+
       // Update indicators
       const indicators = document.querySelectorAll('.carousel-indicator');
       indicators.forEach((indicator, index) => {
@@ -1511,10 +1763,13 @@ if (isLoggedIn()) {
 
     // Smooth Scroll for all anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function (e) {
+      anchor.addEventListener('click', function(e) {
         e.preventDefault();
         const targetId = this.getAttribute('href');
-        
+
+        // Skip bare '#' links (e.g. social icon placeholders)
+        if (!targetId || targetId === '#') return;
+
         // If clicking home, scroll to top
         if (targetId === '#home') {
           window.scrollTo({
@@ -1549,6 +1804,7 @@ if (isLoggedIn()) {
       }
     });
   </script>
-  
+
 </body>
+
 </html>

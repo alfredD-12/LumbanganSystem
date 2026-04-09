@@ -47,7 +47,6 @@ if (file_exists(__DIR__ . '/../../helpers/official_profile_helper.php')) {
             $currentPage = $fallbackPage;
         }
     }
-render_favicon()
 ?>
 
 <!DOCTYPE html>
@@ -86,6 +85,8 @@ render_favicon()
     <!-- Serve official styles from public webroot first (fallback to app path kept for dev) -->
     <link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/admin-officials.css">
     <link rel="stylesheet" href="<?php echo BASE_URL . 'assets/css/admin-officials.css'; ?>">
+    <link rel="icon" type="image/x-icon" href="<?php echo FAVICON_PATH; ?>">
+    <link rel="shortcut icon" type="image/x-icon" href="<?php echo FAVICON_PATH; ?>">
 </head>
 
 <body>

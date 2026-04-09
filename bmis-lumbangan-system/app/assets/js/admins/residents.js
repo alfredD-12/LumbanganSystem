@@ -140,12 +140,12 @@ document.addEventListener('DOMContentLoaded', function(){
     })();
 
     function renderSectionFields(sectionDef, data){
-        // sectionDef: array of {key,label}
-        // build a nicer section card with label icons and two-column responsive layout
+        // sectionDef: { key, title, subsections }
+        // data: object returned from API (nested: assessment, person, vitals, lifestyle...)
         let html = '<div class="section-card p-3 mb-3">';
         html += '<h6 class="mb-2">' + (sectionDef.title || '') + '</h6>';
 
-        // Font Awesome icon map for fields (uses FA class names). Adjust classes if your project uses a different FA prefix (e.g. 'fa' / 'fas' / 'fa-solid').
+        // Font Awesome icon map for fields
         const ICON_FA = {
             first_name: '<i class="fas fa-user fa-fw"></i>',
             middle_name: '<i class="fas fa-user fa-fw"></i>',
@@ -156,33 +156,211 @@ document.addEventListener('DOMContentLoaded', function(){
             marital_status: '<i class="fas fa-ring fa-fw"></i>',
             is_head: '<i class="fas fa-home fa-fw"></i>',
             age: '<i class="fas fa-birthday-cake fa-fw"></i>',
-            contact_no: '<i class="fas fa-phone fa-fw"></i>',
+            contact_no: '<i class="fas fa-phone-alt fa-fw"></i>',
             highest_educ_attainment: '<i class="fas fa-graduation-cap fa-fw"></i>',
             religion: '<i class="fas fa-praying-hands fa-fw"></i>',
             occupation: '<i class="fas fa-briefcase fa-fw"></i>',
             blood_type: '<i class="fas fa-tint fa-fw"></i>',
-            bp_systolic: '<i class="fas fa-heartbeat fa-fw"></i>',
-            bp_diastolic: '<i class="fas fa-heartbeat fa-fw"></i>',
-            pulse: '<i class="fas fa-heart fa-fw"></i>',
+            bp_systolic: '<i class="fas fa-tachometer-alt fa-fw"></i>',
+            bp_diastolic: '<i class="fas fa-tachometer-alt fa-fw"></i>',
+            pulse: '<i class="fas fa-heartbeat fa-fw"></i>',
             respiratory_rate: '<i class="fas fa-lungs fa-fw"></i>',
             temperature_c: '<i class="fas fa-thermometer-half fa-fw"></i>',
             disability: '<i class="fas fa-wheelchair fa-fw"></i>',
-            height_cm: '<i class="fas fa-arrows-v fa-fw"></i>',
-            weight_kg: '<i class="fas fa-weight fa-fw"></i>',
-            waist_circumference_cm: '<i class="fas fa-ruler-horizontal fa-fw"></i>'
+            height_cm: '<i class="fas fa-ruler-vertical fa-fw"></i>',
+            weight_kg: '<i class="fas fa-weight-scale fa-fw"></i>',
+            waist_circumference_cm: '<i class="fas fa-tape fa-fw"></i>',
+            // family history icons
+            hypertension: '<i class="fas fa-heart fa-fw"></i>',
+            heart_attack: '<i class="fas fa-heart-crack fa-fw"></i>',
+            diabetes: '<i class="fas fa-syringe fa-fw"></i>',
+            kidney_disease: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="fa-fw" style="vertical-align:middle"><path d="M12 2c2 0 4 1 5 3 1 2 1 4 0 6-1 2-3 4-5 6s-4 3-6 2c-2-1-3-3-3-5 0-2 1-4 2-6C6 8 8 6 12 2z" fill="#1e3a5f"/></svg>',
+            stroke: '<i class="fas fa-brain fa-fw"></i>',
+            cancer: '<i class="fas fa-ribbon fa-fw"></i>',
+            asthma: '<i class="fas fa-lungs fa-fw"></i>'
         };
 
-        // helper to render an array of fields into the html buffer
-        function renderFieldsArray(fields){
+        ICON_FA.is_approved = '<i class="fas fa-check-circle fa-fw"></i>';
+        ICON_FA.review_notes = '<i class="fas fa-sticky-note fa-fw"></i>';
+
+        // add lifestyle-specific icons
+        ICON_FA.smoking_status = '<i class="fas fa-smoking fa-fw"></i>';
+        ICON_FA.alcohol_use = '<i class="fas fa-beer fa-fw"></i>';
+        ICON_FA.excessive_alcohol = '<i class="fas fa-exclamation-triangle fa-fw"></i>';
+        ICON_FA.eats_processed_weekly = '<i class="fas fa-hamburger fa-fw"></i>';
+        ICON_FA.fruits_3_servings_daily = '<i class="fas fa-apple-alt fa-fw"></i>';
+        ICON_FA.vegetables_3_servings_daily = '<i class="fas fa-carrot fa-fw"></i>';
+        ICON_FA.exercise_days_per_week = '<i class="fas fa-calendar-day fa-fw"></i>';
+        ICON_FA.exercise_minutes_per_day = '<i class="fas fa-stopwatch fa-fw"></i>';
+        ICON_FA.exercise_intensity = '<i class="fas fa-running fa-fw"></i>';
+
+        // Determine the data source object for this section
+        function sourceForSection(sectionKey){
+            if (!data) return {};
+            switch (sectionKey) {
+                case 'personal': return data.person || data;
+                case 'assessment': return data.assessment || data;
+                case 'vitals': return data.vitals || data;
+                case 'lifestyle': return data.lifestyle || data;
+                case 'angina': return data.angina || data;
+                case 'diabetes': return data.diabetes || data;
+                case 'family_history': return data.family_history || data;
+                case 'household': return data.household || data;
+                case 'family': {
+                    const fam = data.family || [];
+                    let text = '';
+                    try {
+                        if (Array.isArray(fam)) {
+                            text = fam.filter(Boolean).map(function(f){ return f.full_name || ((f.first_name||'') + ' ' + (f.last_name||'')).trim(); }).join(', ');
+                        } else if (fam && typeof fam === 'object') {
+                            text = fam.full_name || ((fam.first_name||'') + ' ' + (fam.last_name||'')).trim();
+                        }
+                    } catch(e){ text = ''; }
+                    return {'family_list': text};
+                }
+                default: return data || {};
+            }
+        }
+
+        // helper to render an array of fields into the html buffer (editable inputs)
+        function renderFieldsArray(fields, sectionKey){
+            const src = sourceForSection(sectionKey);
             let out = '';
             (fields || []).forEach(function(f){
-                const val = (data && (data[f.key] !== undefined && data[f.key] !== null)) ? String(data[f.key]) : '';
-                // prefer Font Awesome mapping, fallback to a simple FA circle
+                // read value from nested source first, then fallback to root-level key
+                const rawVal = (src && src[f.key] !== undefined && src[f.key] !== null) ? src[f.key] : (data && data[f.key] !== undefined ? data[f.key] : '');
+
+                const val = (rawVal === null || rawVal === undefined) ? '' : String(rawVal);
                 const icon = ICON_FA[f.key] || '<i class="fas fa-circle fa-fw"></i>';
+
+                // pick input type with special cases for birthdate, age, radios, and family history
+                let inputHtml = '';
+                const textareaKeys = ['review_notes','notes','smoking_comments','alcohol_notes','family_list'];
+                const numericPattern = /(_cm|_kg|bp_|bp|systolic|diastolic|pulse|temperature|respiratory|rbs|fbs|hba1c|length_of_residency|days|minutes|percent|_mg_dl|_percent|waist|bmi)/i;
+                if (f.key === 'birthdate') {
+                    // visible formatted text input plus hidden ISO date input
+                    const isoVal = (val && !isNaN(Date.parse(val))) ? (new Date(val)).toISOString().slice(0,10) : '';
+                    inputHtml = '<div class="d-flex gap-2 align-items-center">'
+                        + '<input class="form-control fa-input birthdate-visible" data-section="'+escapeHtml(sectionKey)+'" data-key="'+escapeHtml(f.key)+'" type="text" value="'+escapeHtml(val)+'" placeholder="e.g. January 01, 2000">'
+                        + '<input class="form-control birthdate-iso visually-hidden" data-section="'+escapeHtml(sectionKey)+'" data-key="'+escapeHtml(f.key)+'" type="date" value="'+escapeHtml(isoVal)+'">'
+                        + '</div>';
+                } else if (f.key === 'age') {
+                    inputHtml = '<input class="form-control fa-input age-input" data-section="'+escapeHtml(sectionKey)+'" data-key="'+escapeHtml(f.key)+'" type="number" value="'+escapeHtml(val)+'" readonly>';
+                } else if (f.key === 'sex') {
+                    // radio inputs for sex (Male / Female only)
+                    const opts = [{v:'M',l:'Male'},{v:'F',l:'Female'}];
+                    inputHtml = '<div class="d-flex gap-2">';
+                    opts.forEach(function(o){
+                        const checked = (String(val) === String(o.v)) ? ' checked' : '';
+                        inputHtml += '<div class="form-check form-check-inline"><input class="form-check-input fa-input" name="sex_radio_'+escapeHtml(sectionKey)+'" data-section="'+escapeHtml(sectionKey)+'" data-key="'+escapeHtml(f.key)+'" type="radio" value="'+escapeHtml(o.v)+'"'+checked+'> <label class="form-check-label">'+escapeHtml(o.l)+'</label></div>';
+                    });
+                    inputHtml += '</div>';
+                } else if (f.key === 'is_head') {
+                    // is_head: yes/no radios
+                    const checkedYes = (String(val) === '1' || String(val).toLowerCase() === 'yes' || String(val).toLowerCase() === 'true') ? ' checked' : '';
+                    const checkedNo = (!checkedYes) ? ' checked' : '';
+                    inputHtml = '<div class="d-flex gap-2">'
+                        + '<div class="form-check form-check-inline"><input class="form-check-input fa-input" type="radio" name="is_head_'+escapeHtml(sectionKey)+'" data-section="'+escapeHtml(sectionKey)+'" data-key="is_head" value="1"'+checkedYes+'> <label class="form-check-label">Yes</label></div>'
+                        + '<div class="form-check form-check-inline"><input class="form-check-input fa-input" type="radio" name="is_head_'+escapeHtml(sectionKey)+'" data-section="'+escapeHtml(sectionKey)+'" data-key="is_head" value="0"'+checkedNo+'> <label class="form-check-label">No</label></div>'
+                        + '</div>';
+                } else if (f.key === 'is_approved') {
+                    // is_approved: yes/no radios for officials
+                    const checkedYesA = (String(val) === '1' || String(val).toLowerCase() === 'yes' || String(val).toLowerCase() === 'true') ? ' checked' : '';
+                    const checkedNoA = (!checkedYesA) ? ' checked' : '';
+                    inputHtml = '<div class="d-flex gap-2">'
+                        + '<div class="form-check form-check-inline"><input class="form-check-input fa-input" type="radio" name="is_approved_'+escapeHtml(sectionKey)+'" data-section="'+escapeHtml(sectionKey)+'" data-key="is_approved" value="1"'+checkedYesA+'> <label class="form-check-label">Yes</label></div>'
+                        + '<div class="form-check form-check-inline"><input class="form-check-input fa-input" type="radio" name="is_approved_'+escapeHtml(sectionKey)+'" data-section="'+escapeHtml(sectionKey)+'" data-key="is_approved" value="0"'+checkedNoA+'> <label class="form-check-label">No</label></div>'
+                        + '</div>';
+                } else if (['hypertension','heart_attack','diabetes','kidney_disease','stroke','asthma','cancer','family_diabetes'].indexOf(f.key) !== -1) {
+                    // family history yes/no radios
+                    const checkedY = (String(val) === '1' || String(val).toLowerCase() === 'yes' || String(val).toLowerCase() === 'true') ? ' checked' : '';
+                    const checkedN = (!checkedY) ? ' checked' : '';
+                    inputHtml = '<div class="d-flex gap-2">'
+                        + '<div class="form-check form-check-inline"><input class="form-check-input fa-input" type="radio" name="fh_'+escapeHtml(f.key)+'" data-section="'+escapeHtml(sectionKey)+'" data-key="'+escapeHtml(f.key)+'" value="1"'+checkedY+'> <label class="form-check-label">Yes</label></div>'
+                        + '<div class="form-check form-check-inline"><input class="form-check-input fa-input" type="radio" name="fh_'+escapeHtml(f.key)+'" data-section="'+escapeHtml(sectionKey)+'" data-key="'+escapeHtml(f.key)+'" value="0"'+checkedN+'> <label class="form-check-label">No</label></div>'
+                        + '</div>';
+                } else if (textareaKeys.indexOf(f.key) !== -1) {
+                    inputHtml = '<textarea class="form-control fa-input" data-section="'+escapeHtml(sectionKey)+'" data-key="'+escapeHtml(f.key)+'" rows="3">'+escapeHtml(val)+'</textarea>';
+                } else if (f.key === 'smoking_status') {
+                    // explicit smoking status options rendered as radio buttons with icons
+                    const opts = [
+                        {v:'never', l:'Never Smoked', i: ICON_FA.smoking_status},
+                        {v:'stopped_gt1', l:'Stopped (>1 year)', i: ICON_FA.smoking_status},
+                        {v:'current', l:'Current Smoker', i: ICON_FA.smoking_status},
+                        {v:'stopped_lt1', l:'Stopped (<1 year)', i: ICON_FA.smoking_status},
+                        {v:'passive', l:'Passive Smoker', i: ICON_FA.smoking_status}
+                    ];
+
+                // Add Review & Approval as a final section for officials
+                SURVEY_SECTIONS.push({
+                    key: 'assessment',
+                    title: 'Review & Approval',
+                    subsections: [
+                        { title: 'Approval', fields: [
+                            { key: 'is_approved', label: 'Approve assessment?' }
+                        ]},
+                        { title: 'Review Notes', fields: [
+                            { key: 'review_notes', label: 'Review notes' }
+                        ]}
+                    ]
+                });
+                    inputHtml = '<div class="d-flex flex-column gap-2">';
+                    opts.forEach(function(o){
+                        const checked = (String(val) === String(o.v)) ? ' checked' : '';
+                        // make the radio visible and clickable; input precedes label text for accessibility
+                        inputHtml += '<label class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 p-2">'
+                            + '<input class="form-check-input fa-input me-2" type="radio" name="smoke_'+escapeHtml(sectionKey)+'" data-section="'+escapeHtml(sectionKey)+'" data-key="'+escapeHtml(f.key)+'" value="'+escapeHtml(o.v)+'"'+checked+'> '
+                            + o.i + '<span>'+escapeHtml(o.l)+'</span></label>';
+                    });
+                    inputHtml += '</div>';
+                } else if (f.key === 'alcohol_use') {
+                    const opts = [ {v:'never',l:'Never'},{v:'current',l:'Current'},{v:'former',l:'Former'} ];
+                    inputHtml = '<div class="d-flex gap-2">';
+                    opts.forEach(function(o){
+                        const checked = (String(val) === String(o.v)) ? ' checked' : '';
+                        inputHtml += '<div class="form-check form-check-inline"><input class="form-check-input fa-input" name="alcohol_'+escapeHtml(sectionKey)+'" data-section="'+escapeHtml(sectionKey)+'" data-key="'+escapeHtml(f.key)+'" type="radio" value="'+escapeHtml(o.v)+'"'+checked+'> <label class="form-check-label">'+escapeHtml(o.l)+'</label></div>';
+                    });
+                    inputHtml += '</div>';
+                } else if (['excessive_alcohol','eats_processed_weekly','fruits_3_servings_daily','vegetables_3_servings_daily'].indexOf(f.key) !== -1) {
+                    // yes/no radios for dietary and excessive alcohol consumption
+                    const checkedY = (String(val) === '1' || String(val).toLowerCase() === 'yes' || String(val).toLowerCase() === 'true') ? ' checked' : '';
+                    const checkedN = (!checkedY) ? ' checked' : '';
+                    inputHtml = '<div class="d-flex gap-2">'
+                        + '<div class="form-check form-check-inline"><input class="form-check-input fa-input" type="radio" name="yn_'+escapeHtml(f.key)+'" data-section="'+escapeHtml(sectionKey)+'" data-key="'+escapeHtml(f.key)+'" value="1"'+checkedY+'> <label class="form-check-label">Yes</label></div>'
+                        + '<div class="form-check form-check-inline"><input class="form-check-input fa-input" type="radio" name="yn_'+escapeHtml(f.key)+'" data-section="'+escapeHtml(sectionKey)+'" data-key="'+escapeHtml(f.key)+'" value="0"'+checkedN+'> <label class="form-check-label">No</label></div>'
+                        + '</div>';
+                } else if (f.key === 'exercise_days_per_week') {
+                    // range slider 0-7 days
+                    const vnum = val !== '' ? Number(val) : 0;
+                    inputHtml = '<div class="d-flex align-items-center gap-2">'
+                        + '<input class="form-range fa-input" data-section="'+escapeHtml(sectionKey)+'" data-key="'+escapeHtml(f.key)+'" type="range" min="0" max="7" step="1" value="'+escapeHtml(String(vnum))+'">'
+                        + '<div class="ms-2"><span class="range-value">'+escapeHtml(String(vnum))+'</span> days</div>'
+                        + '</div>';
+                } else if (f.key === 'exercise_minutes_per_day') {
+                    // range slider 0-300 minutes
+                    const vnum2 = val !== '' ? Number(val) : 0;
+                    inputHtml = '<div class="d-flex align-items-center gap-2">'
+                        + '<input class="form-range fa-input" data-section="'+escapeHtml(sectionKey)+'" data-key="'+escapeHtml(f.key)+'" type="range" min="0" max="300" step="5" value="'+escapeHtml(String(vnum2))+'">'
+                        + '<div class="ms-2"><span class="range-value">'+escapeHtml(String(vnum2))+'</span> minutes</div>'
+                        + '</div>';
+                } else if (f.key === 'exercise_intensity') {
+                    const opts = [{v:'light',l:'Light'},{v:'moderate',l:'Moderate'},{v:'vigorous',l:'Vigorous'}];
+                    inputHtml = '<div class="d-flex gap-2">';
+                    opts.forEach(function(o){
+                        const checked = (String(val) === String(o.v)) ? ' checked' : '';
+                        inputHtml += '<div class="form-check form-check-inline"><input class="form-check-input fa-input" name="intensity_'+escapeHtml(sectionKey)+'" data-section="'+escapeHtml(sectionKey)+'" data-key="'+escapeHtml(f.key)+'" type="radio" value="'+escapeHtml(o.v)+'"'+checked+'> <label class="form-check-label">'+escapeHtml(o.l)+'</label></div>';
+                    });
+                    inputHtml += '</div>';
+                } else if (numericPattern.test(f.key)) {
+                    inputHtml = '<input class="form-control fa-input" data-section="'+escapeHtml(sectionKey)+'" data-key="'+escapeHtml(f.key)+'" type="number" step="any" value="'+escapeHtml(val)+'">';
+                } else {
+                    inputHtml = '<input class="form-control fa-input" data-section="'+escapeHtml(sectionKey)+'" data-key="'+escapeHtml(f.key)+'" type="text" value="'+escapeHtml(val)+'">';
+                }
+
                 out += '<div class="col-12 col-md-6">';
                 out += '<div class="p-2">';
                 out += '<div class="field-label">' + '<span class="field-icon" aria-hidden="true">' + icon + '</span>' + '<span>' + (f.label || f.key) + '</span>' + '</div>';
-                out += '<div class="field-value">' + (val === '' ? '—' : escapeHtml(val)) + '</div>';
+                out += '<div class="field-value mt-2">' + inputHtml + '</div>';
                 out += '</div>';
                 out += '</div>';
             });
@@ -195,14 +373,14 @@ document.addEventListener('DOMContentLoaded', function(){
                 html += '<div class="subsection mb-3">';
                 html += '<h6 class="subsection-title small text-muted mb-2">' + (sub.title ? escapeHtml(sub.title) : '') + '</h6>';
                 html += '<div class="row g-2">';
-                html += renderFieldsArray(sub.fields || []);
+                html += renderFieldsArray(sub.fields || [], sectionDef.key || '');
                 html += '</div>';
                 html += '</div>';
             });
         } else {
             // fallback to old single fields array
             html += '<div class="row g-2">';
-            html += renderFieldsArray(sectionDef.fields || []);
+            html += renderFieldsArray(sectionDef.fields || [], sectionDef.key || '');
             html += '</div>';
         }
 
@@ -284,18 +462,18 @@ document.addEventListener('DOMContentLoaded', function(){
             title: 'Lifestyle Information',
             subsections: [
                 { title: 'Smoking Status', fields: [
-                    {key:'current_smoking_status', label:'Current Smoking Status'},
-                    {key:'additional_smoking_comments', label:'Additional Smoking Comments'}
+                    {key:'smoking_status', label:'Current Smoking Status'},
+                    {key:'smoking_comments', label:'Smoking Comments'}
                 ]},
                 { title: 'Alcohol Consumption', fields: [
-                    {key:'alcohol_use_status', label:'Alcohol Use Status'},
-                    {key:'excessive_alcohol_consumption', label:'Excessive Alcohol Consumption?'},
-                    {key:'additional_alcohol_comments', label:'Additional Alcohol Comments'}
+                    {key:'alcohol_use', label:'Alcohol Use Status'},
+                    {key:'excessive_alcohol', label:'Excessive Alcohol Consumption?'},
+                    {key:'alcohol_notes', label:'Alcohol Notes'}
                 ]},
                 { title: 'Dietary Habits', fields: [
-                    {key:'eat_processed_foods', label:'Eat Processed Foods?'},
-                    {key:'eat_fruits_daily', label:'Eat Fruits Daily?'},
-                    {key:'eat_vegetables_daily', label:'Eat Vegetables Daily?'}
+                    {key:'eats_processed_weekly', label:'Do you eat processed foods weekly?'},
+                    {key:'fruits_3_servings_daily', label:'Do you eat 3+ servings of fruits daily?'},
+                    {key:'vegetables_3_servings_daily', label:'Do you eat 3+ servings of vegetables daily?'}
                 ]},
                 { title: 'Physical Activity', fields: [
                     {key:'exercise_days_per_week', label:'Exercise Days per Week'},
@@ -384,68 +562,378 @@ document.addEventListener('DOMContentLoaded', function(){
         if (!btnFull) return;
         const pid = btnFull.getAttribute('data-pid');
         const aid = btnFull.getAttribute('data-aid');
-        const list = (window.assessmentsByPerson && window.assessmentsByPerson[pid]) ? window.assessmentsByPerson[pid] : [];
-        const assessment = list.find(function(x){ return String(x.id) === String(aid) || String(x.cvd_id) === String(aid); }) || list[0] || null;
-        if (!assessment) {
-            if (bsFullModal) {
-                document.getElementById('fullAssessmentModalBody').innerHTML = '<div class="alert alert-info">No assessment data found.</div>';
-                bsFullModal.show();
+
+        // helper to derive base url for API calls (tries to detect BASE_URL from script tag)
+        function getBaseUrl(){
+            if (window.BASE_URL) return window.BASE_URL;
+            const scripts = Array.from(document.getElementsByTagName('script'));
+            const me = scripts.find(s => (s.src || '').indexOf('assets/js/admins/residents.js') !== -1);
+            if (me && me.src) {
+                const idx = me.src.indexOf('assets/');
+                if (idx !== -1) return me.src.substring(0, idx);
             }
-            return;
+            return '/';
         }
 
-        // Build paginated content: one section per page
-        const pages = SURVEY_SECTIONS.map(function(sec){
-            return { title: sec.title, html: renderSectionFields(sec, assessment) };
-        });
+        // Prefer absolute BASE_URL when available (injected by PHP). Fallback to relative path.
+        const baseUrlClient = (window.BASE_URL ? String(window.BASE_URL).replace(/\/$/, '') : '');
+        const apiUrl = (baseUrlClient ? (baseUrlClient + '/api/get_full_assessment.php?cvd_id=' + encodeURIComponent(aid)) : ('app/api/get_full_assessment.php?cvd_id=' + encodeURIComponent(aid)));
 
-        // Render modal shell
         const container = document.getElementById('fullAssessmentModalBody');
         if (!container) return;
-        let html = '<div id="full-assessment-pages">';
-        pages.forEach(function(p, idx){
-            // Render all pages visible but mark non-active as hidden for CSS animation
-            html += '<div class="fa-page'+(idx===0?'':' hidden')+'" data-idx="'+idx+'">';
-            html += p.html;
-            html += '</div>';
-        });
-        html += '</div>';
-        // pagination controls
-        html += '<div class="d-flex justify-content-between align-items-center mt-3">';
-        html += '<button type="button" class="btn btn-outline-secondary btn-sm" id="fa-prev">&larr; Prev</button>';
-        html += '<div class="fa-page-indicator small text-muted">Page <span id="fa-cur">1</span> of <span id="fa-total">'+pages.length+'</span></div>';
-        html += '<button type="button" class="btn btn-primary btn-sm" id="fa-next">Next &rarr;</button>';
-        html += '</div>';
+        container.innerHTML = '<div class="text-center text-muted">Loading assessment...</div>';
 
-        container.innerHTML = html;
-        // attach nav handlers
-        let cur = 0;
-        function showPage(i){
-            const pagesEls = container.querySelectorAll('.fa-page');
-            if (!pagesEls || pagesEls.length === 0) return;
-            if (i < 0) i = 0; if (i >= pagesEls.length) i = pagesEls.length -1;
-            pagesEls.forEach(function(pe, idx){
-                if (idx === i) {
-                    pe.classList.remove('hidden');
-                } else {
-                    pe.classList.add('hidden');
+        fetch(apiUrl, { credentials: 'same-origin' })
+            .then(function(res){
+                if (!res.ok) {
+                    return res.text().then(function(text){ throw new Error('Server returned ' + res.status + ': ' + text); });
                 }
+                const ct = res.headers.get('content-type') || '';
+                if (!ct.includes('application/json')) {
+                    return res.text().then(function(txt){ throw new Error('Invalid JSON response: ' + txt.slice(0,300)); });
+                }
+                return res.json();
+            })
+            .then(function(json){
+                if (!json || !json.success) {
+                    container.innerHTML = '<div class="alert alert-danger">Unable to load assessment.</div>';
+                    if (json && json.error) console.warn(json.error);
+                    if (bsFullModal) bsFullModal.show();
+                    return;
+                }
+
+            const fullData = Object.assign({}, json.assessment || {}, {
+                person: json.person || {},
+                vitals: json.vitals || {},
+                lifestyle: json.lifestyle || {},
+                angina: json.angina || {},
+                diabetes: json.diabetes || {},
+                household: json.household || {},
+                family_history: json.family_history || {}
             });
-            cur = i;
-            const curEl = container.querySelector('#fa-cur'); if (curEl) curEl.textContent = (cur+1);
-            const totalEl2 = container.querySelector('#fa-total'); if (totalEl2) totalEl2.textContent = pagesEls.length;
-            // update button disabled states
-            const prevBtn = container.querySelector('#fa-prev'); const nextBtn = container.querySelector('#fa-next');
-            if (prevBtn) prevBtn.disabled = (cur === 0);
-            if (nextBtn) nextBtn.disabled = (cur === pagesEls.length - 1);
-        }
-        container.querySelector('#fa-prev').addEventListener('click', function(){ showPage(cur-1); });
-        container.querySelector('#fa-next').addEventListener('click', function(){ showPage(cur+1); });
 
-        // initialize buttons disabled state
-        showPage(0);
+            // Build paginated content: one section per page
+            const pages = SURVEY_SECTIONS.map(function(sec){
+                return { title: sec.title, html: renderSectionFields(sec, fullData) };
+            });
 
-        if (bsFullModal) bsFullModal.show();
+            let html = '<div id="full-assessment-pages">';
+            pages.forEach(function(p, idx){
+                html += '<div class="fa-page'+(idx===0?'':' hidden')+'" data-idx="'+idx+'">';
+                html += p.html;
+                html += '</div>';
+            });
+            html += '</div>';
+
+            // pagination + save controls
+            html += '<div class="d-flex justify-content-between align-items-center mt-3">';
+            html += '<div><button type="button" class="btn btn-outline-secondary btn-sm" id="fa-prev">&larr; Prev</button></div>';
+            html += '<div class="fa-page-indicator small text-muted">Page <span id="fa-cur">1</span> of <span id="fa-total">'+pages.length+'</span></div>';
+            html += '<div class="d-flex gap-2">';
+            // removed Cancel button (Close exists separately)
+            html += '<button type="button" class="btn btn-success btn-sm" id="fa-save">Save Changes</button>';
+            html += '<button type="button" class="btn btn-primary btn-sm" id="fa-next">Next &rarr;</button>';
+            html += '</div>';
+            html += '</div>';
+
+            container.innerHTML = html;
+
+            // attach nav handlers and save
+            let cur = 0;
+            function showPage(i){
+                const pagesEls = container.querySelectorAll('.fa-page');
+                if (!pagesEls || pagesEls.length === 0) return;
+                if (i < 0) i = 0; if (i >= pagesEls.length) i = pagesEls.length -1;
+                pagesEls.forEach(function(pe, idx){
+                    if (idx === i) { pe.classList.remove('hidden'); } else { pe.classList.add('hidden'); }
+                });
+                        cur = i;
+                const curEl = container.querySelector('#fa-cur'); if (curEl) curEl.textContent = (cur+1);
+                const totalEl2 = container.querySelector('#fa-total'); if (totalEl2) totalEl2.textContent = pagesEls.length;
+                const prevBtn = container.querySelector('#fa-prev'); const nextBtn = container.querySelector('#fa-next');
+                if (prevBtn) prevBtn.disabled = (cur === 0);
+                if (nextBtn) nextBtn.disabled = (cur === pagesEls.length - 1);
+                        // Toggle Save button visibility for specific sections (hide on Family members page)
+                        try {
+                            const saveBtn = container.querySelector('#fa-save');
+                            const curSectionKey = (SURVEY_SECTIONS && SURVEY_SECTIONS[cur] && SURVEY_SECTIONS[cur].key) ? SURVEY_SECTIONS[cur].key : null;
+                            if (saveBtn) {
+                                if (curSectionKey === 'family') {
+                                    saveBtn.style.display = 'none';
+                                    saveBtn.disabled = true;
+                                } else {
+                                    saveBtn.style.display = '';
+                                    saveBtn.disabled = false;
+                                }
+                            }
+                        } catch(e) { /* safe-guard: do nothing on error */ }
+            }
+
+            container.querySelector('#fa-prev').addEventListener('click', function(){ showPage(cur-1); });
+            container.querySelector('#fa-next').addEventListener('click', function(){ showPage(cur+1); });
+
+            // fa-cancel removed — Close btn is available on modal footer
+
+            // post-render initialization: wire birthdate/age sync, replace family_list textarea with read-only list
+            (function postRenderInit(){
+                // normalize data.family to array and render members list
+                try {
+                    const familySection = container.querySelector('[data-key="family_list"]');
+                    if (familySection) {
+                        // find underlying textarea (if any)
+                        const ta = familySection.closest('.field-value') ? familySection.closest('.field-value').querySelector('textarea') : null;
+                        const fam = json.family || [];
+                        const currentPid = (json.assessment && json.assessment.person_id) ? Number(json.assessment.person_id) : (json.person && json.person.id ? Number(json.person.id) : null);
+                        let members = [];
+                        if (Array.isArray(fam)) members = fam.filter(Boolean).map(function(m){ return m; });
+                        else if (fam && typeof fam === 'object') members = [fam];
+
+                        // exclude the current person from the members list and only show distinct names
+                        const seen = new Set();
+                        const filtered = members.filter(function(m){
+                            const id = m && (m.id || m.person_id) ? Number(m.id || m.person_id) : null;
+                            if (currentPid && id && id === currentPid) return false;
+                            const name = (m && (m.full_name || ((m.first_name||'') + ' ' + (m.last_name||'')).trim())) || '';
+                            const key = (name || '').trim().toLowerCase();
+                            if (!key) return false;
+                            if (seen.has(key)) return false;
+                            seen.add(key);
+                            return true;
+                        });
+
+                        const listHtml = filtered.length ? ('<ul class="list-unstyled mb-0">' + filtered.map(function(m){
+                            const fn = m.full_name || ((m.first_name||'') + ' ' + (m.last_name||'')).trim() || '(Unnamed)';
+                            return '<li class="mb-1"><strong>'+escapeHtml(fn)+'</strong></li>';
+                        }).join('') + '</ul>') : '<div class="text-muted">No family members recorded.</div>';
+
+                        if (ta) ta.outerHTML = listHtml; else if (familySection) familySection.innerHTML = listHtml;
+                    }
+                } catch(e){ console.warn('family render error', e); }
+
+                // birthdate sync and age calc
+                function computeAgeFromISO(iso){
+                    if (!iso) return '';
+                    const d = new Date(iso);
+                    if (isNaN(d.getTime())) return '';
+                    const now = new Date();
+                    let age = now.getFullYear() - d.getFullYear();
+                    const m = now.getMonth() - d.getMonth();
+                    if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+                    return age;
+                }
+
+                const isoInputs = container.querySelectorAll('.birthdate-iso');
+                isoInputs.forEach(function(iso){
+                    const visible = iso.closest('.d-flex') ? iso.closest('.d-flex').querySelector('.birthdate-visible') : null;
+                    // when iso changes, update visible formatted and age
+                    iso.addEventListener('change', function(){
+                        const v = iso.value;
+                        if (visible) {
+                            try { visible.value = v ? (new Date(v)).toLocaleDateString(undefined,{year:'numeric',month:'long',day:'2-digit'}) : ''; } catch(e){ visible.value = v; }
+                        }
+                        const ageEl = container.querySelector('.age-input');
+                        if (ageEl) ageEl.value = computeAgeFromISO(v);
+                    });
+                    // initialize
+                    if (iso.value) iso.dispatchEvent(new Event('change'));
+                });
+
+                // clicking the visible birthdate should open the hidden date picker if present
+                const visibleBirths = container.querySelectorAll('.birthdate-visible');
+                visibleBirths.forEach(function(vis){
+                    vis.addEventListener('focus', function(){
+                        const iso = vis.closest('.d-flex') ? vis.closest('.d-flex').querySelector('.birthdate-iso') : null;
+                        if (iso) iso.showPicker && iso.showPicker();
+                    });
+                });
+
+                // Contact number formatting: enforce digits-only and format as 09XX-XXXX-XXX
+                function formatPHMobile(digits) {
+                    if (!digits) return '';
+                    digits = String(digits).replace(/\D/g, '').slice(0,11);
+                    // if user typed 9XXXXXXXXX (10 digits starting with 9), prepend 0
+                    if (digits.length === 10 && digits.charAt(0) === '9') digits = '0' + digits;
+                    const a = digits.slice(0,4);
+                    const b = digits.slice(4,8);
+                    const c = digits.slice(8,11);
+                    const parts = [];
+                    if (a) parts.push(a);
+                    if (b) parts.push(b);
+                    if (c) parts.push(c);
+                    return parts.join('-');
+                }
+
+                const contactInputs = container.querySelectorAll('.fa-input[data-key="contact_no"]');
+                contactInputs.forEach(function(ci){
+                    // hint to mobile keyboards
+                    try { ci.setAttribute('inputmode', 'numeric'); } catch(e){}
+                    // initial format
+                    ci.value = formatPHMobile(ci.value);
+                    ci.addEventListener('input', function(){
+                        const raw = String(ci.value || '');
+                        const digits = raw.replace(/\D/g,'').slice(0,11);
+                        ci.value = formatPHMobile(digits);
+                    });
+                    // prevent pasting non-digit characters
+                    ci.addEventListener('paste', function(ev){
+                        ev.preventDefault();
+                        const txt = (ev.clipboardData || window.clipboardData).getData('text') || '';
+                        const digits = txt.replace(/\D/g,'').slice(0,11);
+                        ci.value = formatPHMobile(digits);
+                    });
+                });
+
+                // Range slider live value updates (exercise sliders)
+                try {
+                    const ranges = container.querySelectorAll('input.form-range.fa-input');
+                    ranges.forEach(function(r){
+                        const display = r.parentElement ? r.parentElement.querySelector('.range-value') : null;
+                        const update = function(){ if (display) display.textContent = String(r.value || '0'); };
+                        r.addEventListener('input', update);
+                        // initialize
+                        update();
+                    });
+                } catch(e){ /* ignore */ }
+            })();
+
+            // Save handler: collect inputs and post to update API. If current page is Vitals, send vitals-only payload.
+            container.querySelector('#fa-save').addEventListener('click', function(){
+                const curSectionKey = (SURVEY_SECTIONS && SURVEY_SECTIONS[cur] && SURVEY_SECTIONS[cur].key) ? SURVEY_SECTIONS[cur].key : null;
+
+                // limit inputs to current page when saving vitals-only, otherwise include all inputs
+                let inputs = [];
+                if (curSectionKey === 'vitals') {
+                    const pageEls = container.querySelectorAll('.fa-page');
+                    const pageEl = pageEls && pageEls[cur] ? pageEls[cur] : null;
+                    inputs = pageEl ? Array.from(pageEl.querySelectorAll('.fa-input')) : [];
+                } else {
+                    inputs = Array.from(container.querySelectorAll('.fa-input'));
+                }
+
+                // construct payload
+                const payload = { cvd_id: json.assessment.id || json.assessment.cvd_id };
+                if (json.assessment.person_id) payload.person_id = json.assessment.person_id;
+
+                const vitalsOnly = (curSectionKey === 'vitals');
+                if (vitalsOnly && !payload.vitals) payload.vitals = {};
+
+                inputs.forEach(function(inp){
+                    const section = inp.getAttribute('data-section') || 'other';
+                    const key = inp.getAttribute('data-key');
+                    if (!key) return;
+                    // radios: only take checked
+                    if (inp.type === 'radio' && !inp.checked) return;
+                    // skip visible birthdate (we use iso)
+                    if (inp.classList && inp.classList.contains('birthdate-visible')) return;
+
+                    let value = inp.value;
+                    if (key === 'contact_no' && typeof value === 'string') {
+                        value = value.replace(/\D/g,'').slice(0,11);
+                    }
+
+                    if (vitalsOnly) {
+                        // only capture vitals keys
+                        const vkeys = ['height_cm','weight_kg','bmi','waist_circumference_cm','bp_systolic','bp_diastolic','pulse','temperature_c','respiratory_rate'];
+                        if (vkeys.indexOf(key) !== -1) payload.vitals[key] = value;
+                    } else {
+                        if (!payload[section]) payload[section] = {};
+                        payload[section][key] = value;
+                    }
+                });
+
+                // if there's a birthdate iso input, ensure it wins when doing full save
+                const iso = container.querySelector('.birthdate-iso');
+                if (iso && !vitalsOnly) {
+                    if (!payload.personal) payload.personal = {};
+                    payload.personal.birthdate = iso.value || payload.personal.birthdate || '';
+                }
+
+                // if full save, copy biometric fields from personal into vitals to be safe
+                if (!vitalsOnly) {
+                    const bioKeys = ['height_cm','weight_kg','waist_circumference_cm','bp_systolic','bp_diastolic','pulse','respiratory_rate','temperature_c'];
+                    if (!payload.vitals) payload.vitals = {};
+                    bioKeys.forEach(function(k){
+                        if ((!payload.vitals[k] || payload.vitals[k] === '') && payload.personal && payload.personal[k]) {
+                            payload.vitals[k] = payload.personal[k];
+                        }
+                    });
+                }
+
+                // Ensure key lifestyle fields are always included in the payload (defensive collect)
+                if (!vitalsOnly) {
+                    if (!payload.lifestyle) payload.lifestyle = {};
+                    // explicit keys that sometimes were missed by the generic collection
+                    const lifestyleKeys = ['smoking_status','smoking_comments','alcohol_use','alcohol_notes','excessive_alcohol','eats_processed_weekly','fruits_3_servings_daily','vegetables_3_servings_daily','exercise_days_per_week','exercise_minutes_per_day','exercise_intensity'];
+                    lifestyleKeys.forEach(function(k){
+                        try {
+                            // radio/checkbox checked selector
+                            const checked = container.querySelector('.fa-input[data-key="'+k+'"]:checked');
+                            if (checked) {
+                                payload.lifestyle[k] = checked.value;
+                                return;
+                            }
+                            // textareas/inputs
+                            const el = container.querySelector('.fa-input[data-key="'+k+'"]');
+                            if (el) {
+                                payload.lifestyle[k] = el.value;
+                                return;
+                            }
+                            // Some radio groups render inputs without data-key on the options (use name fallback)
+                            const nameFallback = container.querySelector('[name^="smoke_"]') || container.querySelector('[name^="alcohol_"]') || container.querySelector('[name^="intensity_"]');
+                            if (nameFallback && nameFallback.name) {
+                                const c = container.querySelector('[name="'+nameFallback.name+'"]:checked');
+                                if (c && c.getAttribute('data-key') === k) payload.lifestyle[k] = c.value;
+                            }
+                        } catch(e) { /* ignore per-key errors */ }
+                    });
+                }
+
+                const updBaseClient = (window.BASE_URL ? String(window.BASE_URL).replace(/\/$/, '') : '');
+                const updUrl = (updBaseClient ? (updBaseClient + '/api/update_assessment.php') : 'app/api/update_assessment.php');
+
+                const saveBtn = container.querySelector('#fa-save');
+                saveBtn.disabled = true; saveBtn.textContent = 'Saving...';
+
+                fetch(updUrl, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+                .then(function(res){
+                    if (!res.ok) return res.text().then(function(t){ throw new Error('Server returned ' + res.status + ': ' + t); });
+                    const ct = res.headers.get('content-type') || '';
+                    if (!ct.includes('application/json')) return res.text().then(function(t){ throw new Error('Invalid JSON response: ' + t); });
+                    return res.json();
+                })
+                .then(function(resJson){
+                    if (resJson && resJson.success) {
+                        saveBtn.textContent = 'Saved';
+                        // advance to next page after short delay
+                        setTimeout(function(){
+                            saveBtn.textContent = 'Save Changes'; saveBtn.disabled = false;
+                            if (cur < (SURVEY_SECTIONS.length - 1)) showPage(cur + 1);
+                        }, 800);
+                    } else {
+                        saveBtn.textContent = 'Save Changes'; saveBtn.disabled = false;
+                        alert('Save failed: ' + (resJson && resJson.error ? resJson.error : 'unknown error'));
+                    }
+                })
+                .catch(function(err){
+                    saveBtn.textContent = 'Save Changes'; saveBtn.disabled = false;
+                    console.error('Fetch/update_assessment error:', err);
+                    alert('Save error: ' + err.message);
+                });
+            });
+
+            // initialize buttons disabled state
+            showPage(0);
+            if (bsFullModal) bsFullModal.show();
+            }).catch(function(err){
+                container.innerHTML = '<div class="alert alert-danger">Error loading assessment.</div>';
+                console.error('Fetch/get_full_assessment error:', err);
+                if (bsFullModal) bsFullModal.show();
+            });
     });
 
 });

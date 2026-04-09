@@ -8,7 +8,9 @@ function getBaseUrl() {
     // Try to get from a meta tag first
     const metaBase = document.querySelector('meta[name="base-url"]');
     if (metaBase) {
-        return metaBase.content;
+        // Always ensure trailing slash so concatenation like BASE_URL + 'file.php' works correctly
+        const url = metaBase.content;
+        return url.endsWith('/') ? url : url + '/';
     }
     
     // Fallback: construct from current location
@@ -26,6 +28,8 @@ function getBaseUrl() {
 }
 
 const BASE_URL = getBaseUrl();
+// email_verification.php lives at the project root (one level above /app/)
+const ROOT_URL = BASE_URL.replace(/\/app\/?$/, '/');
 
 // Store registration data and verification state
 let registrationFormData = null;
@@ -152,23 +156,28 @@ function sendVerificationCode() {
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
     
-    fetch(BASE_URL + 'email_verification.php?action=send_code', {
+    fetch(ROOT_URL + 'email_verification.php?action=send_code', {
         method: 'POST',
         body: registrationFormData
     })
-    .then(res => res.json())
-    .then(data => {
+    .then(res => res.text())
+    .then(text => {
         btn.disabled = false;
         btn.innerHTML = originalText;
-        
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.error('[send_code] Non-JSON response:', text);
+            showEmailVerifyError(1, 'Server error. Please try again.');
+            return;
+        }
         if (data.success) {
             // Show email in step 2
             const emailDisplay = document.getElementById('emailVerifyEmailDisplay');
             if (emailDisplay) emailDisplay.textContent = verificationEmail;
-            
             // Start countdown timer
             startEmailVerifyCountdown();
-            
             // Move to step 2
             showEmailVerifyStep(2);
         } else {
@@ -178,7 +187,8 @@ function sendVerificationCode() {
     .catch(err => {
         btn.disabled = false;
         btn.innerHTML = originalText;
-        showEmailVerifyError(1, 'An error occurred. Please try again.');
+        console.error('[send_code] fetch error:', err);
+        showEmailVerifyError(1, 'Network error. Please try again.');
     });
 }
 
@@ -206,7 +216,7 @@ function verifyEmailCode(e) {
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
     
-    fetch(BASE_URL + 'email_verification.php?action=verify_code', {
+    fetch(ROOT_URL + 'email_verification.php?action=verify_code', {
         method: 'POST',
         body: formData
     })
@@ -244,8 +254,16 @@ function completeRegistration() {
     
     const formData = new FormData();
     formData.append('token', verificationToken);
+
+    // Forward face data that was captured during face scan
+    if (registrationFormData) {
+        const faceEmbedding = registrationFormData.get('face_embedding');
+        const faceImageB64  = registrationFormData.get('face_image_b64');
+        if (faceEmbedding)  formData.append('face_embedding',  faceEmbedding);
+        if (faceImageB64)   formData.append('face_image_b64',  faceImageB64);
+    }
     
-    fetch(BASE_URL + 'email_verification.php?action=complete_registration', {
+    fetch(ROOT_URL + 'email_verification.php?action=complete_registration', {
         method: 'POST',
         body: formData
     })
@@ -287,7 +305,7 @@ function resendVerificationCode() {
     const formData = new FormData();
     formData.append('email', verificationEmail);
     
-    fetch(BASE_URL + 'email_verification.php?action=resend_code', {
+    fetch(ROOT_URL + 'email_verification.php?action=resend_code', {
         method: 'POST',
         body: formData
     })

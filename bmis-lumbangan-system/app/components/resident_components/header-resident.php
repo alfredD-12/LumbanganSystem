@@ -4,6 +4,11 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
   session_start();
 }
 
+require_once __DIR__ . '/../../helpers/csrf_helper.php';
+$csrfToken = csrf_token();
+$csrfHeader = csrf_header_name();
+$csrfField = csrf_field_name();
+
 function h($s)
 {
   return htmlspecialchars((string)($s ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
@@ -35,6 +40,9 @@ render_favicon();
 
   <!-- Server-provided logout endpoint for header JS to call (centralized via index page routing) -->
   <meta name="app-auth-logout" content="<?php echo h(rtrim(BASE_PUBLIC, '/') . '/index.php?page=logout'); ?>">
+  <meta name="csrf-token" content="<?php echo h($csrfToken); ?>">
+  <meta name="csrf-header" content="<?php echo h($csrfHeader); ?>">
+  <meta name="csrf-field" content="<?php echo h($csrfField); ?>">
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">

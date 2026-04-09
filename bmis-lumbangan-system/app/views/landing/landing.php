@@ -1,5 +1,6 @@
 <?php
 require_once dirname(__DIR__, 2) . '/helpers/session_helper.php';
+require_once dirname(__DIR__, 2) . '/helpers/csrf_helper.php';
 require_once dirname(__DIR__, 2) . '/config/Database.php';
 require_once dirname(__DIR__, 2) . '/models/Gallery.php';
 require_once dirname(__DIR__, 2) . '/models/Announcement.php';
@@ -25,6 +26,10 @@ if (isLoggedIn()) {
       exit();
     }
 }
+
+  $csrfToken = csrf_token();
+  $csrfHeader = csrf_header_name();
+  $csrfField = csrf_field_name();
 ?>
 <?php include_once dirname(__DIR__, 2) . '/config/config.php'; ?>
 <?php render_favicon(); ?>
@@ -36,6 +41,9 @@ if (isLoggedIn()) {
   <title>Barangay Lumbangan | Nasugbu, Batangas</title>
 
   <meta name="app-auth-endpoint" content="<?php echo rtrim(BASE_URL, '/'); ?>/controllers/AuthController.php">
+  <meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+  <meta name="csrf-header" content="<?php echo htmlspecialchars($csrfHeader, ENT_QUOTES, 'UTF-8'); ?>">
+  <meta name="csrf-field" content="<?php echo htmlspecialchars($csrfField, ENT_QUOTES, 'UTF-8'); ?>">
 
   <!-- Vendor -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
@@ -970,6 +978,7 @@ if (isLoggedIn()) {
     }
   </script>
   
+  <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/security/csrf.js?v=<?php echo filemtime(dirname(__DIR__, 2) . '/assets/js/security/csrf.js'); ?>"></script>
   <script src="<?php echo BASE_URL; ?>/assets/js/Landing/Landing.js?v=2"></script>
   <script src="<?php echo BASE_URL; ?>/assets/js/email_verification.js?v=<?php echo time(); ?>"></script>
   <script src="<?php echo BASE_URL; ?>/assets/js/Landing/login.js?v=2"></script>

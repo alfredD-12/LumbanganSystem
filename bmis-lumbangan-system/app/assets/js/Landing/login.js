@@ -73,7 +73,10 @@ document.getElementById('signinForm')?.addEventListener('submit', async function
             window.location.href = result.redirect;
         } else {
             // Show error message
-            showLoginError(result.message || 'Invalid username or password');
+            const errorMessage = result.code === 'invalid_csrf'
+                ? 'Security validation failed (CSRF). Refresh the page and try again.'
+                : (result.message || 'Invalid username or password');
+            showLoginError(errorMessage);
             console.error('Login failed:', result.message);
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;

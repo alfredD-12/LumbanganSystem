@@ -86,6 +86,7 @@
 <!-- 1) Core dependencies -->
 <!-- Load Bootstrap first so scripts that use bootstrap.Modal etc can run safely -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/security/csrf.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/security/csrf.js'); ?>"></script>
 
 <!-- Resident-specific JS -->
 <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/resident/document_resident.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/resident/document_resident.js'); ?>"></script>

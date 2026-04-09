@@ -73,6 +73,11 @@ $predictionChartData['histogram'] = [
     'labels' => array_keys($histogramBins),
     'values' => array_values($histogramBins)
 ];
+
+require_once dirname(__DIR__, 2) . '/helpers/csrf_helper.php';
+$csrfToken = csrf_token();
+$csrfHeader = csrf_header_name();
+$csrfField = csrf_field_name();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -80,6 +85,9 @@ $predictionChartData['histogram'] = [
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+    <meta name="csrf-header" content="<?php echo htmlspecialchars($csrfHeader, ENT_QUOTES, 'UTF-8'); ?>">
+    <meta name="csrf-field" content="<?php echo htmlspecialchars($csrfField, ENT_QUOTES, 'UTF-8'); ?>">
     <title>Analytics Dashboard - Barangay Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -765,6 +773,7 @@ $predictionChartData['histogram'] = [
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/security/csrf.js?v=<?php echo filemtime(dirname(__DIR__, 2) . '/assets/js/security/csrf.js'); ?>"></script>
     <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/SecDash/SecDash.js"></script>
 
     <!-- Initialize Bootstrap Dropdowns -->

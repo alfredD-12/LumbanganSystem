@@ -6,6 +6,7 @@ session_start();
 require_once dirname(__DIR__) . '/config/Database.php';
 require_once dirname(__DIR__) . '/models/User.php';
 require_once dirname(__DIR__) . '/models/Official.php';
+require_once dirname(__DIR__) . '/helpers/csrf_helper.php';
 
 class AuthController {
     private $db;
@@ -29,6 +30,13 @@ class AuthController {
             echo json_encode(['success' => false, 'message' => 'Invalid request method']);
             return;
         }
+
+        // CSRF rollout scope: protect login flow first.
+        csrf_require_valid_token([
+            'response' => 'json',
+            'status' => 419,
+            'message' => 'Invalid or missing CSRF token.'
+        ]);
 
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';

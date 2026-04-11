@@ -43,6 +43,7 @@ render_favicon();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
     <title>Dashboard - Barangay Lumbangan</title>
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
@@ -50,6 +51,7 @@ render_favicon();
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/Dashboard/dashboard.css?v=2">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/notifications.css?v=1">
+    <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/csrf-protection.js"></script>
 </head>
 <body>
     <!-- Floating Background Shapes -->
@@ -1875,6 +1877,7 @@ render_favicon();
                 <!-- Modal Body -->
                 <div class="modal-body" style="padding: 2rem;">
                     <form id="editProfileForm">
+                        <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                             <div>
                                 <label for="editName" style="color: #999; font-weight: 500; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.3px; display: block; margin-bottom: 0.5rem;">Full Name</label>

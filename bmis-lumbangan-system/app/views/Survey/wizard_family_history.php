@@ -114,6 +114,7 @@ include __DIR__ . '/../../components/resident_components/header-resident.php';
     </div>
 
     <form id="form-family-history" class="needs-validation" novalidate>
+      <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
 
       <!-- Health Conditions Section -->
       <div class="section-card p-4 mb-4">

@@ -1,6 +1,7 @@
 <?php
 
 require_once dirname(__DIR__) . '/models/MigrationModel.php';
+require_once dirname(__DIR__) . '/helpers/csrf_helper.php';
 
 class PredictiveAnalyticsController
 {
@@ -243,6 +244,8 @@ class PredictiveAnalyticsController
             ]);
             return;
         }
+
+        csrf_require_valid_token();
 
         // Generate predictions
         $result = $this->generatePredictions(true);

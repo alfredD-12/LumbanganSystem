@@ -102,6 +102,7 @@ include __DIR__ . '/../../components/resident_components/header-resident.php';
     </div>
 
     <form id="form-lifestyle" class="needs-validation" novalidate method="POST">
+      <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
 
       <!-- Smoking Section -->
       <div class="section-card p-4 mb-4">

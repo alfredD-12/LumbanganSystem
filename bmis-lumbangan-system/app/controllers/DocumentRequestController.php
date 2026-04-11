@@ -3,6 +3,7 @@ require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/DocumentType.php';
 require_once __DIR__ . '/../models/DocumentRequest.php';
 require_once __DIR__ . '/../helpers/session_helper.php';
+require_once __DIR__ . '/../helpers/csrf_helper.php';
 
 
 
@@ -61,6 +62,7 @@ class DocumentRequestController
     public function submitRequest()
     {
         header('Content-Type: application/json');
+        csrf_require_valid_token();
         // Ensure authenticated for AJAX
         if (!isUser()) {
             http_response_code(401);
@@ -184,6 +186,7 @@ class DocumentRequestController
     public function deleteRequest()
     {
         header('Content-Type: application/json');
+        csrf_require_valid_token();
         // Ensure authenticated
         if (!isUser()) {
             http_response_code(401);
@@ -299,6 +302,7 @@ class DocumentRequestController
     public function updateRequest()
     {
         header('Content-Type: application/json');
+        csrf_require_valid_token();
 
         if (!isUser()) {
             http_response_code(401);
@@ -377,6 +381,7 @@ class DocumentRequestController
     public function removeProofFile()
     {
         header('Content-Type: application/json');
+        csrf_require_valid_token();
 
         if (!isUser()) {
             http_response_code(401);

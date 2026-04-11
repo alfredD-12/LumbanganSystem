@@ -118,6 +118,7 @@ if (!$hasAnginaData) {
     </div>
 
     <form id="form-angina" class="needs-validation" novalidate>
+      <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
 
       <!-- Question 1 -->
       <div class="question-card">

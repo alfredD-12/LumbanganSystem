@@ -11,6 +11,7 @@
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/SurveyModel.php';
 require_once __DIR__ . '/../helpers/session_helper.php';
+require_once __DIR__ . '/../helpers/csrf_helper.php';
 
 class SurveyController
 {
@@ -86,6 +87,7 @@ class SurveyController
 
     public function create_assessment_action()
     {
+        csrf_require_valid_token();
         $this->requireLoggedIn();
         $person_id = $_SESSION['person_id'] ?? null;
         $user_id = $_SESSION['user_id'] ?? null;
@@ -107,6 +109,7 @@ class SurveyController
     {
         ob_start();
         try {
+            csrf_require_valid_token();
             $this->requireLoggedIn();
             $person_id = $_SESSION['person_id'] ?? null;
             $user_id = $_SESSION['user_id'] ?? null;
@@ -211,6 +214,7 @@ class SurveyController
     {
         ob_start();
         try {
+            csrf_require_valid_token();
             $this->requireLoggedIn();
             $person_id = $_SESSION['person_id'] ?? null;
             $user_id = $_SESSION['user_id'] ?? null;
@@ -268,6 +272,7 @@ class SurveyController
      */
     public function save_angina_action()
     {
+        csrf_require_valid_token();
         $this->requireLoggedIn();
         $person_id = $_SESSION['person_id'] ?? null;
         $user_id = $_SESSION['user_id'] ?? null;
@@ -295,6 +300,7 @@ class SurveyController
      */
     public function save_diabetes_action()
     {
+        csrf_require_valid_token();
         $this->requireLoggedIn();
         $person_id = $_SESSION['person_id'] ?? null;
         $user_id = $_SESSION['user_id'] ?? null;
@@ -335,6 +341,7 @@ class SurveyController
      */
     public function save_family_history_action()
     {
+        csrf_require_valid_token();
         $this->requireLoggedIn();
         $person_id = $_SESSION['person_id'] ?? null;
         $user_id = $_SESSION['user_id'] ?? null;
@@ -355,6 +362,7 @@ class SurveyController
      */
     public function save_lifestyle_action()
     {
+        csrf_require_valid_token();
         $this->requireLoggedIn();
         $person_id = $_SESSION['person_id'] ?? null;
         $user_id = $_SESSION['user_id'] ?? null;
@@ -402,6 +410,7 @@ class SurveyController
 
     public function add_family_member_action()
     {
+        csrf_require_valid_token();
         $this->requireLoggedIn();
         $person_id = $_SESSION['person_id'] ?? null;
         if (!$person_id) $this->jsonResponse(['success' => false, 'message' => 'Not logged in'], 401);
@@ -423,6 +432,7 @@ class SurveyController
 
     public function remove_family_member_action()
     {
+        csrf_require_valid_token();
         $this->requireLoggedIn();
         $person_id = $_SESSION['person_id'] ?? null;
         if (!$person_id) $this->jsonResponse(['success' => false, 'message' => 'Not logged in'], 401);
@@ -442,6 +452,7 @@ class SurveyController
 
     public function save_family_action()
     {
+        csrf_require_valid_token();
         $this->requireLoggedIn();
         $person_id = $_SESSION['person_id'] ?? null;
         if (!$person_id) $this->jsonResponse(['success' => false, 'message' => 'Not logged in'], 401);
@@ -559,6 +570,7 @@ class SurveyController
      */
     public function save_household_action()
     {
+        csrf_require_valid_token();
         $this->requireLoggedIn();
         // Temporary debug hook: if client sends debug=1, echo back session and POST for inspection
         if ((isset($_GET['debug']) && ($_GET['debug'] == '1' || $_GET['debug'] === 'true')) || (isset($_POST['debug']) && ($_POST['debug'] == '1' || $_POST['debug'] === 'true'))) {

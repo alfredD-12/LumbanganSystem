@@ -5,6 +5,7 @@ require_once dirname(__DIR__) . '/config/Database.php';
 require_once dirname(__DIR__) . '/models/EmailVerification.php';
 require_once dirname(__DIR__) . '/models/User.php';
 require_once dirname(__DIR__) . '/helpers/sms_helper.php';
+require_once dirname(__DIR__) . '/helpers/csrf_helper.php';
 
 class EmailVerificationController {
     private $db;
@@ -32,6 +33,8 @@ class EmailVerificationController {
                 echo json_encode(['success' => false, 'message' => 'Invalid request method']);
                 return;
             }
+
+            csrf_require_valid_token();
 
             // Get all registration data from the form
             $username = trim($_POST['username'] ?? '');
@@ -225,6 +228,8 @@ class EmailVerificationController {
                 return;
             }
 
+            csrf_require_valid_token();
+
             $token = trim($_POST['token'] ?? '');
 
             if (empty($token)) {
@@ -390,6 +395,8 @@ class EmailVerificationController {
             echo json_encode(['success' => false, 'message' => 'Invalid request method']);
             return;
         }
+
+        csrf_require_valid_token();
 
         $email = trim($_POST['email'] ?? '');
 

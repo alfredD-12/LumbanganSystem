@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../models/Announcement.php';
 require_once __DIR__ . '/../config/Database.php';
+require_once __DIR__ . '/../helpers/csrf_helper.php';
 //require_once __DIR__ . '/../helpers/notification_helper.php';
 // Ensure config constants (BASE_URL, BASE_PUBLIC) are available
 if (!defined('BASE_URL')) {
@@ -47,6 +48,7 @@ class AnnouncementController {
     public function index() {
         // Handle POST actions
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            csrf_require_valid_token();
             $filters = $this->getFilters();
             $this->handlePostActions($filters);
             return;

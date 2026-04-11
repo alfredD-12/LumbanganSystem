@@ -112,6 +112,7 @@ include __DIR__ . '/../../components/resident_components/header-resident.php';
 
                         <!--  FORM STARTS HERE -->
                         <form action="DocumentRequestController.php" method="POST" enctype="multipart/form-data">
+                            <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
                             <div class="modal-header modal-header-color">
                                 <h5 class="modal-title" id="newRequestModalLabel">New Document Request</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -226,6 +227,7 @@ include __DIR__ . '/../../components/resident_components/header-resident.php';
                 <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
                     <div class="modal-content overflow-auto">
                         <form id="editRequestForm" enctype="multipart/form-data">
+                            <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
                             <div class="modal-header modal-header-color">
                                 <h5 class="modal-title" id="editRequestModalLabel">Edit Document Request</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>

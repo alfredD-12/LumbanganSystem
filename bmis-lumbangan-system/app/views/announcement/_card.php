@@ -67,6 +67,7 @@
                     <i class="bi bi-pencil-square"></i>
                 </a>
                 <form method="post" style="display:inline" onsubmit="event.stopPropagation(); return confirm('Delete this announcement?');">
+                    <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
                     <input type="hidden" name="action" value="delete">
                     <input type="hidden" name="id" value="<?php echo $a['id']; ?>">
                     <button class="btn-action btn-delete" onclick="event.stopPropagation();" title="Delete">

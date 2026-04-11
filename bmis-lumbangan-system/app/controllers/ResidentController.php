@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../models/Complaint.php';
 require_once __DIR__ . '/../helpers/session_helper.php';
+require_once __DIR__ . '/../helpers/csrf_helper.php';
 
 class ResidentController {
     private $complaintModel;
@@ -112,6 +113,8 @@ class ResidentController {
             return;
         }
 
+        csrf_require_valid_token();
+
         try {
             // Check if this is an update
             if (isset($_GET['action']) && $_GET['action'] === 'edit' && isset($_GET['id'])) {
@@ -173,6 +176,8 @@ class ResidentController {
             return;
         }
 
+        csrf_require_valid_token();
+
         try {
             if (!isset($_POST['incident_id']) || !isset($_POST['status_id'])) {
                 throw new Exception('Missing required parameters');
@@ -204,6 +209,10 @@ class ResidentController {
      */
     public function delete() {
         header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            csrf_require_valid_token();
+        }
         
         if (!isset($_GET['id'])) {
             echo json_encode(['success' => false, 'error' => 'No ID provided']);

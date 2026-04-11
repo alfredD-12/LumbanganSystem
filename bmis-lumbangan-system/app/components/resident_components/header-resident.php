@@ -36,6 +36,7 @@ render_favicon();
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
   <title><?php echo h($pageTitle ?? 'Barangay Lumbangan System'); ?></title>
 
   <!-- Server-provided logout endpoint for header JS to call (centralized via index page routing) -->
@@ -57,6 +58,7 @@ render_favicon();
   <!-- If may iba kayong need or idagdag na link pakilagay nalang sa baba -->
   <link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/Survey/wizard_personal.css?v=<?php echo time(); ?>">
   <link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/Survey/bhw-float.css?v=<?php echo time(); ?>">
+  <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/csrf-protection.js"></script>
   <!-- Notification System CSS -->
   <link rel="stylesheet" href="<?php echo BASE_URL . 'assets/css/notifications.css'; ?>">
   <style>

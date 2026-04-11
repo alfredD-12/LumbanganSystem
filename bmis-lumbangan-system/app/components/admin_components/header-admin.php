@@ -55,9 +55,7 @@ if (file_exists(__DIR__ . '/../../helpers/official_profile_helper.php')) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
-    <meta name="csrf-header" content="<?php echo htmlspecialchars($csrfHeader, ENT_QUOTES, 'UTF-8'); ?>">
-    <meta name="csrf-field" content="<?php echo htmlspecialchars($csrfField, ENT_QUOTES, 'UTF-8'); ?>">
+    <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
     <title><?php echo htmlspecialchars($pageTitle ?? 'Barangay Lumbangan Admin System'); ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
@@ -85,6 +83,7 @@ if (file_exists(__DIR__ . '/../../helpers/official_profile_helper.php')) {
     <!-- Serve official styles from public webroot first (fallback to app path kept for dev) -->
     <link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/admin-officials.css">
     <link rel="stylesheet" href="<?php echo BASE_URL . 'assets/css/admin-officials.css'; ?>">
+    <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/csrf-protection.js"></script>
     <link rel="icon" type="image/x-icon" href="<?php echo FAVICON_PATH; ?>">
     <link rel="shortcut icon" type="image/x-icon" href="<?php echo FAVICON_PATH; ?>">
 </head>

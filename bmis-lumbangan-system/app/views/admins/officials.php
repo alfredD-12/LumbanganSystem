@@ -59,6 +59,7 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/header-admin.ph
             </div>
             <div class="modal-body">
                 <form id="editOfficialForm">
+                    <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
                     <input type="hidden" name="id" id="editOfficialId">
                     <div class="mb-2">
                         <label class="form-label">Full Name</label>
@@ -104,6 +105,7 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/header-admin.ph
             </div>
             <div class="modal-body">
                 <form id="createOfficialForm">
+                    <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
                     <div class="mb-2">
                         <label class="form-label">Full Name</label>
                         <input class="form-control" name="full_name" id="createFullName">

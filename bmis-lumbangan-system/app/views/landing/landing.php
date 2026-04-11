@@ -39,6 +39,7 @@ if (isLoggedIn()) {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
   <title>Barangay Lumbangan | Nasugbu, Batangas</title>
 
   <meta name="app-auth-endpoint" content="<?php echo rtrim(BASE_URL, '/'); ?>/controllers/AuthController.php">
@@ -60,6 +61,7 @@ if (isLoggedIn()) {
 
   <!-- Optional news fetcher -->
   <script src="<?php echo BASE_URL; ?>/assets/js/Landing/batangas-news.js?v=2" defer></script>
+  <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/csrf-protection.js"></script>
 </head>
 
 <body>
@@ -590,6 +592,7 @@ if (isLoggedIn()) {
           <div class="contact-card">
             <h4 style="color: var(--primary-blue); font-weight: 700; margin-bottom: 1.618rem; font-size: 1.5rem;">Send Us a Message</h4>
             <form class="contact-form" id="contactForm">
+              <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
               <input type="text" class="form-control" id="contactName" placeholder="Your Name" required>
               <input type="email" class="form-control" id="contactEmail" placeholder="Your Email" required>
               <input type="text" class="form-control" id="contactSubject" placeholder="Subject" required>
@@ -662,6 +665,7 @@ if (isLoggedIn()) {
         <!-- Sign Up -->
         <div class="login-form-container login-sign-up" style="overflow-y: auto;">
           <form id="signupForm" method="POST" action="javascript:void(0);">
+            <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
             <h1>Create Account</h1>
 
             <!-- Registration Error Alert (after heading) -->
@@ -696,6 +700,7 @@ if (isLoggedIn()) {
         <!-- Sign In -->
         <div class="login-form-container login-sign-in">
           <form id="signinForm" method="POST" action="javascript:void(0);">
+            <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
             <h1>Sign In</h1>
             <div class="login-social-icons">
               <img src="https://upload.wikimedia.org/wikipedia/commons/0/0c/Seal_of_Batangas.png" alt="Batangas" style="width: 40px;">
@@ -1479,6 +1484,7 @@ if (isLoggedIn()) {
           <p style="color: #666; text-align: center; margin-bottom: 30px; font-size: 0.95rem;">Enter your email and we'll send you a reset code</p>
 
           <form onsubmit="submitForgetEmailNew(event)" style="display: flex; flex-direction: column;">
+            <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
             <input type="email" placeholder="Email address" id="forgetEmail" required style="
               padding: 12px 15px;
               margin-bottom: 15px;
@@ -1523,6 +1529,7 @@ if (isLoggedIn()) {
           <p style="color: #666; text-align: center; margin-bottom: 30px; font-size: 0.95rem;">Enter the 6-digit code sent to<br><strong id="forgetEmailDisplay" style="color: #333;"></strong></p>
 
           <form onsubmit="submitForgetCodeNew(event)" style="display: flex; flex-direction: column;">
+            <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
             <input type="text" placeholder="000000" maxlength="6" id="forgetCode" required style="
               padding: 12px 15px;
               margin-bottom: 15px;
@@ -1570,6 +1577,7 @@ if (isLoggedIn()) {
           <p style="color: #666; text-align: center; margin-bottom: 30px; font-size: 0.95rem;">Password must be at least 6 characters</p>
 
           <form onsubmit="submitResetPasswordNew(event)" style="display: flex; flex-direction: column;">
+            <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
             <input type="password" placeholder="New Password" id="forgetNewPassword" required style="
               padding: 12px 15px;
               margin-bottom: 15px;

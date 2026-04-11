@@ -118,6 +118,7 @@ if (!$hasDiabetesData) {
     </div>
 
     <form id="form-diabetes" class="needs-validation" novalidate>
+      <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
 
       <!-- Medical History Section -->
       <div class="section-card p-4 mb-4">

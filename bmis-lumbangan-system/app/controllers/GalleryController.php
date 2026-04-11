@@ -5,6 +5,7 @@ ini_set('display_errors', 1);
 
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/Gallery.php';
+require_once __DIR__ . '/../helpers/csrf_helper.php';
 
 class GalleryController {
     private $galleryModel;
@@ -15,6 +16,10 @@ class GalleryController {
     
     public function handleRequest() {
         $action = $_POST['action'] ?? $_GET['action'] ?? '';
+
+        if (in_array($action, ['create', 'update', 'delete', 'toggle', 'update_order'], true)) {
+            csrf_require_valid_token();
+        }
         
         switch ($action) {
             case 'fetch':

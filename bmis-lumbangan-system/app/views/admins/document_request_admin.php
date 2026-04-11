@@ -111,6 +111,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <form id="statusForm">
+        <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
         <div class="modal-header">
           <h5 class="modal-title" id="statusModalLabel">Update Request Status</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -229,6 +230,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <form id="editDocumentTypeForm">
+        <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
         <div class="modal-body">
           <input type="hidden" id="editDocumentId" name="document_type_id">
           <div class="mb-3">
@@ -292,6 +294,7 @@
       <div class="modal-body">
 
         <form id="addDocumentForm" class="row g-3">
+          <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
 
           <div class="col-md-6">
             <label class="form-label">Category</label>
@@ -341,6 +344,7 @@
       </div>
 
       <form id="newRequestForm">
+        <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
         <div class="modal-body">
 
           <!-- Resident Name -->

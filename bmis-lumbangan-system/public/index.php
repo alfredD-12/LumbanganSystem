@@ -18,7 +18,88 @@ require_once __DIR__ . '/../app/controllers/ResidentController.php';
 //  Handle AJAX/API actions
 $action = $_GET['action'] ?? null;
 
+if (!function_exists('csrf_error_response')) {
+    function csrf_error_response()
+    {
+        http_response_code(403);
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'error' => 'Invalid CSRF token.'
+        ]);
+        exit;
+    }
+}
+
+if (!function_exists('request_csrf_token')) {
+    function request_csrf_token()
+    {
+        $headerToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+        if (!empty($headerToken)) {
+            return $headerToken;
+        }
+
+        if (!empty($_POST['csrf_token'])) {
+            return $_POST['csrf_token'];
+        }
+
+        $rawInput = file_get_contents('php://input');
+        if (!empty($rawInput)) {
+            $json = json_decode($rawInput, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($json) && !empty($json['csrf_token'])) {
+                return $json['csrf_token'];
+            }
+        }
+
+        return '';
+    }
+}
+
 if ($action) {
+    $csrfProtectedActions = [
+        'submitRequest',
+        'deleteRequest',
+        'updateStatus',
+        'complaint_save',
+        'complaint_updateStatus',
+        'complaint_delete',
+        'createComplaint',
+        'updateComplaint',
+        'deleteComplaint',
+        'updateComplaintStatus',
+        'create_assessment',
+        'save_personal',
+        'save_vitals',
+        'save_angina',
+        'save_diabetes',
+        'save_family_history',
+        'save_family',
+        'save_household',
+        'save_lifestyle',
+        'add_family_member',
+        'update_official_profile',
+        'create_official',
+        'admin_update_official',
+        'delete_official',
+        'saveTemplate',
+        'updateDocumentType',
+        'deleteDocumentType',
+        'addDocumentType',
+        'addAdminRequest',
+        'request_reset',
+        'verify_code',
+        'reset_password',
+        'updateRequest',
+        'removeProofFile'
+    ];
+
+    if (in_array($action, $csrfProtectedActions, true)) {
+        $submittedCsrfToken = request_csrf_token();
+        if (!csrf_validate($submittedCsrfToken)) {
+            csrf_error_response();
+        }
+    }
+
     $controller = new DocumentRequestController();
     $adminController = new AdminDocumentController();
     $surveyController = new SurveyController(); // instantiate survey controller for AJAX survey actions

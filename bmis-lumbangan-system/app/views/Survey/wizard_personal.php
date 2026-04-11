@@ -181,6 +181,7 @@ include __DIR__ . '/../../components/resident_components/header-resident.php';
 
     <!-- Wrap all sections in a single form so persistence and validation cover all fields -->
     <form id="form-person" class="needs-validation mt-3" novalidate>
+      <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
 
     <!-- Identity -->
     <div class="section-card p-4 mb-4">

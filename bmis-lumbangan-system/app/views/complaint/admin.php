@@ -357,6 +357,7 @@ if (!isset($complaints) || !isset($statistics) || !isset($statuses) || !isset($c
                 </div>
                 <div class="modal-body">
                     <form id="complaintForm" autocomplete="off">
+                        <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
                         <input type="hidden" name="id" id="complaintId">
                         <div class="row g-3">
                             <div class="col-12">

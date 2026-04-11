@@ -28,6 +28,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <form id="galleryForm" enctype="multipart/form-data">
+                <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
         <div class="modal-body py-3">
           <input type="hidden" id="galleryId" name="id">
           

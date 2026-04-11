@@ -85,9 +85,7 @@ $csrfField = csrf_field_name();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
-    <meta name="csrf-header" content="<?php echo htmlspecialchars($csrfHeader, ENT_QUOTES, 'UTF-8'); ?>">
-    <meta name="csrf-field" content="<?php echo htmlspecialchars($csrfField, ENT_QUOTES, 'UTF-8'); ?>">
+    <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
     <title>Analytics Dashboard - Barangay Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -95,6 +93,7 @@ $csrfField = csrf_field_name();
     <?php if (!defined('BASE_URL')) {
         require_once dirname(__DIR__, 2) . '/config/config.php';
     } ?>
+    <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/csrf-protection.js"></script>
     <link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/SecDash/secDash.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/predictions_dashboard.css?v=<?php echo time(); ?>">
 </head>
@@ -741,6 +740,7 @@ $csrfField = csrf_field_name();
                 <!-- Modal Body -->
                 <div class="modal-body" style="padding: 2rem;">
                     <form id="editAdminProfileForm">
+                        <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                             <div>
                                 <label for="editAdminName" style="color: #999; font-weight: 500; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.3px; display: block; margin-bottom: 0.5rem;">Full Name</label>

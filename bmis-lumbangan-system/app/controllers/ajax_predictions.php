@@ -26,12 +26,14 @@ if (
 
 require_once dirname(__DIR__) . '/controllers/PredictiveAnalyticsController.php';
 require_once dirname(__DIR__) . '/models/MigrationModel.php';
+require_once dirname(__DIR__) . '/helpers/csrf_helper.php';
 
 $controller = new PredictiveAnalyticsController();
 $action = $_GET['action'] ?? '';
 
 switch ($action) {
     case 'generate':
+        csrf_require_valid_token();
         // Generate predictions
         $result = $controller->generatePredictions(true);
         echo json_encode($result);

@@ -17,16 +17,30 @@ ob_start();                   // prevent PHP notices from corrupting JSON
 ini_set('display_errors', 0);
 error_reporting(0);
 
+require_once dirname(__DIR__) . '/app/config/config.php';
+
 function jsonExit(array $arr): void {
     ob_end_clean();
     echo json_encode($arr);
     exit;
 }
 
+function apiCsrfTokenFromRequest(): string {
+    if (!empty($_SERVER['HTTP_X_CSRF_TOKEN'])) {
+        return (string) $_SERVER['HTTP_X_CSRF_TOKEN'];
+    }
+
+    if (!empty($_POST['csrf_token'])) {
+        return (string) $_POST['csrf_token'];
+    }
+
+    return '';
+}
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Headers: Content-Type, X-CSRF-Token');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     ob_end_clean();
@@ -36,6 +50,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonExit(['success' => false, 'message' => 'Method not allowed']);
+}
+
+$csrfToken = apiCsrfTokenFromRequest();
+if (!csrf_validate($csrfToken)) {
+    http_response_code(403);
+    jsonExit(['success' => false, 'message' => 'Invalid or missing CSRF token']);
 }
 
 // ── Threshold config ─────────────────────────────────────────────────────────

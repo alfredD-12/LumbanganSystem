@@ -4,6 +4,7 @@
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/AdminSurveyModel.php';
 require_once __DIR__ . '/../helpers/session_helper.php';
+require_once __DIR__ . '/../helpers/csrf_helper.php';
 
 class AdminSurveyController
 {
@@ -42,6 +43,7 @@ class AdminSurveyController
     {
         ob_start();
         try {
+            csrf_require_valid_token();
             $this->requireLoggedIn();
             $person_id = $_SESSION['person_id'] ?? null;
             $user_id = $_SESSION['user_id'] ?? null;

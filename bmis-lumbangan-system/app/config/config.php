@@ -1,4 +1,44 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
+if (!function_exists('csrf_token')) {
+    function csrf_token()
+    {
+        if (empty($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+
+        return $_SESSION['csrf_token'];
+    }
+}
+
+if (!function_exists('csrf_input')) {
+    function csrf_input($fieldName = 'csrf_token')
+    {
+        $token = htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8');
+        $field = htmlspecialchars($fieldName, ENT_QUOTES, 'UTF-8');
+
+        return '<input type="hidden" name="' . $field . '" value="' . $token . '">';
+    }
+}
+
+if (!function_exists('csrf_validate')) {
+    function csrf_validate($submittedToken, $fieldName = 'csrf_token')
+    {
+        if (!isset($_SESSION[$fieldName])) {
+            return false;
+        }
+
+        return hash_equals((string) $_SESSION[$fieldName], (string) $submittedToken);
+    }
+}
+
 // Detect protocol correctly even behind ngrok or proxies
 if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
     $protocol = $_SERVER['HTTP_X_FORWARDED_PROTO'] . '://';
@@ -10,7 +50,7 @@ if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 
 // Path to your project
-$baseFolder = '/Lumbangan_BMIS/bmis-lumbangan-system/';
+$baseFolder = '/bmis-lumbangan-system/';
 
 // Define dynamic URLs
 define('BASE_URL', $protocol . $host . $baseFolder . 'app/');

@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../../config/Database.php';
 require_once __DIR__ . '/../../models/DocumentTemplate.php';
 require_once __DIR__ . '/../../models/DocumentType.php';
+require_once __DIR__ . '/../../helpers/csrf_helper.php';
 
 class DocumentTemplateController
 {
@@ -41,6 +42,7 @@ class DocumentTemplateController
 
     public function saveTemplate()
     {
+        csrf_require_valid_token();
 
         $typeId = $_POST['document_type_id'] ?? null;
         $html = $_POST['template_html'] ?? null;

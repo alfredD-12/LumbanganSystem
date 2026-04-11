@@ -1,5 +1,30 @@
 <?php
 
+require_once dirname(__DIR__) . '/app/config/config.php';
+
+if (!function_exists('api_csrf_token_from_request')) {
+    function api_csrf_token_from_request()
+    {
+        if (!empty($_SERVER['HTTP_X_CSRF_TOKEN'])) {
+            return (string) $_SERVER['HTTP_X_CSRF_TOKEN'];
+        }
+
+        if (!empty($_POST['csrf_token'])) {
+            return (string) $_POST['csrf_token'];
+        }
+
+        return '';
+    }
+}
+
+if (!function_exists('api_reject_invalid_csrf')) {
+    function api_reject_invalid_csrf()
+    {
+        http_response_code(403);
+        echo json_encode(['error' => 'Invalid or missing CSRF token']);
+        exit;
+    }
+}
 
 header('Content-Type: application/json');
 
@@ -8,6 +33,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['error' => 'Method not allowed']);
     exit;
+}
+
+$csrfToken = api_csrf_token_from_request();
+if (!csrf_validate($csrfToken)) {
+    api_reject_invalid_csrf();
 }
 
 

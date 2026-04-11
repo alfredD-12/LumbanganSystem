@@ -6,6 +6,7 @@ require_once __DIR__ . '/../../models/DocumentRequest.php';
 require_once __DIR__ . '/../../config/Database.php';
 require_once __DIR__ . "/../../models/DocumentType.php";
 require_once __DIR__ . "/../../models/DocumentCategory.php";
+require_once __DIR__ . '/../../helpers/csrf_helper.php';
 
 class AdminDocumentController
 {
@@ -33,6 +34,7 @@ class AdminDocumentController
     // Update request status
     public function updateRequestStatus()
     {
+        csrf_require_valid_token();
         $requestId = $_POST['request_id'] ?? null;
         $status = $_POST['status'] ?? null;
         $remarks = $_POST['remarks'] ?? null;
@@ -217,6 +219,7 @@ class AdminDocumentController
     // Update document type
     public function updateDocumentType()
     {
+        csrf_require_valid_token();
         $data = $_POST; // document_name, description, requirements, fee, category_id
         $id = $data['document_type_id'];
         $success = $this->documentTypeModel->updateDocumentType($id, $data);
@@ -226,6 +229,7 @@ class AdminDocumentController
     // Delete document type
     public function deleteDocumentType()
     {
+        csrf_require_valid_token();
         $id = $_POST['id'];
         $success = $this->documentTypeModel->deleteDocumentType($id);
         echo json_encode(['success' => $success]);
@@ -241,6 +245,7 @@ class AdminDocumentController
     // Insert a new document type
     public function addDocumentType()
     {
+        csrf_require_valid_token();
         header("Content-Type: application/json");
 
         if (!isset($_POST['document_name'], $_POST['category_id'])) {
@@ -271,6 +276,7 @@ class AdminDocumentController
     //Add admin request from admin side
     public function addAdminRequest()
     {
+        csrf_require_valid_token();
         $data = [
             'user_id' => null, // Walk-in resident has no user_id
             'requested_for' => $_POST['requested_for'],

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../models/Complaint.php';
+require_once __DIR__ . '/../helpers/csrf_helper.php';
 
 class AdminController {
     private $complaintModel;
@@ -41,6 +42,8 @@ class AdminController {
             echo json_encode(['success' => false, 'message' => 'Invalid request method']);
             return;
         }
+
+        csrf_require_valid_token();
 
         if (session_status() === PHP_SESSION_NONE) session_start();
         $official_id = $_SESSION['official_id'] ?? ($_POST['official_id'] ?? null);
@@ -125,6 +128,8 @@ class AdminController {
             return;
         }
 
+        csrf_require_valid_token();
+
         try {
             $id = $this->complaintModel->create($_POST);
             if ($id) {
@@ -159,6 +164,8 @@ class AdminController {
             return;
         }
 
+        csrf_require_valid_token();
+
         try {
             $updated = $this->complaintModel->update($id, $_POST);
             if ($updated) {
@@ -179,6 +186,10 @@ class AdminController {
      */
     public function deleteComplaint() {
         header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            csrf_require_valid_token();
+        }
 
         // Accept POSTed id or GET id
         $id = $_POST['id'] ?? $_GET['id'] ?? null;
@@ -210,6 +221,8 @@ class AdminController {
             echo json_encode(['success' => false, 'message' => 'Invalid request method']);
             return;
         }
+
+        csrf_require_valid_token();
 
         $id = $_POST['id'] ?? null;
         $status_id = $_POST['status_id'] ?? null;
@@ -344,6 +357,7 @@ class AdminController {
     public function createOfficial() {
         header('Content-Type: application/json');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); echo json_encode(['success'=>false,'message'=>'Invalid method']); return; }
+        csrf_require_valid_token();
         $full_name = trim($_POST['full_name'] ?? '');
         $username = trim($_POST['username'] ?? '');
         // Password should be same as username per requirements
@@ -456,6 +470,7 @@ class AdminController {
     public function updateOfficialAdmin() {
         header('Content-Type: application/json');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); echo json_encode(['success'=>false,'message'=>'Invalid method']); return; }
+        csrf_require_valid_token();
         $id = $_POST['id'] ?? null;
         if (!$id) { echo json_encode(['success'=>false,'message'=>'Missing id']); return; }
 
@@ -509,6 +524,7 @@ class AdminController {
     public function deleteOfficial() {
         header('Content-Type: application/json');
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); echo json_encode(['success'=>false,'message'=>'Invalid method']); return; }
+        csrf_require_valid_token();
         $id = $_POST['id'] ?? null; if (!$id) { echo json_encode(['success'=>false,'message'=>'Missing id']); return; }
         require_once __DIR__ . '/../config/Database.php';
         require_once __DIR__ . '/../models/Official.php';

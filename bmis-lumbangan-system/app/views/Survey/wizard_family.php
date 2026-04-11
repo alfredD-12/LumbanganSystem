@@ -179,6 +179,7 @@ include __DIR__ . '/../../components/resident_components/header-resident.php';
 
 <!-- Hidden form used for compatibility (not submitted directly by browser) -->
 <form id="form-family" method="post" style="display:none;">
+  <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
   <input type="hidden" name="family_members" value="">
   <input type="hidden" name="person_id" value="<?php echo htmlspecialchars($_SESSION['person_id'] ?? ''); ?>">
 </form>

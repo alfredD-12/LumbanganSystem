@@ -12,6 +12,7 @@ require_once dirname(__DIR__) . '/models/AccountLockoutService.php';
 require_once dirname(__DIR__) . '/models/LoginAttemptLogger.php';
 require_once dirname(__DIR__) . '/models/AdminAlertService.php';
 require_once dirname(__DIR__) . '/helpers/CaptchaHelper.php';
+require_once dirname(__DIR__) . '/helpers/csrf_helper.php';
 
 class AuthController
 {
@@ -52,12 +53,7 @@ class AuthController
             return;
         }
 
-        // CSRF rollout scope: protect login flow first.
-        csrf_require_valid_token([
-            'response' => 'json',
-            'status' => 419,
-            'message' => 'Invalid or missing CSRF token.'
-        ]);
+        csrf_require_valid_token();
 
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
@@ -277,6 +273,8 @@ class AuthController
                 echo json_encode(['success' => false, 'message' => 'Invalid request method']);
                 return;
             }
+
+            csrf_require_valid_token();
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
             return;

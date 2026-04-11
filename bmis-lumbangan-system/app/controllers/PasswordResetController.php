@@ -4,6 +4,7 @@
 require_once dirname(__DIR__) . '/config/Database.php';
 require_once dirname(__DIR__) . '/models/User.php';
 require_once dirname(__DIR__) . '/models/PasswordReset.php';
+require_once dirname(__DIR__) . '/helpers/csrf_helper.php';
 
 class PasswordResetController {
     private $db;
@@ -27,6 +28,8 @@ class PasswordResetController {
             echo json_encode(['success' => false, 'message' => 'Invalid request method']);
             return;
         }
+
+        csrf_require_valid_token();
 
         $email = trim($_POST['email'] ?? '');
 
@@ -118,6 +121,8 @@ class PasswordResetController {
             echo json_encode(['success' => false, 'message' => 'Invalid request method']);
             return;
         }
+
+        csrf_require_valid_token();
 
         $token = trim($_POST['token'] ?? '');
         $newPassword = $_POST['password'] ?? '';

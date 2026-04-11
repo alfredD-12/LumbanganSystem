@@ -147,6 +147,7 @@ include_once __DIR__ . '/../../components/admin_components/header-admin.php'
                 <div class="card-body">
                     <h4 class="form-title"><i class="bi bi-<?php echo $editData ? 'pencil-square' : 'plus-circle'; ?>-fill me-2"></i><?php echo $editData ? 'Edit Announcement' : 'Add Announcement'; ?></h4>
                     <form method="post" enctype="multipart/form-data" id="announcementForm" data-confirm="<?php echo $editData ? 'Are you sure you want to update this announcement?' : 'Are you sure you want to create this announcement?'; ?>">
+                        <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
                         <?php if ($editData): ?>
                             <input type="hidden" name="action" value="update">
                             <input type="hidden" name="id" value="<?php echo htmlspecialchars($editData['id']); ?>">
@@ -365,6 +366,7 @@ include_once __DIR__ . '/../../components/admin_components/header-admin.php'
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>
                                             <form method="post" class="delete-form" style="display:inline" data-announcement-title="<?php echo htmlspecialchars($a['title'], ENT_QUOTES); ?>">
+                                                <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
                                                 <input type="hidden" name="action" value="delete">
                                                 <input type="hidden" name="id" value="<?php echo $a['id']; ?>">
                                                 <button type="button" class="btn-action btn-delete" onclick="event.stopPropagation();" title="Delete">

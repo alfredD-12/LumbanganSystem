@@ -1,44 +1,40 @@
 <?php
-session_start();
 
-// Include config, database and models
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
 @require_once dirname(__DIR__) . '/config/config.php';
 require_once dirname(__DIR__) . '/config/Database.php';
 require_once dirname(__DIR__) . '/models/User.php';
 require_once dirname(__DIR__) . '/models/Official.php';
 require_once dirname(__DIR__) . '/helpers/csrf_helper.php';
-require_once dirname(__DIR__) . '/models/RateLimitService.php';
-require_once dirname(__DIR__) . '/models/AccountLockoutService.php';
-require_once dirname(__DIR__) . '/models/LoginAttemptLogger.php';
-require_once dirname(__DIR__) . '/models/AdminAlertService.php';
-require_once dirname(__DIR__) . '/helpers/CaptchaHelper.php';
-require_once dirname(__DIR__) . '/helpers/csrf_helper.php';
+require_once dirname(__DIR__) . '/services/AuthSecurityContext.php';
+require_once dirname(__DIR__) . '/services/AuthSecurityService.php';
 
 class AuthController
 {
     private $db;
     private $userModel;
     private $officialModel;
-    private $rateLimitService;
-    private $accountLockoutService;
-    private $loginAttemptLogger;
-    private $adminAlertService;
+    private $authSecurityService;
     private $dummyPasswordHash;
 
-    public function __construct()
+    public function __construct(array $dependencies = [])
     {
-        $database = new Database();
-        $this->db = $database->getConnection();
-        $this->userModel = new User($this->db);
-        $this->officialModel = new Official($this->db);
+        $this->db = $dependencies['db'] ?? (new Database($dependencies['db_config'] ?? []))->getConnection();
+        $this->userModel = $dependencies['userModel'] ?? new User($this->db);
+        $this->officialModel = $dependencies['officialModel'] ?? new Official($this->db);
         $this->dummyPasswordHash = '$2y$10$g7B2U4QY9vDYbh1Psj0G6OVj3Lh9d9nIXfEyx8jGljN1g7q.QhC9u';
-
-        if ($this->isBruteForceProtectionEnabled()) {
-            $this->rateLimitService = new RateLimitService($this->db);
-            $this->accountLockoutService = new AccountLockoutService($this->db);
-            $this->loginAttemptLogger = new LoginAttemptLogger($this->db);
-            $this->adminAlertService = new AdminAlertService($this->db);
-        }
+        $this->authSecurityService = $dependencies['authSecurityService'] ?? new AuthSecurityService(
+            $this->db,
+            $dependencies['loginAttemptLogger'] ?? null,
+            $dependencies['rateLimitService'] ?? null,
+            $dependencies['accountLockoutService'] ?? null,
+            $dependencies['securityAlertService'] ?? ($dependencies['adminAlertService'] ?? null),
+            $dependencies['captchaVerifier'] ?? null,
+            $dependencies['clock'] ?? null
+        );
     }
 
     /**
@@ -49,101 +45,65 @@ class AuthController
         header('Content-Type: application/json');
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            $this->respondJson(['success' => false, 'message' => 'Invalid request method'], 405);
             return;
         }
 
-        csrf_require_valid_token();
+        if (!$this->hasValidAuthCsrfToken()) {
+            $this->respondJson([
+                'success' => false,
+                'code' => 'invalid_csrf',
+                'message' => 'Security validation failed. Refresh the page and try again.',
+            ], 403);
+            return;
+        }
 
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
         $captchaToken = trim($_POST['captcha_token'] ?? '');
         $ipAddress = $this->getClientIpAddress();
         $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
-        $protectionEnabled = $this->isBruteForceProtectionEnabled();
+        $securityContext = AuthSecurityContext::forLogin($username, $ipAddress, $userAgent, $captchaToken);
 
-        // Validate inputs
         if (empty($username) || empty($password)) {
-            echo json_encode(['success' => false, 'message' => 'Username and password are required']);
+            $this->respondJson(['success' => false, 'message' => 'Username and password are required'], 422);
             return;
         }
 
-        if ($protectionEnabled) {
-            $ipCheck = $this->rateLimitService->checkIpRateLimit($ipAddress);
-            if (!empty($ipCheck['blocked'])) {
-                echo json_encode([
-                    'success' => false,
-                    'code' => 'rate_limit_exceeded',
-                    'retry_after' => (int) ($ipCheck['retry_after'] ?? 60),
-                    'message' => 'Too many login attempts from your network. Please try again shortly.'
-                ]);
-                return;
-            }
-
-            $lockCheck = $this->accountLockoutService->isAccountLocked($username);
-            if (!empty($lockCheck['locked'])) {
-                echo json_encode([
-                    'success' => false,
-                    'code' => 'account_locked',
-                    'retry_after' => (int) ($lockCheck['retry_after'] ?? 900),
-                    'message' => 'Too many failed sign-in attempts. This account is temporarily locked.'
-                ]);
-                return;
-            }
-
-            $accountRateMax = defined('ACCOUNT_RATE_LIMIT_MAX_FAILURES') ? (int) ACCOUNT_RATE_LIMIT_MAX_FAILURES : 8;
-            $accountRateWindow = defined('ACCOUNT_RATE_LIMIT_WINDOW_MINUTES') ? (int) ACCOUNT_RATE_LIMIT_WINDOW_MINUTES : 15;
-            $accountFailures = $this->loginAttemptLogger->countRecentFailuresByUsername($username, $accountRateWindow);
-            if ($accountFailures >= $accountRateMax) {
-                $retryAfter = $this->loginAttemptLogger->getUsernameWindowRetryAfter($username, $accountRateWindow);
-                echo json_encode([
-                    'success' => false,
-                    'code' => 'account_rate_limited',
-                    'retry_after' => (int) $retryAfter,
-                    'message' => 'Too many failed attempts for this account. Please try again later.'
-                ]);
-                return;
-            }
-
-            $captchaRequired = CaptchaHelper::shouldRequireCaptcha($this->loginAttemptLogger, $username, $ipAddress);
-            if ($captchaRequired) {
-                $captchaOk = CaptchaHelper::verifyToken($captchaToken, $ipAddress, 'login');
-                if (!$captchaOk) {
-                    $this->rateLimitService->recordAttempt($ipAddress);
-                    $this->loginAttemptLogger->logAttempt($username, $ipAddress, $userAgent, 'failure', 'captcha_failed');
-                    echo json_encode([
-                        'success' => false,
-                        'code' => 'captcha_required',
-                        'captcha_mode' => 'v2_checkbox',
-                        'message' => 'Additional verification is required. Please complete the reCAPTCHA challenge.'
-                    ]);
-                    return;
-                }
-            }
+        $guard = $this->authSecurityService->guard($securityContext);
+        if (empty($guard['allowed'])) {
+            $this->respondJson($guard['response'], $this->statusCodeForAuthError($guard['response']['code'] ?? null));
+            return;
         }
 
         $loginSuccess = false;
         $authenticatedUserType = null;
         $redirectUrl = null;
-        // Try to find user first
         $user = $this->userModel->findByUsername($username);
 
         if ($user) {
-            // User found - verify password
             if (password_verify($password, $user['password_hash'])) {
-                // Check if user is active
                 if ($user['status'] !== 'active') {
-                    if ($protectionEnabled) {
-                        $this->rateLimitService->recordAttempt($ipAddress);
-                        $this->loginAttemptLogger->logAttempt($username, $ipAddress, $userAgent, 'failure', 'account_disabled');
-                        $failureState = $this->accountLockoutService->recordFailure($username);
-                        $this->adminAlertService->evaluateAndSend($ipAddress, $username, $this->loginAttemptLogger, !empty($failureState['locked']));
+                    $failureState = $this->authSecurityService->recordFailure($securityContext, 'account_disabled');
+                    if (!empty($failureState['locked'])) {
+                        $this->respondJson([
+                            'success' => false,
+                            'code' => 'account_locked',
+                            'retry_after' => (int) ($failureState['retry_after'] ?? 900),
+                            'message' => 'Too many failed sign-in attempts. This account is temporarily locked.',
+                        ], 423);
+                        return;
                     }
-                    echo json_encode(['success' => false, 'message' => 'Unable to sign in with the provided credentials.']);
+
+                    $this->respondJson([
+                        'success' => false,
+                        'code' => 'invalid_credentials',
+                        'attempts_remaining' => (int) ($failureState['attempts_remaining'] ?? 0),
+                        'message' => 'Unable to sign in with the provided credentials.',
+                    ], 401);
                     return;
                 }
 
-                // Set session variables
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['person_id'] = $user['person_id'];
                 $_SESSION['username'] = $user['username'];
@@ -154,7 +114,6 @@ class AuthController
                 $_SESSION['user_type'] = 'user';
                 $_SESSION['logged_in'] = true;
 
-                // Update last login
                 $this->userModel->updateLastLogin($user['id']);
 
                 $loginSuccess = true;
@@ -163,13 +122,10 @@ class AuthController
             }
         }
 
-        // If user not found or password incorrect, try official
         $official = !$loginSuccess ? $this->officialModel->findByUsername($username) : null;
 
         if ($official) {
-            // Official found - verify password
             if (password_verify($password, $official['password_hash'])) {
-                // Set session variables for official
                 $_SESSION['official_id'] = $official['id'];
                 $_SESSION['username'] = $official['username'];
                 $_SESSION['full_name'] = $official['full_name'];
@@ -177,10 +133,8 @@ class AuthController
                 $_SESSION['user_type'] = 'official';
                 $_SESSION['logged_in'] = true;
 
-                // Update last login
                 $this->officialModel->updateLastLogin($official['id']);
 
-                // Redirect officials to the official dashboard route handled by the front controller
                 $loginSuccess = true;
                 $authenticatedUserType = 'official';
                 $redirectUrl = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=dashboard_official';
@@ -188,38 +142,29 @@ class AuthController
         }
 
         if ($loginSuccess) {
-            if ($protectionEnabled) {
-                $this->rateLimitService->recordAttempt($ipAddress);
-                $this->loginAttemptLogger->logAttempt($username, $ipAddress, $userAgent, 'success');
-                $this->accountLockoutService->recordSuccess($username);
-            }
+            $this->authSecurityService->recordSuccess($securityContext);
 
-            echo json_encode([
+            $this->respondJson([
                 'success' => true,
                 'message' => 'Login successful',
                 'user_type' => $authenticatedUserType,
-                'redirect' => $redirectUrl
+                'redirect' => $redirectUrl,
             ]);
             return;
         }
 
-        // Keep response timing closer for unknown usernames.
         password_verify($password, $this->dummyPasswordHash);
 
-        if ($protectionEnabled) {
-            $this->rateLimitService->recordAttempt($ipAddress);
-            $this->loginAttemptLogger->logAttempt($username, $ipAddress, $userAgent, 'failure', 'invalid_credentials');
-            $failureState = $this->accountLockoutService->recordFailure($username);
-            $justLocked = !empty($failureState['locked']);
-            $this->adminAlertService->evaluateAndSend($ipAddress, $username, $this->loginAttemptLogger, $justLocked);
+        if ($this->isBruteForceProtectionEnabled()) {
+            $failureState = $this->authSecurityService->recordFailure($securityContext, 'invalid_credentials');
 
-            if ($justLocked) {
-                echo json_encode([
+            if (!empty($failureState['locked'])) {
+                $this->respondJson([
                     'success' => false,
                     'code' => 'account_locked',
                     'retry_after' => (int) ($failureState['retry_after'] ?? 900),
-                    'message' => 'Too many failed sign-in attempts. This account is temporarily locked.'
-                ]);
+                    'message' => 'Too many failed sign-in attempts. This account is temporarily locked.',
+                ], 423);
                 return;
             }
 
@@ -229,16 +174,16 @@ class AuthController
                 $message .= ' ' . $attemptsRemaining . ' attempt(s) remaining before temporary lockout.';
             }
 
-            echo json_encode([
+            $this->respondJson([
                 'success' => false,
                 'code' => 'invalid_credentials',
                 'attempts_remaining' => $attemptsRemaining,
-                'message' => $message
-            ]);
+                'message' => $message,
+            ], 401);
             return;
         }
 
-        echo json_encode(['success' => false, 'message' => 'Invalid username or password']);
+        $this->respondJson(['success' => false, 'message' => 'Invalid username or password'], 401);
     }
 
     private function isBruteForceProtectionEnabled()
@@ -255,6 +200,46 @@ class AuthController
         }
 
         return '0.0.0.0';
+    }
+
+    private function hasValidAuthCsrfToken()
+    {
+        $headerName = 'HTTP_' . str_replace('-', '_', strtoupper(csrf_header_name()));
+        $submittedToken = $_SERVER[$headerName] ?? '';
+
+        if ($submittedToken === '') {
+            $fieldName = csrf_field_name();
+            $submittedToken = $_POST[$fieldName] ?? $_POST['csrf_token'] ?? '';
+        }
+
+        return csrf_validate($submittedToken, csrf_field_name()) || csrf_validate($submittedToken, 'csrf_token');
+    }
+
+    private function respondJson(array $payload, $statusCode = 200)
+    {
+        http_response_code((int) $statusCode);
+        echo json_encode($payload);
+    }
+
+    private function statusCodeForAuthError($code)
+    {
+        if ($code === 'invalid_csrf') {
+            return 403;
+        }
+
+        if ($code === 'account_locked') {
+            return 423;
+        }
+
+        if ($code === 'rate_limit_exceeded') {
+            return 429;
+        }
+
+        if ($code === 'captcha_required') {
+            return 422;
+        }
+
+        return 400;
     }
 
     /**
@@ -518,30 +503,31 @@ class AuthController
     }
 }
 
-// Route the request
-$controller = new AuthController();
+if (realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__) {
+    $controller = new AuthController();
 
-if (isset($_GET['action'])) {
-    $action = $_GET['action'];
+    if (isset($_GET['action'])) {
+        $action = $_GET['action'];
 
-    switch ($action) {
-        case 'login':
-            $controller->login();
-            break;
-        case 'register':
-            $controller->register();
-            break;
-        case 'logout':
-            $controller->logout();
-            break;
-        case 'checkUsername':
-            $controller->checkUsername();
-            break;
-        default:
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => 'Invalid action']);
+        switch ($action) {
+            case 'login':
+                $controller->login();
+                break;
+            case 'register':
+                $controller->register();
+                break;
+            case 'logout':
+                $controller->logout();
+                break;
+            case 'checkUsername':
+                $controller->checkUsername();
+                break;
+            default:
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Invalid action']);
+        }
+    } else {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => 'No action specified']);
     }
-} else {
-    header('Content-Type: application/json');
-    echo json_encode(['success' => false, 'message' => 'No action specified']);
 }

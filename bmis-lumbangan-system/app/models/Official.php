@@ -72,10 +72,12 @@ class Official {
      */
     public function updateLastLogin($officialId) {
         $query = "UPDATE " . $this->table . " 
-                  SET last_login_at = NOW() 
+                  SET last_login_at = :last_login_at 
                   WHERE id = :id";
         
         $stmt = $this->conn->prepare($query);
+        $lastLoginAt = date('Y-m-d H:i:s');
+        $stmt->bindParam(':last_login_at', $lastLoginAt);
         $stmt->bindParam(':id', $officialId);
         return $stmt->execute();
     }

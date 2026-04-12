@@ -1,5 +1,22 @@
 {
     "require": {
         "dompdf/dompdf": "^3.1"
+    },
+    "require-dev": {
+        "pestphp/pest": "^3.8"
+    },
+    "scripts": {
+        "test": "vendor/bin/pest"
+    },
+    "autoload-dev": {
+        "classmap": [
+            "tests/Support/"
+        ]
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
     }
 }

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="tests/bootstrap.php"
+         cacheResult="false"
+         colors="true"
+         executionOrder="depends,defects">
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+        <testsuite name="Integration">
+            <directory>tests/Integration</directory>
+        </testsuite>
+    </testsuites>
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="BMIS_USE_TEST_DB" value="1"/>
+        <env name="BMIS_TEST_DB_HOST" value="localhost"/>
+        <env name="BMIS_TEST_DB_PORT" value="3306"/>
+        <env name="BMIS_TEST_DB_NAME" value="lumbangansystem_test"/>
+        <env name="BMIS_TEST_DB_USERNAME" value="root"/>
+        <env name="BMIS_TEST_DB_PASSWORD" value=""/>
+        <env name="RECAPTCHA_SITE_KEY" value="test-site-key"/>
+        <env name="RECAPTCHA_SECRET_KEY" value="test-secret-key"/>
+    </php>
+</phpunit>

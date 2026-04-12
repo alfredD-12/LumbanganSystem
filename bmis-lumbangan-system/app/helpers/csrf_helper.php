@@ -5,8 +5,18 @@ require_once __DIR__ . '/../config/config.php';
 if (!function_exists('csrf_request_token')) {
     function csrf_request_token()
     {
+        $headerName = 'HTTP_' . str_replace('-', '_', strtoupper(csrf_header_name()));
+        if (!empty($_SERVER[$headerName])) {
+            return (string) $_SERVER[$headerName];
+        }
+
         if (!empty($_SERVER['HTTP_X_CSRF_TOKEN'])) {
             return (string) $_SERVER['HTTP_X_CSRF_TOKEN'];
+        }
+
+        $fieldName = csrf_field_name();
+        if (!empty($_POST[$fieldName])) {
+            return (string) $_POST[$fieldName];
         }
 
         if (!empty($_POST['csrf_token'])) {

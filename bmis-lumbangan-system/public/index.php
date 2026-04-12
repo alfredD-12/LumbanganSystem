@@ -34,9 +34,15 @@ if (!function_exists('csrf_error_response')) {
 if (!function_exists('request_csrf_token')) {
     function request_csrf_token()
     {
-        $headerToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+        $headerName = 'HTTP_' . str_replace('-', '_', strtoupper(csrf_header_name()));
+        $headerToken = $_SERVER[$headerName] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
         if (!empty($headerToken)) {
             return $headerToken;
+        }
+
+        $fieldName = csrf_field_name();
+        if (!empty($_POST[$fieldName])) {
+            return $_POST[$fieldName];
         }
 
         if (!empty($_POST['csrf_token'])) {
@@ -46,8 +52,14 @@ if (!function_exists('request_csrf_token')) {
         $rawInput = file_get_contents('php://input');
         if (!empty($rawInput)) {
             $json = json_decode($rawInput, true);
-            if (json_last_error() === JSON_ERROR_NONE && is_array($json) && !empty($json['csrf_token'])) {
-                return $json['csrf_token'];
+            if (json_last_error() === JSON_ERROR_NONE && is_array($json)) {
+                if (!empty($json[$fieldName])) {
+                    return $json[$fieldName];
+                }
+
+                if (!empty($json['csrf_token'])) {
+                    return $json['csrf_token'];
+                }
             }
         }
 
@@ -86,9 +98,6 @@ if ($action) {
         'deleteDocumentType',
         'addDocumentType',
         'addAdminRequest',
-        'request_reset',
-        'verify_code',
-        'reset_password',
         'updateRequest',
         'removeProofFile'
     ];

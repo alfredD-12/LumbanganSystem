@@ -1,2 +1,24 @@
-[2026-03-08 05:15:39] ACCOUNT_LOCKOUT target=niks attempts=5 details=Username niks was temporarily locked after repeated failures from IP ::1.
-[2026-03-08 05:31:36] ACCOUNT_LOCKOUT target=niks attempts=5 details=Username niks was temporarily locked after repeated failures from IP ::1.
+[2026-04-12 09:00:00] IP_THRESHOLD target=127.0.0.1 attempts=10 details=[login] IP 127.0.0.1 reached 10 failures in 5 minutes.
+[2026-04-12 10:01:00] IP_THRESHOLD target=127.0.0.1 attempts=10 details=[login] IP 127.0.0.1 reached 10 failures in 5 minutes.
+[2026-04-12 09:00:00] IP_THRESHOLD target=127.0.0.1 attempts=10 details=[login] IP 127.0.0.1 reached 10 failures in 5 minutes.
+[2026-04-12 10:01:00] IP_THRESHOLD target=127.0.0.1 attempts=10 details=[login] IP 127.0.0.1 reached 10 failures in 5 minutes.
+[2026-04-12 09:00:00] IP_THRESHOLD target=127.0.0.1 attempts=10 details=[login] IP 127.0.0.1 reached 10 failures in 5 minutes.
+[2026-04-12 10:01:00] IP_THRESHOLD target=127.0.0.1 attempts=10 details=[login] IP 127.0.0.1 reached 10 failures in 5 minutes.
+[2026-04-12 09:00:00] IP_THRESHOLD target=127.0.0.1 attempts=10 details=[login] IP 127.0.0.1 reached 10 failures in 5 minutes.
+[2026-04-12 10:01:00] IP_THRESHOLD target=127.0.0.1 attempts=10 details=[login] IP 127.0.0.1 reached 10 failures in 5 minutes.
+[2026-04-12 09:00:00] IP_THRESHOLD target=127.0.0.1 attempts=10 details=[login] IP 127.0.0.1 reached 10 failures in 5 minutes.
+[2026-04-12 10:01:00] IP_THRESHOLD target=127.0.0.1 attempts=10 details=[login] IP 127.0.0.1 reached 10 failures in 5 minutes.
+[2026-04-12 09:00:00] IP_THRESHOLD target=127.0.0.1 attempts=10 details=[login] IP 127.0.0.1 reached 10 failures in 5 minutes.
+[2026-04-12 10:01:00] IP_THRESHOLD target=127.0.0.1 attempts=10 details=[login] IP 127.0.0.1 reached 10 failures in 5 minutes.
+[2026-04-12 09:00:00] IP_THRESHOLD target=127.0.0.1 attempts=10 details=[login] IP 127.0.0.1 reached 10 failures in 5 minutes.
+[2026-04-12 10:01:00] IP_THRESHOLD target=127.0.0.1 attempts=10 details=[login] IP 127.0.0.1 reached 10 failures in 5 minutes.
+[2026-04-12 09:00:00] IP_THRESHOLD target=127.0.0.1 attempts=10 details=[login] IP 127.0.0.1 reached 10 failures in 5 minutes.
+[2026-04-12 10:01:00] IP_THRESHOLD target=127.0.0.1 attempts=10 details=[login] IP 127.0.0.1 reached 10 failures in 5 minutes.
+[2026-04-12 09:00:00] IP_THRESHOLD target=127.0.0.1 attempts=10 details=[login] IP 127.0.0.1 reached 10 failures in 5 minutes.
+[2026-04-12 10:01:00] IP_THRESHOLD target=127.0.0.1 attempts=10 details=[login] IP 127.0.0.1 reached 10 failures in 5 minutes.
+[2026-04-12 09:00:00] IP_THRESHOLD target=127.0.0.1 attempts=10 details=[login] IP 127.0.0.1 reached 10 failures in 5 minutes.
+[2026-04-12 10:01:00] IP_THRESHOLD target=127.0.0.1 attempts=10 details=[login] IP 127.0.0.1 reached 10 failures in 5 minutes.
+[2026-04-12 09:00:00] IP_THRESHOLD target=127.0.0.1 attempts=10 details=[login] IP 127.0.0.1 reached 10 failures in 5 minutes.
+[2026-04-12 10:01:00] IP_THRESHOLD target=127.0.0.1 attempts=10 details=[login] IP 127.0.0.1 reached 10 failures in 5 minutes.
+[2026-04-12 09:00:00] IP_THRESHOLD target=127.0.0.1 attempts=10 details=[login] IP 127.0.0.1 reached 10 failures in 5 minutes.
+[2026-04-12 10:01:00] IP_THRESHOLD target=127.0.0.1 attempts=10 details=[login] IP 127.0.0.1 reached 10 failures in 5 minutes.

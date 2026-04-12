@@ -22,6 +22,15 @@ class BatangasNewsFetcher {
             });
         }
     }
+
+    getNewsProxyUrls() {
+        const sourceUrl = 'https://portal.batangas.gov.ph/news/';
+        return [
+            'https://corsproxy.io/?url=' + encodeURIComponent(sourceUrl),
+            'https://api.allorigins.win/raw?url=' + encodeURIComponent(sourceUrl),
+            'https://thingproxy.freeboard.io/fetch/' + encodeURIComponent(sourceUrl)
+        ];
+    }
     
     showLoading() {
         if (this.newsLoading) {
@@ -65,12 +74,33 @@ class BatangasNewsFetcher {
         }
         
         try {
-            const response = await fetch('https://corsproxy.io/?url=' + encodeURIComponent('https://portal.batangas.gov.ph/news/'));
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
+            let html = null;
+            let lastError = null;
+
+            for (const url of this.getNewsProxyUrls()) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        credentials: 'omit'
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Proxy request failed with status ${response.status}`);
+                    }
+
+                    html = await response.text();
+                    if (html) {
+                        break;
+                    }
+                } catch (error) {
+                    lastError = error;
+                }
             }
-            
-            const html = await response.text();
+
+            if (!html) {
+                throw lastError || new Error('Unable to fetch Batangas news right now.');
+            }
+
             const news = this.extractNewsFromHTML(html);
             this.displayNews(news);
         } catch (error) {

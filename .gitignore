@@ -12,8 +12,14 @@ bmis-lumbangan-system/public/uploads/generated_pdfs/
 .env
 .env.local
 .env.*.local
+bmis-lumbangan-system/.env
+bmis-lumbangan-system/.env.local
+bmis-lumbangan-system/.env.testing
+bmis-lumbangan-system/.env.testing.local
 # But DO commit .env.example as template for team members
 !.env.example
+!bmis-lumbangan-system/.env.example
+!bmis-lumbangan-system/.env.testing.example
 
 # Ignore PHP files in API folder (API keys, credentials, etc.)
 # (the directory itself must NOT be ignored so exceptions can work)
@@ -22,3 +28,11 @@ bmis-lumbangan-system/api/*.php
 !bmis-lumbangan-system/api/check_face_duplicate.php
 
 bmis-lumbangan-system/.github/
+
+# Security/runtime artifacts
+bmis-lumbangan-system/app/logs/*.log
+!bmis-lumbangan-system/app/logs/.gitkeep
+
+# Test caches
+bmis-lumbangan-system/.phpunit.result.cache
+bmis-lumbangan-system/.pest

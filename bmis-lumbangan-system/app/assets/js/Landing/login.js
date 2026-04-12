@@ -3,6 +3,7 @@ const registerBtn = document.getElementById("modalRegisterBtn");
 const loginBtn = document.getElementById("modalLoginBtn");
 let loginCaptchaWidgetId = null;
 let loginCaptchaRequired = false;
+const captchaWidgetIds = {};
 
 async function ensureRecaptchaLoaded(siteKey) {
   if (!siteKey) {
@@ -38,7 +39,7 @@ async function ensureRecaptchaLoaded(siteKey) {
   return false;
 }
 
-async function ensureVisibleLoginCaptcha(siteKey) {
+async function ensureVisibleCaptcha(widgetKey, containerId, widgetId, siteKey) {
   const loaded = await ensureRecaptchaLoaded(siteKey);
   if (!loaded) {
     return false;
@@ -48,23 +49,27 @@ async function ensureVisibleLoginCaptcha(siteKey) {
     grecaptcha.ready(resolve);
   });
 
-  const containerEl = document.getElementById("loginRecaptchaContainer");
-  const widgetEl = document.getElementById("loginRecaptchaWidget");
+  const containerEl = document.getElementById(containerId);
+  const widgetEl = document.getElementById(widgetId);
   if (!containerEl || !widgetEl) {
     return false;
   }
 
   containerEl.style.display = "block";
 
-  if (loginCaptchaWidgetId !== null) {
+  if (captchaWidgetIds[widgetKey] !== undefined) {
     return true;
   }
 
   try {
-    loginCaptchaWidgetId = grecaptcha.render(widgetEl, {
+    const renderedId = grecaptcha.render(widgetEl, {
       sitekey: siteKey,
       theme: "light",
     });
+    captchaWidgetIds[widgetKey] = renderedId;
+    if (widgetKey === "login") {
+      loginCaptchaWidgetId = renderedId;
+    }
     return true;
   } catch (err) {
     console.error("reCAPTCHA widget render error:", err);
@@ -72,28 +77,54 @@ async function ensureVisibleLoginCaptcha(siteKey) {
   }
 }
 
-function getVisibleLoginCaptchaToken() {
-  if (loginCaptchaWidgetId === null || typeof grecaptcha === "undefined") {
+function getVisibleCaptchaToken(widgetKey) {
+  const widgetId = captchaWidgetIds[widgetKey];
+  if (widgetId === undefined || typeof grecaptcha === "undefined") {
     return "";
   }
 
   try {
-    return grecaptcha.getResponse(loginCaptchaWidgetId) || "";
+    return grecaptcha.getResponse(widgetId) || "";
   } catch (err) {
     console.error("reCAPTCHA getResponse error:", err);
     return "";
   }
 }
 
-function resetVisibleLoginCaptcha() {
-  if (loginCaptchaWidgetId !== null && typeof grecaptcha !== "undefined") {
+function resetVisibleCaptcha(widgetKey) {
+  const widgetId = captchaWidgetIds[widgetKey];
+  if (widgetId !== undefined && typeof grecaptcha !== "undefined") {
     try {
-      grecaptcha.reset(loginCaptchaWidgetId);
+      grecaptcha.reset(widgetId);
     } catch (err) {
       console.error("reCAPTCHA reset error:", err);
     }
   }
 }
+
+async function ensureVisibleLoginCaptcha(siteKey) {
+  return ensureVisibleCaptcha(
+    "login",
+    "loginRecaptchaContainer",
+    "loginRecaptchaWidget",
+    siteKey,
+  );
+}
+
+function getVisibleLoginCaptchaToken() {
+  return getVisibleCaptchaToken("login");
+}
+
+function resetVisibleLoginCaptcha() {
+  resetVisibleCaptcha("login");
+}
+
+window.BMISCaptcha = {
+  ensureLoaded: ensureRecaptchaLoaded,
+  ensureVisibleCaptcha,
+  getToken: getVisibleCaptchaToken,
+  reset: resetVisibleCaptcha,
+};
 
 // Desktop toggle buttons
 if (registerBtn) {
@@ -144,12 +175,12 @@ document
 
     const formData = new FormData(this);
     const captchaTokenInput = document.getElementById("loginCaptchaToken");
-    const isProtectionEnabled =
-      document.querySelector('meta[name="bf-protection-enabled"]')?.content ===
-      "1";
     const recaptchaSiteKey =
       document.querySelector('meta[name="recaptcha-site-key"]')?.content || "";
     const submitBtn = this.querySelector('button[type="submit"]');
+    if (!submitBtn) {
+      return;
+    }
     const originalText = submitBtn.innerHTML;
 
     if (loginCaptchaRequired) {
@@ -173,63 +204,62 @@ document
       '<i class="fas fa-spinner fa-spin"></i> Logging in...';
 
     try {
-        const metaAuth = document.querySelector('meta[name="app-auth-endpoint"]');
-        const authUrlBase = metaAuth ? metaAuth.content : '../../controllers/AuthController.php';
-        const response = await fetch(authUrlBase + '?action=login', {
-            method: 'POST',
-            body: formData,
-            credentials: 'same-origin'
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            // Hide any error messages
-            hideLoginError();
-            // Redirect to appropriate dashboard
-            window.location.href = result.redirect;
+      const metaAuth = document.querySelector('meta[name="app-auth-endpoint"]');
+      const authUrlBase = metaAuth
+        ? metaAuth.content
+        : "../../controllers/AuthController.php";
+      const response = await fetch(authUrlBase + "?action=login", {
+        method: "POST",
+        body: formData,
+        credentials: "same-origin",
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        hideLoginError();
+        window.location.href = result.redirect;
+        return;
+      }
+
+      const retryAfter = Number(result.retry_after || 0);
+      let message = result.message || "Invalid username or password";
+
+      if (result.code === "invalid_csrf") {
+        message =
+          "Security validation failed (CSRF). Refresh the page and try again.";
+      } else if ((result.code || "") === "captcha_required") {
+        loginCaptchaRequired = true;
+
+        if (!recaptchaSiteKey) {
+          message =
+            "CAPTCHA is required, but site key is missing in configuration. Contact administrator.";
         } else {
-            // Show error message
-            const retryAfter = Number(result.retry_after || 0);
-            let message = result.message || "Invalid username or password";
-
-            if (result.code === 'invalid_csrf') {
-                message = 'Security validation failed (CSRF). Refresh the page and try again.';
-            } else if ((result.code || "") === "captcha_required") {
-                loginCaptchaRequired = true;
-
-                if (!recaptchaSiteKey) {
-                    message =
-                        "CAPTCHA is required, but site key is missing in configuration. Contact administrator.";
-                } else {
-                    const rendered = await ensureVisibleLoginCaptcha(recaptchaSiteKey);
-                    if (!rendered) {
-                        message =
-                            "Unable to load reCAPTCHA challenge. Please refresh and try again.";
-                    } else {
-                        message =
-                            "Too many failed attempts. Please complete reCAPTCHA, then sign in again.";
-                    }
-                }
-            }
-        }
-
-        showLoginError(message, result.code || "", retryAfter);
-
-        if (loginCaptchaRequired && (result.code || "") !== "captcha_required") {
-          resetVisibleLoginCaptcha();
-          if (captchaTokenInput) {
-            captchaTokenInput.value = "";
+          const rendered = await ensureVisibleLoginCaptcha(recaptchaSiteKey);
+          if (!rendered) {
+            message =
+              "Unable to load reCAPTCHA challenge. Please refresh and try again.";
+          } else {
+            message =
+              "Too many failed attempts. Please complete reCAPTCHA, then sign in again.";
           }
         }
-
-        console.error("Login failed:", result.message);
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalText;
       }
+
+      showLoginError(message, result.code || "", retryAfter);
+
+      if (loginCaptchaRequired && (result.code || "") !== "captcha_required") {
+        resetVisibleLoginCaptcha();
+        if (captchaTokenInput) {
+          captchaTokenInput.value = "";
+        }
+      }
+
+      console.error("Login failed:", result.message);
     } catch (error) {
       showLoginError("An error occurred. Please try again.");
       console.error("Login error:", error);
+    } finally {
       submitBtn.disabled = false;
       submitBtn.innerHTML = originalText;
     }

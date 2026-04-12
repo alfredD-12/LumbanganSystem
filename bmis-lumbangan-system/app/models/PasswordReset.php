@@ -1,111 +1,135 @@
 <?php
-class PasswordReset {
-    private $conn;
-    private $table = "password_resets";
 
-    public function __construct($db) {
+require_once dirname(__DIR__) . '/services/SystemClock.php';
+
+class PasswordReset
+{
+    private $conn;
+    private $table = 'password_resets';
+    private $clock;
+
+    public function __construct($db, ClockInterface $clock = null)
+    {
         $this->conn = $db;
+        $this->clock = $clock ?: new SystemClock();
     }
 
-    /**
-     * Create a password reset token
-     */
-    public function createToken($user_id, $email) {
-        // Generate a 6-digit code for simplicity
-        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+    public function createToken($user_id, $email)
+    {
+        $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         $token = bin2hex(random_bytes(32));
-        
-        // Use database time instead of PHP time to avoid timezone issues
-        $query = "INSERT INTO " . $this->table . " 
-                  (user_id, email, code, token, expires_at) 
-                  VALUES (:user_id, :email, :code, :token, DATE_ADD(NOW(), INTERVAL 1 HOUR))
-                  ON DUPLICATE KEY UPDATE 
-                    code = :code,
-                    token = :token,
-                    expires_at = DATE_ADD(NOW(), INTERVAL 1 HOUR),
-                    used_at = NULL";
+        $expiresAt = $this->clock->now()
+            ->add(new DateInterval('PT' . PASSWORD_RESET_TOKEN_EXPIRY_MINUTES . 'M'))
+            ->format('Y-m-d H:i:s');
+        $createdAt = $this->clock->now()->format('Y-m-d H:i:s');
 
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':user_id', $user_id);
-        $stmt->bindParam(':email', $email);
-        $stmt->bindParam(':code', $code);
-        $stmt->bindParam(':token', $token);
+        $existing = $this->conn->prepare("SELECT id FROM {$this->table} WHERE email = :email LIMIT 1");
+        $existing->bindParam(':email', $email);
+        $existing->execute();
+        $row = $existing->fetch(PDO::FETCH_ASSOC);
 
-        if ($stmt->execute()) {
+        if ($row) {
+            $query = "UPDATE {$this->table}
+                      SET user_id = :user_id,
+                          code = :code,
+                          token = :token,
+                          expires_at = :expires_at,
+                          used_at = NULL
+                      WHERE id = :id";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':id', $row['id']);
+            $stmt->bindParam(':user_id', $user_id);
+            $stmt->bindParam(':code', $code);
+            $stmt->bindParam(':token', $token);
+            $stmt->bindParam(':expires_at', $expiresAt);
+        } else {
+            $query = "INSERT INTO {$this->table}
+                      (user_id, email, code, token, expires_at, created_at)
+                      VALUES (:user_id, :email, :code, :token, :expires_at, :created_at)";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':user_id', $user_id);
+            $stmt->bindParam(':email', $email);
+            $stmt->bindParam(':code', $code);
+            $stmt->bindParam(':token', $token);
+            $stmt->bindParam(':expires_at', $expiresAt);
+            $stmt->bindParam(':created_at', $createdAt);
+        }
+
+        if (!$stmt->execute()) {
             return [
-                'success' => true,
-                'code' => $code,
-                'token' => $token
+                'success' => false,
+                'message' => 'Failed to create reset token',
             ];
         }
 
         return [
-            'success' => false,
-            'message' => 'Failed to create reset token'
+            'success' => true,
+            'code' => $code,
+            'token' => $token,
         ];
     }
 
-    /**
-     * Verify reset code
-     */
-    public function verifyCode($email, $code) {
-        $query = "SELECT id, user_id, code, token, expires_at, used_at 
-                  FROM " . $this->table . " 
-                  WHERE email = :email 
-                  AND code = :code 
-                  AND used_at IS NULL 
-                  AND expires_at > NOW()
+    public function verifyCode($email, $code)
+    {
+        $nowSql = $this->clock->now()->format('Y-m-d H:i:s');
+        $query = "SELECT id, user_id, code, token, expires_at, used_at
+                  FROM {$this->table}
+                  WHERE email = :email
+                    AND code = :code
+                    AND used_at IS NULL
+                    AND expires_at > :now_sql
                   LIMIT 1";
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':email', $email);
         $stmt->bindParam(':code', $code);
+        $stmt->bindParam(':now_sql', $nowSql);
         $stmt->execute();
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Mark reset as used
-     */
-    public function markAsUsed($reset_id) {
-        $query = "UPDATE " . $this->table . " 
-                  SET used_at = NOW() 
-                  WHERE id = :id";
+    public function markAsUsed($reset_id)
+    {
+        $usedAt = $this->clock->now()->format('Y-m-d H:i:s');
+        $query = "UPDATE {$this->table} SET used_at = :used_at WHERE id = :id";
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':id', $reset_id);
+        $stmt->bindParam(':used_at', $usedAt);
 
         return $stmt->execute();
     }
 
-    /**
-     * Check if reset token exists and is valid
-     */
-    public function getByToken($token) {
-        $query = "SELECT id, user_id, email, code, expires_at, used_at 
-                  FROM " . $this->table . " 
-                  WHERE token = :token 
-                  AND used_at IS NULL 
-                  AND expires_at > NOW()
+    public function getByToken($token)
+    {
+        $nowSql = $this->clock->now()->format('Y-m-d H:i:s');
+        $query = "SELECT id, user_id, email, code, expires_at, used_at
+                  FROM {$this->table}
+                  WHERE token = :token
+                    AND used_at IS NULL
+                    AND expires_at > :now_sql
                   LIMIT 1";
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':token', $token);
+        $stmt->bindParam(':now_sql', $nowSql);
         $stmt->execute();
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Delete expired tokens
-     */
-    public function cleanupExpiredTokens() {
-        $query = "DELETE FROM " . $this->table . " 
-                  WHERE expires_at < NOW() 
-                  AND used_at IS NOT NULL";
+    public function cleanupExpiredTokens()
+    {
+        $cutoff = $this->clock->now()->format('Y-m-d H:i:s');
+        $query = "DELETE FROM {$this->table}
+                  WHERE expires_at < :cutoff
+                    AND used_at IS NOT NULL";
 
         $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':cutoff', $cutoff);
         return $stmt->execute();
     }
 }

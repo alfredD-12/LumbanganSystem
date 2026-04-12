@@ -79,10 +79,12 @@ class User {
      */
     public function updateLastLogin($userId) {
         $query = "UPDATE " . $this->table_users . " 
-                  SET last_login_at = NOW() 
+                  SET last_login_at = :last_login_at 
                   WHERE id = :id";
         
         $stmt = $this->conn->prepare($query);
+        $lastLoginAt = date('Y-m-d H:i:s');
+        $stmt->bindParam(':last_login_at', $lastLoginAt);
         $stmt->bindParam(':id', $userId);
         return $stmt->execute();
     }

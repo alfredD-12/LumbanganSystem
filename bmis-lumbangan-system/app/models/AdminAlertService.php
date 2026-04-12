@@ -1,203 +1,207 @@
 <?php
 
-class AdminAlertService
+require_once dirname(__DIR__) . '/config/config.php';
+require_once dirname(__DIR__) . '/config/email_config.php';
+require_once dirname(__DIR__) . '/services/SystemClock.php';
+require_once dirname(__DIR__) . '/services/SecurityAlertServiceInterface.php';
+
+class AdminAlertService implements SecurityAlertServiceInterface
 {
-        private $conn;
+    private $conn;
+    private $clock;
 
-        public function __construct($db)
-        {
-                $this->conn = $db;
+    public function __construct($db, ClockInterface $clock = null)
+    {
+        $this->conn = $db;
+        $this->clock = $clock ?: new SystemClock();
+    }
+
+    public function evaluateAndSend($ipAddress, $target, $scope, LoginAttemptLogger $logger, $justLocked = false)
+    {
+        $alertThreshold = defined('ADMIN_ALERT_THRESHOLD_IP') ? (int) ADMIN_ALERT_THRESHOLD_IP : 10;
+        $distributedIpThreshold = defined('DISTRIBUTED_ATTACK_DISTINCT_IP_THRESHOLD') ? (int) DISTRIBUTED_ATTACK_DISTINCT_IP_THRESHOLD : 5;
+        $ipFailures = $logger->countRecentFailuresByIp($ipAddress, 5);
+
+        if ($ipFailures >= $alertThreshold) {
+            $alertType = 'ip_threshold';
+            if ($this->shouldSendAlert($alertType, $ipAddress, 60)) {
+                $details = sprintf('[%s] IP %s reached %d failures in 5 minutes.', $scope, $ipAddress, $ipFailures);
+                $emailSent = $this->sendAlertEmail($alertType, $ipAddress, $ipFailures, $details);
+                $this->logAlert($alertType, $ipAddress, $ipFailures, $emailSent, $details);
+            }
         }
 
-        public function evaluateAndSend($ipAddress, $username, LoginAttemptLogger $logger, $justLocked = false)
-        {
-                $alertThreshold = defined('ADMIN_ALERT_THRESHOLD_IP') ? (int) ADMIN_ALERT_THRESHOLD_IP : 10;
-                $distributedIpThreshold = defined('DISTRIBUTED_ATTACK_DISTINCT_IP_THRESHOLD') ? (int) DISTRIBUTED_ATTACK_DISTINCT_IP_THRESHOLD : 5;
-                $ipFailures = $logger->countRecentFailuresByIp($ipAddress, 5);
-
-                if ($ipFailures >= $alertThreshold) {
-                        $alertType = 'ip_threshold';
-                        if ($this->shouldSendAlert($alertType, $ipAddress, 60)) {
-                                $details = sprintf('IP %s reached %d failures in 5 minutes.', $ipAddress, $ipFailures);
-                                $emailSent = $this->sendAlertEmail($alertType, $ipAddress, $ipFailures, $details);
-                                $this->logAlert($alertType, $ipAddress, $ipFailures, $emailSent, $details);
-                        }
-                }
-
-                if ($justLocked) {
-                        $alertType = 'account_lockout';
-                        if ($this->shouldSendAlert($alertType, $username, 30)) {
-                                $details = sprintf('Username %s was temporarily locked after repeated failures from IP %s.', $username, $ipAddress);
-                                $emailSent = $this->sendAlertEmail($alertType, $username, $ipFailures, $details);
-                                $this->logAlert($alertType, $username, $ipFailures, $emailSent, $details);
-                        }
-                }
-
-                $distinctIpCount = $logger->countDistinctFailedIpByUsername($username, 10);
-                if ($distinctIpCount >= $distributedIpThreshold) {
-                        $alertType = 'distributed_attack';
-                        if ($this->shouldSendAlert($alertType, $username, 60)) {
-                                $details = sprintf('Username %s received failures from %d distinct IPs within 10 minutes.', $username, $distinctIpCount);
-                                $emailSent = $this->sendAlertEmail($alertType, $username, $distinctIpCount, $details);
-                                $this->logAlert($alertType, $username, $distinctIpCount, $emailSent, $details);
-                        }
-                }
+        if ($justLocked) {
+            $alertType = 'account_lockout';
+            if ($this->shouldSendAlert($alertType, $target, 30)) {
+                $details = sprintf('[%s] Identifier %s was temporarily locked after repeated failures from IP %s.', $scope, $target, $ipAddress);
+                $emailSent = $this->sendAlertEmail($alertType, $target, $ipFailures, $details);
+                $this->logAlert($alertType, $target, $ipFailures, $emailSent, $details);
+            }
         }
 
-        private function shouldSendAlert($alertType, $target, $cooldownMinutes)
-        {
-                $stmt = $this->conn->prepare(
-                        "SELECT id FROM brute_force_alerts
+        $distinctIpCount = $logger->countDistinctFailedIpByIdentifier($target, 10, $scope);
+        if ($distinctIpCount >= $distributedIpThreshold) {
+            $alertType = 'distributed_attack';
+            if ($this->shouldSendAlert($alertType, $target, 60)) {
+                $details = sprintf('[%s] Identifier %s received failures from %d distinct IPs within 10 minutes.', $scope, $target, $distinctIpCount);
+                $emailSent = $this->sendAlertEmail($alertType, $target, $distinctIpCount, $details);
+                $this->logAlert($alertType, $target, $distinctIpCount, $emailSent, $details);
+            }
+        }
+    }
+
+    private function shouldSendAlert($alertType, $target, $cooldownMinutes)
+    {
+        $cutoff = $this->clock->now()->sub(new DateInterval('PT' . (int) $cooldownMinutes . 'M'))->format('Y-m-d H:i:s');
+        $stmt = $this->conn->prepare(
+            "SELECT id FROM brute_force_alerts
              WHERE alert_type = :alert_type
                AND target = :target
-               AND alert_sent_at >= (NOW() - INTERVAL :minutes MINUTE)
+               AND alert_sent_at >= :cutoff
              ORDER BY id DESC
              LIMIT 1"
-                );
-                $stmt->bindValue(':alert_type', $alertType);
-                $stmt->bindValue(':target', $target);
-                $stmt->bindValue(':minutes', (int) $cooldownMinutes, PDO::PARAM_INT);
-                $stmt->execute();
+        );
+        $stmt->bindValue(':alert_type', $alertType);
+        $stmt->bindValue(':target', $target);
+        $stmt->bindValue(':cutoff', $cutoff);
+        $stmt->execute();
 
-                return !$stmt->fetch(PDO::FETCH_ASSOC);
+        return !$stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    private function logAlert($type, $target, $attemptCount, $emailSent, $details)
+    {
+        $alertSentAt = $this->clock->now()->format('Y-m-d H:i:s');
+        $stmt = $this->conn->prepare(
+            "INSERT INTO brute_force_alerts (alert_type, target, attempt_count, alert_sent_at, email_sent, details)
+             VALUES (:alert_type, :target, :attempt_count, :alert_sent_at, :email_sent, :details)"
+        );
+        $stmt->bindValue(':alert_type', $type);
+        $stmt->bindValue(':target', $target);
+        $stmt->bindValue(':attempt_count', (int) $attemptCount, PDO::PARAM_INT);
+        $stmt->bindValue(':alert_sent_at', $alertSentAt);
+        $stmt->bindValue(':email_sent', $emailSent ? 1 : 0, PDO::PARAM_INT);
+        $stmt->bindValue(':details', $details);
+        $stmt->execute();
+
+        $this->writeLogLine($type, $target, $attemptCount, $details);
+    }
+
+    private function writeLogLine($type, $target, $attemptCount, $details)
+    {
+        if (!is_dir(BMIS_LOG_DIR)) {
+            @mkdir(BMIS_LOG_DIR, 0755, true);
         }
 
-        private function logAlert($type, $target, $attemptCount, $emailSent, $details)
-        {
-                $stmt = $this->conn->prepare(
-                        "INSERT INTO brute_force_alerts (alert_type, target, attempt_count, alert_sent_at, email_sent, details)
-             VALUES (:alert_type, :target, :attempt_count, NOW(), :email_sent, :details)"
-                );
-                $stmt->bindValue(':alert_type', $type);
-                $stmt->bindValue(':target', $target);
-                $stmt->bindValue(':attempt_count', (int) $attemptCount, PDO::PARAM_INT);
-                $stmt->bindValue(':email_sent', $emailSent ? 1 : 0, PDO::PARAM_INT);
-                $stmt->bindValue(':details', $details);
-                $stmt->execute();
+        $file = BMIS_LOG_DIR . '/brute_force_alerts.log';
+        $line = sprintf(
+            "[%s] %s target=%s attempts=%d details=%s\n",
+            $this->clock->now()->format('Y-m-d H:i:s'),
+            strtoupper($type),
+            $target,
+            $attemptCount,
+            $details
+        );
+        @file_put_contents($file, $line, FILE_APPEND | LOCK_EX);
+    }
 
-                $this->writeLogLine($type, $target, $attemptCount, $details);
+    private function sendAlertEmail($alertType, $target, $attemptCount, $details)
+    {
+        $to = SECURITY_ALERT_EMAIL ?: SENDER_EMAIL;
+        if ($to === '') {
+            return false;
         }
 
-        private function writeLogLine($type, $target, $attemptCount, $details)
-        {
-                $logDir = dirname(__DIR__) . '/logs';
-                if (!is_dir($logDir)) {
-                        @mkdir($logDir, 0755, true);
-                }
-
-                $file = $logDir . '/brute_force_alerts.log';
-                $line = sprintf(
-                        "[%s] %s target=%s attempts=%d details=%s\n",
-                        date('Y-m-d H:i:s'),
-                        strtoupper($type),
-                        $target,
-                        $attemptCount,
-                        $details
-                );
-                @file_put_contents($file, $line, FILE_APPEND | LOCK_EX);
+        if (defined('APP_ENV') && APP_ENV === 'testing') {
+            return false;
         }
 
-        private function sendAlertEmail($alertType, $target, $attemptCount, $details)
-        {
-                @require_once dirname(__DIR__) . '/config/email_config.php';
+        $subject = '[SECURITY ALERT] Brute-force threshold reached';
+        $body = '<h3>Brute-force Alert</h3>'
+            . '<p><strong>Type:</strong> ' . htmlspecialchars($alertType, ENT_QUOTES, 'UTF-8') . '</p>'
+            . '<p><strong>Target:</strong> ' . htmlspecialchars($target, ENT_QUOTES, 'UTF-8') . '</p>'
+            . '<p><strong>Attempts:</strong> ' . (int) $attemptCount . '</p>'
+            . '<p><strong>Time:</strong> ' . htmlspecialchars($this->clock->now()->format('Y-m-d H:i:s'), ENT_QUOTES, 'UTF-8') . '</p>'
+            . '<p><strong>Details:</strong> ' . htmlspecialchars($details, ENT_QUOTES, 'UTF-8') . '</p>';
 
-                $to = defined('SECURITY_ALERT_EMAIL') ? SECURITY_ALERT_EMAIL : (defined('SENDER_EMAIL') ? SENDER_EMAIL : null);
-                if (empty($to)) {
-                        return false;
-                }
+        return $this->sendEmail($to, $subject, $body);
+    }
 
-                $subject = '[SECURITY ALERT] Brute-force threshold reached';
-                $body = '<h3>Brute-force Alert</h3>'
-                        . '<p><strong>Type:</strong> ' . htmlspecialchars($alertType, ENT_QUOTES, 'UTF-8') . '</p>'
-                        . '<p><strong>Target:</strong> ' . htmlspecialchars($target, ENT_QUOTES, 'UTF-8') . '</p>'
-                        . '<p><strong>Attempts:</strong> ' . (int) $attemptCount . '</p>'
-                        . '<p><strong>Time:</strong> ' . date('Y-m-d H:i:s') . '</p>'
-                        . '<p><strong>Details:</strong> ' . htmlspecialchars($details, ENT_QUOTES, 'UTF-8') . '</p>';
-
-                return $this->sendEmail($to, $subject, $body);
+    private function sendEmail($to, $subject, $body)
+    {
+        if (EMAIL_METHOD === 'smtp') {
+            return $this->sendEmailViaSMTP($to, $subject, $body);
         }
 
-        private function sendEmail($to, $subject, $body)
-        {
-                if (defined('EMAIL_METHOD') && EMAIL_METHOD === 'smtp') {
-                        return $this->sendEmailViaSMTP($to, $subject, $body);
-                }
+        return $this->sendEmailViaPHPMail($to, $subject, $body);
+    }
 
+    private function sendEmailViaPHPMail($to, $subject, $body)
+    {
+        $headers = "MIME-Version: 1.0\r\n";
+        $headers .= "Content-type: text/html; charset=UTF-8\r\n";
+        $headers .= 'From: ' . SENDER_NAME . ' <' . SENDER_EMAIL . ">\r\n";
+
+        return @mail($to, $subject, $body, $headers);
+    }
+
+    private function sendEmailViaSMTP($to, $subject, $body)
+    {
+        try {
+            $smtp = @fsockopen(SMTP_HOST, SMTP_PORT, $errno, $errstr, 10);
+            if (!$smtp) {
                 return $this->sendEmailViaPHPMail($to, $subject, $body);
-        }
+            }
 
-        private function sendEmailViaPHPMail($to, $subject, $body)
-        {
-                $headers = "MIME-Version: 1.0\r\n";
-                $headers .= "Content-type: text/html; charset=UTF-8\r\n";
-                $headers .= "From: noreply@barangaylumbangan.gov.ph\r\n";
+            fgets($smtp, 1024);
+            fputs($smtp, "HELO localhost\r\n");
+            fgets($smtp, 1024);
 
-                return @mail($to, $subject, $body, $headers);
-        }
-
-        private function sendEmailViaSMTP($to, $subject, $body)
-        {
-                try {
-                        $host = defined('SMTP_HOST') ? SMTP_HOST : 'smtp.gmail.com';
-                        $port = defined('SMTP_PORT') ? SMTP_PORT : 587;
-                        $username = defined('SMTP_USERNAME') ? SMTP_USERNAME : '';
-                        $password = defined('SMTP_PASSWORD') ? SMTP_PASSWORD : '';
-                        $secure = defined('SMTP_SECURE') ? SMTP_SECURE : 'tls';
-                        $senderEmail = defined('SENDER_EMAIL') ? SENDER_EMAIL : 'noreply@barangaylumbangan.gov.ph';
-                        $senderName = defined('SENDER_NAME') ? SENDER_NAME : 'Barangay Lumbangan';
-
-                        $smtp = fsockopen($host, $port, $errno, $errstr, 10);
-                        if (!$smtp) {
-                                return $this->sendEmailViaPHPMail($to, $subject, $body);
-                        }
-
-                        fgets($smtp, 1024);
-                        fputs($smtp, "HELO localhost\r\n");
-                        fgets($smtp, 1024);
-
-                        if ($secure === 'tls') {
-                                fputs($smtp, "STARTTLS\r\n");
-                                fgets($smtp, 1024);
-                                if (!stream_socket_enable_crypto($smtp, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
-                                        fclose($smtp);
-                                        return $this->sendEmailViaPHPMail($to, $subject, $body);
-                                }
-                                fputs($smtp, "HELO localhost\r\n");
-                                fgets($smtp, 1024);
-                        }
-
-                        fputs($smtp, "AUTH LOGIN\r\n");
-                        fgets($smtp, 1024);
-                        fputs($smtp, base64_encode($username) . "\r\n");
-                        fgets($smtp, 1024);
-                        fputs($smtp, base64_encode($password) . "\r\n");
-                        $response = fgets($smtp, 1024);
-
-                        if (strpos($response, '235') === false) {
-                                fclose($smtp);
-                                return $this->sendEmailViaPHPMail($to, $subject, $body);
-                        }
-
-                        fputs($smtp, "MAIL FROM: <{$senderEmail}>\r\n");
-                        fgets($smtp, 1024);
-                        fputs($smtp, "RCPT TO: <{$to}>\r\n");
-                        fgets($smtp, 1024);
-                        fputs($smtp, "DATA\r\n");
-                        fgets($smtp, 1024);
-
-                        $headers = "From: {$senderName} <{$senderEmail}>\r\n";
-                        $headers .= "To: {$to}\r\n";
-                        $headers .= "Subject: {$subject}\r\n";
-                        $headers .= "MIME-Version: 1.0\r\n";
-                        $headers .= "Content-Type: text/html; charset=UTF-8\r\n\r\n";
-
-                        fputs($smtp, $headers . $body . "\r\n.\r\n");
-                        fgets($smtp, 1024);
-                        fputs($smtp, "QUIT\r\n");
-                        fclose($smtp);
-                        return true;
-                } catch (Exception $e) {
-                        return $this->sendEmailViaPHPMail($to, $subject, $body);
+            if (SMTP_SECURE === 'tls') {
+                fputs($smtp, "STARTTLS\r\n");
+                fgets($smtp, 1024);
+                if (!stream_socket_enable_crypto($smtp, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
+                    fclose($smtp);
+                    return $this->sendEmailViaPHPMail($to, $subject, $body);
                 }
+                fputs($smtp, "HELO localhost\r\n");
+                fgets($smtp, 1024);
+            }
+
+            fputs($smtp, "AUTH LOGIN\r\n");
+            fgets($smtp, 1024);
+            fputs($smtp, base64_encode(SMTP_USERNAME) . "\r\n");
+            fgets($smtp, 1024);
+            fputs($smtp, base64_encode(SMTP_PASSWORD) . "\r\n");
+            $response = fgets($smtp, 1024);
+
+            if (strpos((string) $response, '235') === false) {
+                fclose($smtp);
+                return $this->sendEmailViaPHPMail($to, $subject, $body);
+            }
+
+            fputs($smtp, 'MAIL FROM: <' . SENDER_EMAIL . ">\r\n");
+            fgets($smtp, 1024);
+            fputs($smtp, 'RCPT TO: <' . $to . ">\r\n");
+            fgets($smtp, 1024);
+            fputs($smtp, "DATA\r\n");
+            fgets($smtp, 1024);
+
+            $headers = 'From: ' . SENDER_NAME . ' <' . SENDER_EMAIL . ">\r\n";
+            $headers .= 'To: ' . $to . "\r\n";
+            $headers .= 'Subject: ' . $subject . "\r\n";
+            $headers .= "MIME-Version: 1.0\r\n";
+            $headers .= "Content-Type: text/html; charset=UTF-8\r\n\r\n";
+
+            fputs($smtp, $headers . $body . "\r\n.\r\n");
+            fgets($smtp, 1024);
+            fputs($smtp, "QUIT\r\n");
+            fclose($smtp);
+
+            return true;
+        } catch (Exception $exception) {
+            return $this->sendEmailViaPHPMail($to, $subject, $body);
         }
+    }
 }

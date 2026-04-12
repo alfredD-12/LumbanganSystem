@@ -66,11 +66,13 @@ function initLandingUI() {
     if (openLoginModalBtn) {
         openLoginModalBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            loginModal.classList.add('show');
-            loginModal.style.display = 'flex';
-            loginModal.style.pointerEvents = 'auto';
-            document.body.style.overflow = 'hidden';
-            initTypewriter();
+            if (loginModal) {
+                loginModal.classList.add('show');
+                loginModal.style.display = 'flex';
+                loginModal.style.pointerEvents = 'auto';
+                document.body.style.overflow = 'hidden';
+                initTypewriter();
+            }
         });
     }
 
@@ -120,6 +122,8 @@ function initLandingUI() {
                 e.preventDefault();
                 if (loginModal) {
                     loginModal.classList.add('show');
+                    loginModal.style.display = 'flex';
+                    loginModal.style.pointerEvents = 'auto';
                     document.body.style.overflow = 'hidden';
                     initTypewriter();
                 } else {

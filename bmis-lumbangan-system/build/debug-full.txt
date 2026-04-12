@@ -1,0 +1,275 @@
+PHPUnit Started (PHPUnit 11.5.50 using PHP 8.3.28 (cli) on WINNT)
+Test Runner Configured
+Bootstrap Finished (C:\laragon\www\Lumbangan_BMIS\bmis-lumbangan-system\tests/bootstrap.php)
+Event Facade Sealed
+Test Suite Loaded (31 tests)
+Test Runner Started
+Test Suite Sorted
+Test Runner Execution Started (31 tests)
+Test Suite Started (C:\laragon\www\Lumbangan_BMIS\bmis-lumbangan-system\phpunit.xml, 31 tests)
+Test Suite Started (Unit, 13 tests)
+Test Suite Started (P\Tests\Unit\AuthSecurityServiceTest, 9 tests)
+Before First Test Method Called (P\Tests\Unit\AuthSecurityServiceTest::setUpBeforeClass)
+Before First Test Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::setUpBeforeClass
+Test Preparation Started (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_does_not_increment_the_ip_failure_bucket_on_successful_login_recovery)
+Before Test Method Called (P\Tests\Unit\AuthSecurityServiceTest::setUp)
+Before Test Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::setUp
+Test Prepared (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_does_not_increment_the_ip_failure_bucket_on_successful_login_recovery)
+Post Condition Method Called (P\Tests\Unit\AuthSecurityServiceTest::__MarkTestIncompleteIfSnapshotHaveChanged)
+Post Condition Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::__MarkTestIncompleteIfSnapshotHaveChanged
+After Test Method Called (P\Tests\Unit\AuthSecurityServiceTest::tearDown)
+After Test Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::tearDown
+Test Passed (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_does_not_increment_the_ip_failure_bucket_on_successful_login_recovery)
+Test Finished (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_does_not_increment_the_ip_failure_bucket_on_successful_login_recovery)
+Test Preparation Started (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_throttles_repeated_password_reset_requests_without_depending_on_account_existence)
+Before Test Method Called (P\Tests\Unit\AuthSecurityServiceTest::setUp)
+Before Test Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::setUp
+Test Prepared (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_throttles_repeated_password_reset_requests_without_depending_on_account_existence)
+Post Condition Method Called (P\Tests\Unit\AuthSecurityServiceTest::__MarkTestIncompleteIfSnapshotHaveChanged)
+Post Condition Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::__MarkTestIncompleteIfSnapshotHaveChanged
+After Test Method Called (P\Tests\Unit\AuthSecurityServiceTest::tearDown)
+After Test Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::tearDown
+Test Passed (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_throttles_repeated_password_reset_requests_without_depending_on_account_existence)
+Test Finished (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_throttles_repeated_password_reset_requests_without_depending_on_account_existence)
+Test Preparation Started (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_applies_lockout_backoff_and_clears_expired_locks)
+Before Test Method Called (P\Tests\Unit\AuthSecurityServiceTest::setUp)
+Before Test Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::setUp
+Test Prepared (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_applies_lockout_backoff_and_clears_expired_locks)
+Post Condition Method Called (P\Tests\Unit\AuthSecurityServiceTest::__MarkTestIncompleteIfSnapshotHaveChanged)
+Post Condition Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::__MarkTestIncompleteIfSnapshotHaveChanged
+After Test Method Called (P\Tests\Unit\AuthSecurityServiceTest::tearDown)
+After Test Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::tearDown
+Test Passed (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_applies_lockout_backoff_and_clears_expired_locks)
+Test Finished (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_applies_lockout_backoff_and_clears_expired_locks)
+Test Preparation Started (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_requires_captcha_after_suspicious_login_failures_and_accepts_valid_captcha_on_retry)
+Before Test Method Called (P\Tests\Unit\AuthSecurityServiceTest::setUp)
+Before Test Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::setUp
+Test Prepared (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_requires_captcha_after_suspicious_login_failures_and_accepts_valid_captcha_on_retry)
+Post Condition Method Called (P\Tests\Unit\AuthSecurityServiceTest::__MarkTestIncompleteIfSnapshotHaveChanged)
+Post Condition Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::__MarkTestIncompleteIfSnapshotHaveChanged
+After Test Method Called (P\Tests\Unit\AuthSecurityServiceTest::tearDown)
+After Test Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::tearDown
+Test Passed (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_requires_captcha_after_suspicious_login_failures_and_accepts_valid_captcha_on_retry)
+Test Finished (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_requires_captcha_after_suspicious_login_failures_and_accepts_valid_captcha_on_retry)
+Test Preparation Started (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_requires_captcha_on_every_registration_request_and_shares_limits_between_send_and_resend)
+Before Test Method Called (P\Tests\Unit\AuthSecurityServiceTest::setUp)
+Before Test Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::setUp
+Test Prepared (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_requires_captcha_on_every_registration_request_and_shares_limits_between_send_and_resend)
+Post Condition Method Called (P\Tests\Unit\AuthSecurityServiceTest::__MarkTestIncompleteIfSnapshotHaveChanged)
+Post Condition Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::__MarkTestIncompleteIfSnapshotHaveChanged
+After Test Method Called (P\Tests\Unit\AuthSecurityServiceTest::tearDown)
+After Test Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::tearDown
+Test Passed (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_requires_captcha_on_every_registration_request_and_shares_limits_between_send_and_resend)
+Test Finished (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_requires_captcha_on_every_registration_request_and_shares_limits_between_send_and_resend)
+Test Preparation Started (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_resets_registration_verification_captcha_pressure_after_a_successful_verification)
+Before Test Method Called (P\Tests\Unit\AuthSecurityServiceTest::setUp)
+Before Test Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::setUp
+Test Prepared (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_resets_registration_verification_captcha_pressure_after_a_successful_verification)
+Post Condition Method Called (P\Tests\Unit\AuthSecurityServiceTest::__MarkTestIncompleteIfSnapshotHaveChanged)
+Post Condition Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::__MarkTestIncompleteIfSnapshotHaveChanged
+After Test Method Called (P\Tests\Unit\AuthSecurityServiceTest::tearDown)
+After Test Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::tearDown
+Test Passed (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_resets_registration_verification_captcha_pressure_after_a_successful_verification)
+Test Finished (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_resets_registration_verification_captcha_pressure_after_a_successful_verification)
+Test Preparation Started (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_skips_rate_limiting_for_whitelisted_ips)
+Before Test Method Called (P\Tests\Unit\AuthSecurityServiceTest::setUp)
+Before Test Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::setUp
+Test Prepared (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_skips_rate_limiting_for_whitelisted_ips)
+Post Condition Method Called (P\Tests\Unit\AuthSecurityServiceTest::__MarkTestIncompleteIfSnapshotHaveChanged)
+Post Condition Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::__MarkTestIncompleteIfSnapshotHaveChanged
+After Test Method Called (P\Tests\Unit\AuthSecurityServiceTest::tearDown)
+After Test Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::tearDown
+Test Passed (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_skips_rate_limiting_for_whitelisted_ips)
+Test Finished (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_skips_rate_limiting_for_whitelisted_ips)
+Test Preparation Started (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_uses_accurate_failure_counts_in_admin_lockout_alerts)
+Before Test Method Called (P\Tests\Unit\AuthSecurityServiceTest::setUp)
+Before Test Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::setUp
+Test Prepared (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_uses_accurate_failure_counts_in_admin_lockout_alerts)
+Post Condition Method Called (P\Tests\Unit\AuthSecurityServiceTest::__MarkTestIncompleteIfSnapshotHaveChanged)
+Post Condition Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::__MarkTestIncompleteIfSnapshotHaveChanged
+After Test Method Called (P\Tests\Unit\AuthSecurityServiceTest::tearDown)
+After Test Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::tearDown
+Test Passed (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_uses_accurate_failure_counts_in_admin_lockout_alerts)
+Test Finished (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_uses_accurate_failure_counts_in_admin_lockout_alerts)
+Test Preparation Started (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_respects_duplicate_alert_cooldowns)
+Before Test Method Called (P\Tests\Unit\AuthSecurityServiceTest::setUp)
+Before Test Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::setUp
+Test Prepared (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_respects_duplicate_alert_cooldowns)
+Post Condition Method Called (P\Tests\Unit\AuthSecurityServiceTest::__MarkTestIncompleteIfSnapshotHaveChanged)
+Post Condition Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::__MarkTestIncompleteIfSnapshotHaveChanged
+After Test Method Called (P\Tests\Unit\AuthSecurityServiceTest::tearDown)
+After Test Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::tearDown
+Test Passed (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_respects_duplicate_alert_cooldowns)
+Test Finished (P\Tests\Unit\AuthSecurityServiceTest::__pest_evaluable_it_respects_duplicate_alert_cooldowns)
+After Last Test Method Called (P\Tests\Unit\AuthSecurityServiceTest::tearDownAfterClass)
+After Last Test Method Finished:
+- P\Tests\Unit\AuthSecurityServiceTest::tearDownAfterClass
+Test Suite Finished (P\Tests\Unit\AuthSecurityServiceTest, 9 tests)
+Test Suite Started (P\Tests\Unit\CsrfHelperTest, 4 tests)
+Before First Test Method Called (P\Tests\Unit\CsrfHelperTest::setUpBeforeClass)
+Before First Test Method Finished:
+- P\Tests\Unit\CsrfHelperTest::setUpBeforeClass
+Test Preparation Started (P\Tests\Unit\CsrfHelperTest::__pest_evaluable_it_extracts_and_validates_csrf_tokens_from_form_payloads)
+
+   PASS  Tests\Unit\AuthSecurityServiceTest
+  ✓ it does not increment the ip failure bucket on successful login recovery                                     0.02s  
+  ✓ it throttles repeated password reset requests without depending on account existence                         0.01s  
+  ✓ it applies lockout backoff and clears expired locks
+  ✓ it requires captcha after suspicious login failures and accepts valid captcha on retry
+  ✓ it requires captcha on every registration request and shares limits between send and resend
+  ✓ it resets registration verification captcha pressure after a successful verification                         0.01s  
+  ✓ it skips rate limiting for whitelisted ips                                                                   0.01s  
+  ✓ it uses accurate failure counts in admin lockout alerts                                                      5.94s  
+  ✓ it respects duplicate alert cooldowns                                                                        7.28s  
+Before Test Method Called (P\Tests\Unit\CsrfHelperTest::setUp)
+Before Test Method Finished:
+- P\Tests\Unit\CsrfHelperTest::setUp
+Test Prepared (P\Tests\Unit\CsrfHelperTest::__pest_evaluable_it_extracts_and_validates_csrf_tokens_from_form_payloads)
+Post Condition Method Called (P\Tests\Unit\CsrfHelperTest::__MarkTestIncompleteIfSnapshotHaveChanged)
+Post Condition Method Finished:
+- P\Tests\Unit\CsrfHelperTest::__MarkTestIncompleteIfSnapshotHaveChanged
+After Test Method Called (P\Tests\Unit\CsrfHelperTest::tearDown)
+After Test Method Finished:
+- P\Tests\Unit\CsrfHelperTest::tearDown
+Test Passed (P\Tests\Unit\CsrfHelperTest::__pest_evaluable_it_extracts_and_validates_csrf_tokens_from_form_payloads)
+Test Finished (P\Tests\Unit\CsrfHelperTest::__pest_evaluable_it_extracts_and_validates_csrf_tokens_from_form_payloads)
+Test Preparation Started (P\Tests\Unit\CsrfHelperTest::__pest_evaluable_it_extracts_and_validates_csrf_tokens_from_json_payloads)
+Before Test Method Called (P\Tests\Unit\CsrfHelperTest::setUp)
+Before Test Method Finished:
+- P\Tests\Unit\CsrfHelperTest::setUp
+Test Prepared (P\Tests\Unit\CsrfHelperTest::__pest_evaluable_it_extracts_and_validates_csrf_tokens_from_json_payloads)
+Post Condition Method Called (P\Tests\Unit\CsrfHelperTest::__MarkTestIncompleteIfSnapshotHaveChanged)
+Post Condition Method Finished:
+- P\Tests\Unit\CsrfHelperTest::__MarkTestIncompleteIfSnapshotHaveChanged
+After Test Method Called (P\Tests\Unit\CsrfHelperTest::tearDown)
+After Test Method Finished:
+- P\Tests\Unit\CsrfHelperTest::tearDown
+Test Passed (P\Tests\Unit\CsrfHelperTest::__pest_evaluable_it_extracts_and_validates_csrf_tokens_from_json_payloads)
+Test Finished (P\Tests\Unit\CsrfHelperTest::__pest_evaluable_it_extracts_and_validates_csrf_tokens_from_json_payloads)
+Test Preparation Started (P\Tests\Unit\CsrfHelperTest::__pest_evaluable_it_extracts_and_validates_csrf_tokens_from_the_configured_header)
+Before Test Method Called (P\Tests\Unit\CsrfHelperTest::setUp)
+Before Test Method Finished:
+- P\Tests\Unit\CsrfHelperTest::setUp
+Test Prepared (P\Tests\Unit\CsrfHelperTest::__pest_evaluable_it_extracts_and_validates_csrf_tokens_from_the_configured_header)
+Post Condition Method Called (P\Tests\Unit\CsrfHelperTest::__MarkTestIncompleteIfSnapshotHaveChanged)
+Post Condition Method Finished:
+- P\Tests\Unit\CsrfHelperTest::__MarkTestIncompleteIfSnapshotHaveChanged
+After Test Method Called (P\Tests\Unit\CsrfHelperTest::tearDown)
+After Test Method Finished:
+- P\Tests\Unit\CsrfHelperTest::tearDown
+Test Passed (P\Tests\Unit\CsrfHelperTest::__pest_evaluable_it_extracts_and_validates_csrf_tokens_from_the_configured_header)
+Test Finished (P\Tests\Unit\CsrfHelperTest::__pest_evaluable_it_extracts_and_validates_csrf_tokens_from_the_configured_header)
+Test Preparation Started (P\Tests\Unit\CsrfHelperTest::__pest_evaluable_it_returns_false_when_the_csrf_token_is_missing_or_invalid)
+Before Test Method Called (P\Tests\Unit\CsrfHelperTest::setUp)
+Before Test Method Finished:
+- P\Tests\Unit\CsrfHelperTest::setUp
+Test Prepared (P\Tests\Unit\CsrfHelperTest::__pest_evaluable_it_returns_false_when_the_csrf_token_is_missing_or_invalid)
+Post Condition Method Called (P\Tests\Unit\CsrfHelperTest::__MarkTestIncompleteIfSnapshotHaveChanged)
+Post Condition Method Finished:
+- P\Tests\Unit\CsrfHelperTest::__MarkTestIncompleteIfSnapshotHaveChanged
+After Test Method Called (P\Tests\Unit\CsrfHelperTest::tearDown)
+After Test Method Finished:
+- P\Tests\Unit\CsrfHelperTest::tearDown
+Test Passed (P\Tests\Unit\CsrfHelperTest::__pest_evaluable_it_returns_false_when_the_csrf_token_is_missing_or_invalid)
+Test Finished (P\Tests\Unit\CsrfHelperTest::__pest_evaluable_it_returns_false_when_the_csrf_token_is_missing_or_invalid)
+After Last Test Method Called (P\Tests\Unit\CsrfHelperTest::tearDownAfterClass)
+After Last Test Method Finished:
+- P\Tests\Unit\CsrfHelperTest::tearDownAfterClass
+Test Suite Finished (P\Tests\Unit\CsrfHelperTest, 4 tests)
+Test Suite Finished (Unit, 13 tests)
+Test Suite Started (Feature, 14 tests)
+Test Suite Started (P\Tests\Feature\AuthFlowFeatureTest, 9 tests)
+Before First Test Method Called (P\Tests\Feature\AuthFlowFeatureTest::setUpBeforeClass)
+Before First Test Method Finished:
+- P\Tests\Feature\AuthFlowFeatureTest::setUpBeforeClass
+Test Preparation Started (P\Tests\Feature\AuthFlowFeatureTest::__pest_evaluable_it_honors_csrf__captcha_escalation__and_token_invalidation_across_verify_and_reset_steps)
+
+   PASS  Tests\Unit\CsrfHelperTest
+  ✓ it extracts and validates csrf tokens from form payloads                                                     0.06s  
+  ✓ it extracts and validates csrf tokens from json payloads
+  ✓ it extracts and validates csrf tokens from the configured header
+  ✓ it returns false when the csrf token is missing or invalid
+Before Test Method Called (P\Tests\Feature\AuthFlowFeatureTest::setUp)
+Before Test Method Finished:
+- P\Tests\Feature\AuthFlowFeatureTest::setUp
+Test Prepared (P\Tests\Feature\AuthFlowFeatureTest::__pest_evaluable_it_honors_csrf__captcha_escalation__and_token_invalidation_across_verify_and_reset_steps)
+Post Condition Method Called (P\Tests\Feature\AuthFlowFeatureTest::__MarkTestIncompleteIfSnapshotHaveChanged)
+Post Condition Method Finished:
+- P\Tests\Feature\AuthFlowFeatureTest::__MarkTestIncompleteIfSnapshotHaveChanged
+After Test Method Called (P\Tests\Feature\AuthFlowFeatureTest::tearDown)
+After Test Method Finished:
+- P\Tests\Feature\AuthFlowFeatureTest::tearDown
+Test Passed (P\Tests\Feature\AuthFlowFeatureTest::__pest_evaluable_it_honors_csrf__captcha_escalation__and_token_invalidation_across_verify_and_reset_steps)
+Test Finished (P\Tests\Feature\AuthFlowFeatureTest::__pest_evaluable_it_honors_csrf__captcha_escalation__and_token_invalidation_across_verify_and_reset_steps)
+Test Preparation Started (P\Tests\Feature\AuthFlowFeatureTest::__pest_evaluable_it_requires_captcha_for_registration_send_and_resend__escalates_verify__and_completes_signup_through_email_verification)
+Before Test Method Called (P\Tests\Feature\AuthFlowFeatureTest::setUp)
+Before Test Method Finished:
+- P\Tests\Feature\AuthFlowFeatureTest::setUp
+Test Prepared (P\Tests\Feature\AuthFlowFeatureTest::__pest_evaluable_it_requires_captcha_for_registration_send_and_resend__escalates_verify__and_completes_signup_through_email_verification)
+Post Condition Method Called (P\Tests\Feature\AuthFlowFeatureTest::__MarkTestIncompleteIfSnapshotHaveChanged)
+Post Condition Method Finished:
+- P\Tests\Feature\AuthFlowFeatureTest::__MarkTestIncompleteIfSnapshotHaveChanged
+After Test Method Called (P\Tests\Feature\AuthFlowFeatureTest::tearDown)
+After Test Method Finished:
+- P\Tests\Feature\AuthFlowFeatureTest::tearDown
+Test Passed (P\Tests\Feature\AuthFlowFeatureTest::__pest_evaluable_it_requires_captcha_for_registration_send_and_resend__escalates_verify__and_completes_signup_through_email_verification)
+Test Finished (P\Tests\Feature\AuthFlowFeatureTest::__pest_evaluable_it_requires_captcha_for_registration_send_and_resend__escalates_verify__and_completes_signup_through_email_verification)
+Test Preparation Started (P\Tests\Feature\AuthFlowFeatureTest::__pest_evaluable_it_keeps_password_reset_requests_generic_while_escalating_to_captcha_and_throttling_abusive_repetition)
+Before Test Method Called (P\Tests\Feature\AuthFlowFeatureTest::setUp)
+Before Test Method Finished:
+- P\Tests\Feature\AuthFlowFeatureTest::setUp
+Test Prepared (P\Tests\Feature\AuthFlowFeatureTest::__pest_evaluable_it_keeps_password_reset_requests_generic_while_escalating_to_captcha_and_throttling_abusive_repetition)
+Post Condition Method Called (P\Tests\Feature\AuthFlowFeatureTest::__MarkTestIncompleteIfSnapshotHaveChanged)
+Post Condition Method Finished:
+- P\Tests\Feature\AuthFlowFeatureTest::__MarkTestIncompleteIfSnapshotHaveChanged
+After Test Method Called (P\Tests\Feature\AuthFlowFeatureTest::tearDown)
+After Test Method Finished:
+- P\Tests\Feature\AuthFlowFeatureTest::tearDown
+Test Passed (P\Tests\Feature\AuthFlowFeatureTest::__pest_evaluable_it_keeps_password_reset_requests_generic_while_escalating_to_captcha_and_throttling_abusive_repetition)
+Test Finished (P\Tests\Feature\AuthFlowFeatureTest::__pest_evaluable_it_keeps_password_reset_requests_generic_while_escalating_to_captcha_and_throttling_abusive_repetition)
+Test Preparation Started (P\Tests\Feature\AuthFlowFeatureTest::__pest_evaluable_it_creates_session_state__logs_success__clears_lockout_state__and_avoids_poisoning_the_ip_bucket_on_valid_logins)
+Before Test Method Called (P\Tests\Feature\AuthFlowFeatureTest::setUp)
+Before Test Method Finished:
+- P\Tests\Feature\AuthFlowFeatureTest::setUp
+Test Prepared (P\Tests\Feature\AuthFlowFeatureTest::__pest_evaluable_it_creates_session_state__logs_success__clears_lockout_state__and_avoids_poisoning_the_ip_bucket_on_valid_logins)
+Post Condition Method Called (P\Tests\Feature\AuthFlowFeatureTest::__MarkTestIncompleteIfSnapshotHaveChanged)
+Post Condition Method Finished:
+- P\Tests\Feature\AuthFlowFeatureTest::__MarkTestIncompleteIfSnapshotHaveChanged
+After Test Method Called (P\Tests\Feature\AuthFlowFeatureTest::tearDown)
+After Test Method Finished:
+- P\Tests\Feature\AuthFlowFeatureTest::tearDown
+Test Passed (P\Tests\Feature\AuthFlowFeatureTest::__pest_evaluable_it_creates_session_state__logs_success__clears_lockout_state__and_avoids_poisoning_the_ip_bucket_on_valid_logins)
+Test Finished (P\Tests\Feature\AuthFlowFeatureTest::__pest_evaluable_it_creates_session_state__logs_success__clears_lockout_state__and_avoids_poisoning_the_ip_bucket_on_valid_logins)
+Test Preparation Started (P\Tests\Feature\AuthFlowFeatureTest::__pest_evaluable_it_requires_post_plus_csrf_for_logout_and_clears_the_session_on_success)
+Before Test Method Called (P\Tests\Feature\AuthFlowFeatureTest::setUp)
+Before Test Method Finished:
+- P\Tests\Feature\AuthFlowFeatureTest::setUp
+Test Prepared (P\Tests\Feature\AuthFlowFeatureTest::__pest_evaluable_it_requires_post_plus_csrf_for_logout_and_clears_the_session_on_success)

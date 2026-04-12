@@ -8,6 +8,10 @@ require_once __DIR__ . '/../app/controllers/admins/AdminDocumentController.php';
 @require_once __DIR__ . '/../app/config/config.php';
 require_once __DIR__ . '/../app/controllers/admins/DocumentTemplateController.php';
 require_once __DIR__ . '/../app/controllers/PasswordResetController.php';
+require_once __DIR__ . '/../app/controllers/AuthController.php';
+require_once __DIR__ . '/../app/controllers/EmailVerificationController.php';
+require_once __DIR__ . '/../app/controllers/GalleryController.php';
+require_once __DIR__ . '/../app/helpers/csrf_helper.php';
 
 require_once __DIR__ . '/../app/controllers/SurveyController.php';
 // Load announcement helpers (provides base_url/assets_url/uploads_url/announcement_image_url)
@@ -16,56 +20,7 @@ require_once __DIR__ . '/../app/controllers/AdminController.php';
 // Note: Survey controller is handled above for legacy procedural implementation
 require_once __DIR__ . '/../app/controllers/ResidentController.php';
 //  Handle AJAX/API actions
-$action = $_GET['action'] ?? null;
-
-if (!function_exists('csrf_error_response')) {
-    function csrf_error_response()
-    {
-        http_response_code(403);
-        header('Content-Type: application/json');
-        echo json_encode([
-            'success' => false,
-            'error' => 'Invalid CSRF token.'
-        ]);
-        exit;
-    }
-}
-
-if (!function_exists('request_csrf_token')) {
-    function request_csrf_token()
-    {
-        $headerName = 'HTTP_' . str_replace('-', '_', strtoupper(csrf_header_name()));
-        $headerToken = $_SERVER[$headerName] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
-        if (!empty($headerToken)) {
-            return $headerToken;
-        }
-
-        $fieldName = csrf_field_name();
-        if (!empty($_POST[$fieldName])) {
-            return $_POST[$fieldName];
-        }
-
-        if (!empty($_POST['csrf_token'])) {
-            return $_POST['csrf_token'];
-        }
-
-        $rawInput = file_get_contents('php://input');
-        if (!empty($rawInput)) {
-            $json = json_decode($rawInput, true);
-            if (json_last_error() === JSON_ERROR_NONE && is_array($json)) {
-                if (!empty($json[$fieldName])) {
-                    return $json[$fieldName];
-                }
-
-                if (!empty($json['csrf_token'])) {
-                    return $json['csrf_token'];
-                }
-            }
-        }
-
-        return '';
-    }
-}
+$action = $_GET['action'] ?? $_POST['action'] ?? null;
 
 if ($action) {
     $csrfProtectedActions = [
@@ -99,13 +54,29 @@ if ($action) {
         'addDocumentType',
         'addAdminRequest',
         'updateRequest',
-        'removeProofFile'
+        'removeProofFile',
+        'login',
+        'logout',
+        'checkUsername',
+        'check_username',
+        'request_reset',
+        'verify_code',
+        'verify_reset_code',
+        'reset_password',
+        'send_verification_code',
+        'resend_verification_code',
+        'verify_registration_code',
+        'complete_registration',
+        'gallery_create',
+        'gallery_update',
+        'gallery_delete',
+        'gallery_toggle',
+        'gallery_update_order',
     ];
 
     if (in_array($action, $csrfProtectedActions, true)) {
-        $submittedCsrfToken = request_csrf_token();
-        if (!csrf_validate($submittedCsrfToken)) {
-            csrf_error_response();
+        if (!csrf_request_is_valid()) {
+            csrf_reject_request();
         }
     }
 
@@ -350,6 +321,22 @@ if ($action) {
             $adminController->addAdminRequest();
             break;
 
+        case 'login':
+            $authController = new AuthController();
+            $authController->login();
+            break;
+
+        case 'logout':
+            $authController = new AuthController();
+            $authController->logout();
+            break;
+
+        case 'checkUsername':
+        case 'check_username':
+            $authController = new AuthController();
+            $authController->checkUsername();
+            break;
+
         // Password Reset Actions
         case 'request_reset':
             $resetController = new PasswordResetController();
@@ -357,6 +344,7 @@ if ($action) {
             break;
 
         case 'verify_code':
+        case 'verify_reset_code':
             $resetController = new PasswordResetController();
             $resetController->verifyCode();
             break;
@@ -364,6 +352,68 @@ if ($action) {
         case 'reset_password':
             $resetController = new PasswordResetController();
             $resetController->resetPassword();
+            break;
+
+        case 'send_verification_code':
+            $emailVerificationController = new EmailVerificationController();
+            $emailVerificationController->sendVerificationCode();
+            break;
+
+        case 'resend_verification_code':
+            $emailVerificationController = new EmailVerificationController();
+            $emailVerificationController->resendCode();
+            break;
+
+        case 'verify_registration_code':
+            $emailVerificationController = new EmailVerificationController();
+            $emailVerificationController->verifyCode();
+            break;
+
+        case 'complete_registration':
+            $emailVerificationController = new EmailVerificationController();
+            $emailVerificationController->completeRegistration();
+            break;
+
+        case 'gallery_fetch':
+            $_GET['action'] = 'fetch';
+            $galleryController = new GalleryController();
+            $galleryController->handleRequest();
+            break;
+
+        case 'gallery_fetch_one':
+            $_GET['action'] = 'fetch_one';
+            $galleryController = new GalleryController();
+            $galleryController->handleRequest();
+            break;
+
+        case 'gallery_create':
+            $_POST['action'] = 'create';
+            $galleryController = new GalleryController();
+            $galleryController->handleRequest();
+            break;
+
+        case 'gallery_update':
+            $_POST['action'] = 'update';
+            $galleryController = new GalleryController();
+            $galleryController->handleRequest();
+            break;
+
+        case 'gallery_delete':
+            $_POST['action'] = 'delete';
+            $galleryController = new GalleryController();
+            $galleryController->handleRequest();
+            break;
+
+        case 'gallery_toggle':
+            $_POST['action'] = 'toggle';
+            $galleryController = new GalleryController();
+            $galleryController->handleRequest();
+            break;
+
+        case 'gallery_update_order':
+            $_POST['action'] = 'update_order';
+            $galleryController = new GalleryController();
+            $galleryController->handleRequest();
             break;
 
         case 'getRequestById':
@@ -390,7 +440,7 @@ if ($action) {
             break;
     }
 
-    exit; // Stop normal HTML output
+    return; // Stop normal HTML output
 }
 
 // ✅ Handle page routing (HTML views)
@@ -408,34 +458,9 @@ if (!$page) {
 
 switch ($page) {
     case 'logout':
-        if (session_status() !== PHP_SESSION_ACTIVE) session_start();
-        $_SESSION = [];
-        if (ini_get('session.use_cookies')) {
-            $params = session_get_cookie_params();
-            setcookie(
-                session_name(),
-                '',
-                time() - 42000,
-                $params['path'],
-                $params['domain'],
-                $params['secure'],
-                $params['httponly']
-            );
-        }
-        session_unset();
-        session_destroy();
-
-        $isXhr = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
-            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
-
-        if ($isXhr) {
-            header('Content-Type: application/json');
-            echo json_encode(['success' => true, 'message' => 'Logged out']);
-            return;
-        }
         $redirect = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=landing';
         header('Location: ' . $redirect);
-        exit;
+        return;
 
     case 'landing':
         if (isLoggedIn() && isUser()) {

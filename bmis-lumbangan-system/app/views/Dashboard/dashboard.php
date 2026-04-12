@@ -51,7 +51,6 @@ render_favicon();
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/Dashboard/dashboard.css?v=2">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/notifications.css?v=1">
-    <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/csrf-protection.js"></script>
 </head>
 <body>
     <!-- Floating Background Shapes -->
@@ -2018,7 +2017,13 @@ render_favicon();
                 }
 
                 // Redirect to the centralized logout route handled by the front controller
-                var logoutUrl = '<?php echo (defined("BASE_PUBLIC") ? rtrim(BASE_PUBLIC, "/") : rtrim(dirname(__DIR__, 2) . "/public", "/")); ?>/index.php?page=logout';
+                var logoutForm = document.getElementById('appLogoutForm');
+                if (logoutForm) {
+                    logoutForm.submit();
+                    return;
+                }
+
+                var logoutUrl = '<?php echo (defined("BASE_PUBLIC") ? rtrim(BASE_PUBLIC, "/") : rtrim(dirname(__DIR__, 2) . "/public", "/")); ?>/index.php?page=landing';
                 window.location.href = logoutUrl;
             };
         }

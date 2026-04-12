@@ -255,7 +255,7 @@ let deleteGalleryId = null;
 
 // Setup base URL for API calls
 const BASE_URL = "<?php echo (defined('BASE_URL') ? rtrim(BASE_URL, '/') : '/Lumbangan_BMIS/bmis-lumbangan-system/app'); ?>";
-const CONTROLLER_PATH = BASE_URL + '/controllers/GalleryController.php';
+const CONTROLLER_PATH = "<?php echo rtrim(BASE_PUBLIC, '/'); ?>/index.php";
 const UPLOADS_PATH = BASE_URL + '/uploads/gallery/';
 
 // Show success notification
@@ -276,7 +276,7 @@ function showError(message) {
 
 // Load gallery items
 function loadGallery() {
-    fetch(CONTROLLER_PATH + '?action=fetch&active_only=false')
+    fetch(CONTROLLER_PATH + '?action=gallery_fetch&active_only=false')
         .then(res => res.json())
         .then(data => {
             if (data.success) {
@@ -346,7 +346,7 @@ function openAddModal() {
 
 // Open edit modal
 function openEditModal(id) {
-    fetch(CONTROLLER_PATH + `?action=fetch_one&id=${id}`)
+    fetch(CONTROLLER_PATH + `?action=gallery_fetch_one&id=${id}`)
         .then(res => res.json())
         .then(data => {
             if (data.success) {
@@ -392,9 +392,9 @@ document.getElementById('galleryForm').addEventListener('submit', function(e) {
     
     const formData = new FormData(this);
     const id = document.getElementById('galleryId').value;
-    formData.append('action', id ? 'update' : 'create');
+    const actionPath = id ? '?action=gallery_update' : '?action=gallery_create';
     
-    fetch(CONTROLLER_PATH, {
+    fetch(CONTROLLER_PATH + actionPath, {
         method: 'POST',
         body: formData
     })
@@ -417,10 +417,9 @@ document.getElementById('galleryForm').addEventListener('submit', function(e) {
 // Toggle status
 function toggleStatus(id) {
     const formData = new FormData();
-    formData.append('action', 'toggle');
     formData.append('id', id);
     
-    fetch(CONTROLLER_PATH, {
+    fetch(CONTROLLER_PATH + '?action=gallery_toggle', {
         method: 'POST',
         body: formData
     })
@@ -451,10 +450,9 @@ function confirmDelete() {
     if (!deleteGalleryId) return;
     
     const formData = new FormData();
-    formData.append('action', 'delete');
     formData.append('id', deleteGalleryId);
     
-    fetch(CONTROLLER_PATH, {
+    fetch(CONTROLLER_PATH + '?action=gallery_delete', {
         method: 'POST',
         body: formData
     })
@@ -525,10 +523,9 @@ function updateOrder() {
                             .map(card => card.dataset.id);
 
     const formData = new FormData();
-    formData.append('action', 'update_order');
     formData.append('ordered_ids', JSON.stringify(orderedIds));
 
-    fetch(CONTROLLER_PATH, {
+    fetch(CONTROLLER_PATH + '?action=gallery_update_order', {
         method: 'POST',
         body: formData
     })

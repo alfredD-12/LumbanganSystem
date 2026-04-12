@@ -41,7 +41,8 @@ if (isLoggedIn()) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Barangay Lumbangan | Nasugbu, Batangas</title>
 
-  <meta name="app-auth-endpoint" content="<?php echo rtrim(BASE_URL, '/'); ?>/controllers/AuthController.php">
+  <meta name="app-auth-endpoint" content="<?php echo rtrim(BASE_PUBLIC, '/'); ?>/index.php">
+  <meta name="app-front-controller" content="<?php echo rtrim(BASE_PUBLIC, '/'); ?>/index.php">
   <meta name="csrf-token" content="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
   <meta name="csrf-header" content="<?php echo htmlspecialchars($csrfHeader, ENT_QUOTES, 'UTF-8'); ?>">
   <meta name="csrf-field" content="<?php echo htmlspecialchars($csrfField, ENT_QUOTES, 'UTF-8'); ?>">
@@ -60,7 +61,6 @@ if (isLoggedIn()) {
 
   <!-- Optional news fetcher -->
   <script src="<?php echo BASE_URL; ?>/assets/js/Landing/batangas-news.js?v=<?php echo filemtime(dirname(__DIR__, 2) . '/assets/js/Landing/batangas-news.js'); ?>" defer></script>
-  <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/csrf-protection.js"></script>
 </head>
 
 <body>
@@ -710,8 +710,10 @@ if (isLoggedIn()) {
             <input type="text" name="username" placeholder="Username" required>
             <input type="password" name="password" placeholder="Password" required>
             <input type="hidden" name="captcha_token" id="loginCaptchaToken" value="">
-            <div id="loginRecaptchaContainer" style="display: none; margin: 10px 0 14px;">
-              <div id="loginRecaptchaWidget"></div>
+            <div id="loginRecaptchaContainer" class="auth-recaptcha-slot" style="display: none; margin: 10px 0 14px;">
+              <div class="auth-recaptcha-slot-inner">
+                <div id="loginRecaptchaWidget"></div>
+              </div>
             </div>
 
             <!-- Login Error Alert (above Forget Password) -->
@@ -1269,7 +1271,7 @@ if (isLoggedIn()) {
       formData.append('code', code);
 
       try {
-        const response = await fetch('<?php echo (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php'; ?>?action=verify_code', {
+        const response = await fetch('<?php echo (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php'; ?>?action=verify_reset_code', {
           method: 'POST',
           body: formData,
           credentials: 'same-origin'
@@ -1359,14 +1361,15 @@ if (isLoggedIn()) {
     }
   </script>
   <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/security/csrf.js?v=<?php echo filemtime(dirname(__DIR__, 2) . '/assets/js/security/csrf.js'); ?>"></script>
+  <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/security/captcha.js?v=<?php echo filemtime(dirname(__DIR__, 2) . '/assets/js/security/captcha.js'); ?>"></script>
   <script src="<?php echo BASE_URL; ?>/assets/js/Landing/Landing.js?v=<?php echo filemtime(dirname(__DIR__, 2) . '/assets/js/Landing/Landing.js'); ?>"></script>
-  <script src="<?php echo BASE_URL; ?>/assets/js/email_verification.js?v=<?php echo time(); ?>"></script>
+  <script src="<?php echo BASE_URL; ?>/assets/js/email_verification.js?v=<?php echo filemtime(dirname(__DIR__, 2) . '/assets/js/email_verification.js'); ?>"></script>
   <?php if (defined('RECAPTCHA_SITE_KEY') && RECAPTCHA_SITE_KEY !== ''): ?>
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
   <?php endif; ?>
   <!-- Face API & Face Scan -->
   <script src="<?php echo BASE_URL; ?>/assets/js/face-api/face-api.js"></script>
-  <script src="<?php echo BASE_URL; ?>/assets/js/face_scan.js?v=<?php echo time(); ?>"></script>
+  <script src="<?php echo BASE_URL; ?>/assets/js/face_scan.js?v=<?php echo filemtime(dirname(__DIR__, 2) . '/assets/js/face_scan.js'); ?>"></script>
   <script src="<?php echo BASE_URL; ?>/assets/js/Landing/login.js?v=<?php echo filemtime(dirname(__DIR__, 2) . '/assets/js/Landing/login.js'); ?>"></script>
 
   <!-- Announcement Modal for Landing -->

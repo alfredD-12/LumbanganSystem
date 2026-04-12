@@ -6,7 +6,11 @@
         "pestphp/pest": "^3.8"
     },
     "scripts": {
-        "test": "vendor/bin/pest"
+        "test": "vendor/bin/pest --testsuite=Unit,Feature,Integration",
+        "test:unit": "vendor/bin/pest --testsuite=Unit",
+        "test:feature": "vendor/bin/pest --testsuite=Feature",
+        "test:integration": "vendor/bin/pest --testsuite=Integration",
+        "test:all": "vendor/bin/pest --testsuite=Unit,Feature,Integration"
     },
     "autoload-dev": {
         "classmap": [

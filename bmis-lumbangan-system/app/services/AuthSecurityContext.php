@@ -38,6 +38,16 @@ class AuthSecurityContext
         return new self('password_reset_request', $email, $ipAddress, $userAgent, $captchaToken, 'password_reset_request');
     }
 
+    public static function forRegistrationRequest($identifier, $ipAddress, $userAgent = 'unknown', $captchaToken = '')
+    {
+        return new self('registration_request', $identifier, $ipAddress, $userAgent, $captchaToken, 'registration_request');
+    }
+
+    public static function forRegistrationVerify($identifier, $ipAddress, $userAgent = 'unknown', $captchaToken = '')
+    {
+        return new self('registration_verify', $identifier, $ipAddress, $userAgent, $captchaToken, 'registration_verify');
+    }
+
     public static function forPasswordResetVerify($email, $ipAddress, $userAgent = 'unknown', $captchaToken = '')
     {
         return new self('password_reset_verify', $email, $ipAddress, $userAgent, $captchaToken, 'password_reset_verify');

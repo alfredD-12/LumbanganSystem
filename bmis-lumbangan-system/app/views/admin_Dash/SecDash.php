@@ -93,7 +93,6 @@ $csrfField = csrf_field_name();
     <?php if (!defined('BASE_URL')) {
         require_once dirname(__DIR__, 2) . '/config/config.php';
     } ?>
-    <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/csrf-protection.js"></script>
     <link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/SecDash/secDash.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/predictions_dashboard.css?v=<?php echo time(); ?>">
 </head>

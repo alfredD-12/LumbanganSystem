@@ -52,6 +52,14 @@ if (!function_exists('config_load_env_file')) {
                 continue;
             }
 
+            $alreadyDefined = array_key_exists($key, $_ENV)
+                || array_key_exists($key, $_SERVER)
+                || getenv($key) !== false;
+
+            if ($alreadyDefined) {
+                continue;
+            }
+
             $value = config_strip_wrapping_quotes($value);
             $_ENV[$key] = $value;
             $_SERVER[$key] = $value;
@@ -255,10 +263,16 @@ config_define('ACCOUNT_LOCKOUT_THRESHOLD', config_env_int('ACCOUNT_LOCKOUT_THRES
 config_define('ACCOUNT_LOCKOUT_BASE_MINUTES', config_env_int('ACCOUNT_LOCKOUT_BASE_MINUTES', 15));
 config_define('ACCOUNT_LOCKOUT_MAX_MINUTES', config_env_int('ACCOUNT_LOCKOUT_MAX_MINUTES', 120));
 config_define('ACCOUNT_LOCKOUT_BACKOFF_MULTIPLIER', config_env_int('ACCOUNT_LOCKOUT_BACKOFF_MULTIPLIER', 2));
-config_define('CAPTCHA_TRIGGER_THRESHOLD', config_env_int('CAPTCHA_TRIGGER_THRESHOLD', 4));
+config_define('CAPTCHA_TRIGGER_THRESHOLD', config_env_int('CAPTCHA_TRIGGER_THRESHOLD', 3));
 config_define('PASSWORD_RESET_REQUEST_MAX_ATTEMPTS', config_env_int('PASSWORD_RESET_REQUEST_MAX_ATTEMPTS', 3));
 config_define('PASSWORD_RESET_REQUEST_WINDOW_MINUTES', config_env_int('PASSWORD_RESET_REQUEST_WINDOW_MINUTES', 15));
 config_define('PASSWORD_RESET_REQUEST_CAPTCHA_TRIGGER_THRESHOLD', config_env_int('PASSWORD_RESET_REQUEST_CAPTCHA_TRIGGER_THRESHOLD', 2));
+config_define('REGISTRATION_REQUEST_MAX_ATTEMPTS', config_env_int('REGISTRATION_REQUEST_MAX_ATTEMPTS', 3));
+config_define('REGISTRATION_REQUEST_WINDOW_MINUTES', config_env_int('REGISTRATION_REQUEST_WINDOW_MINUTES', 15));
+config_define('REGISTRATION_REQUEST_CAPTCHA_ALWAYS', config_env_bool('REGISTRATION_REQUEST_CAPTCHA_ALWAYS', true));
+config_define('REGISTRATION_VERIFY_MAX_FAILURES', config_env_int('REGISTRATION_VERIFY_MAX_FAILURES', 5));
+config_define('REGISTRATION_VERIFY_WINDOW_MINUTES', config_env_int('REGISTRATION_VERIFY_WINDOW_MINUTES', 15));
+config_define('REGISTRATION_VERIFY_CAPTCHA_TRIGGER_THRESHOLD', config_env_int('REGISTRATION_VERIFY_CAPTCHA_TRIGGER_THRESHOLD', 3));
 config_define('PASSWORD_RESET_VERIFY_MAX_FAILURES', config_env_int('PASSWORD_RESET_VERIFY_MAX_FAILURES', 5));
 config_define('PASSWORD_RESET_VERIFY_WINDOW_MINUTES', config_env_int('PASSWORD_RESET_VERIFY_WINDOW_MINUTES', 15));
 config_define('PASSWORD_RESET_VERIFY_CAPTCHA_TRIGGER_THRESHOLD', config_env_int('PASSWORD_RESET_VERIFY_CAPTCHA_TRIGGER_THRESHOLD', 3));

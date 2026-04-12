@@ -1855,6 +1855,8 @@
     z-index: 9999;
     align-items: center;
     justify-content: center;
+    padding: 32px 16px;
+    overflow-y: auto;
     opacity: 0;
     transition: opacity 0.3s ease;
 }
@@ -1867,6 +1869,8 @@
 .login-modal-container {
     position: relative;
     animation: modalSlideIn 0.5s ease;
+    width: min(960px, 92vw);
+    margin: auto;
 }
 
 /* Forget Password Modal - Higher z-index to appear on top */
@@ -1953,6 +1957,8 @@
     width: 768px;
     max-width: 90vw;
     min-height: 480px;
+    height: min(720px, calc(100vh - 120px));
+    max-height: min(720px, calc(100vh - 120px));
 }
 
 .login-container p {
@@ -2004,8 +2010,11 @@
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    padding: 0 40px;
+    padding: 24px 40px 32px;
     height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
 }
 
 /* Headings inside login modal forms */
@@ -2043,6 +2052,23 @@
     top: 0;
     height: 100%;
     transition: all 0.6s ease-in-out;
+    overflow: hidden;
+}
+
+.auth-recaptcha-slot {
+    display: none;
+    width: 100%;
+}
+
+.auth-recaptcha-slot-inner {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    min-height: 78px;
+}
+
+.auth-recaptcha-slot iframe {
+    max-width: 100%;
 }
 
 .login-sign-in {
@@ -2207,6 +2233,9 @@
         width: 100%;
         max-width: 100%;
         min-height: auto;
+        height: auto;
+        max-height: none;
+        overflow: visible;
         border-radius: 25px;
         padding: 0;
     }
@@ -2265,6 +2294,7 @@
     .login-form-container form {
         padding: 0;
         height: auto;
+        overflow: visible;
     }
     
     .login-form-container h1 {
@@ -2361,6 +2391,10 @@
         background: rgba(30, 58, 95, 0.15);
         transform: scale(0.97);
     }
+
+    .auth-recaptcha-slot-inner {
+        min-height: 74px;
+    }
     
     /* Grid for sign up form */
     .login-form-container div[style*="grid-template-columns"] {
@@ -2394,6 +2428,16 @@
     .login-form-container.login-sign-in,
     .login-form-container.login-sign-up {
         padding: 20px 15px 25px;
+    }
+
+    .auth-recaptcha-slot {
+        overflow: visible;
+    }
+
+    .auth-recaptcha-slot-inner {
+        transform: scale(0.92);
+        transform-origin: top center;
+        min-height: 68px;
     }
     
     .login-form-container h1 {

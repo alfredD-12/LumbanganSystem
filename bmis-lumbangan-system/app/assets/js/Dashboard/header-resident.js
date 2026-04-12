@@ -1,12 +1,11 @@
 /*
  assets/js/Dashboard/header-resident.js
- Single-file header logic (logout -> server logout -> redirect to landing page)
+ Single-file header logic (logout -> POST form -> redirect to landing page)
  - Put exactly one <script src=".../assets/js/Dashboard/header-resident.js?v=..."></script> in your footer.
  - Behavior:
     1) On logout click, clear local survey data,
-    2) call AuthController logout endpoint (same-origin) to destroy server session,
-    3) then redirect browser to the landing page URL provided by data-logout on the logout element
-       or to a fallback URL (if no data-logout is present).
+    2) submit the shared hidden logout form with CSRF,
+    3) let the front controller redirect to the landing page.
  - Exposes window.HeaderResident API: init(), setUser(user), openProfile(), logout()
 */
 
@@ -14,7 +13,7 @@
   'use strict';
 
   var user = { username: 'User', fullName: 'User', email: '', mobile: '' };
-  var logoutEndpoint = (window && window.BASE_URL) ? (window.BASE_URL + '/index.php?page=logout') : '/index.php?page=logout'; // default; will try to read meta override
+  var logoutEndpoint = (window && window.BASE_URL) ? (window.BASE_URL + '/index.php?action=logout') : '/index.php?action=logout'; // default; will try to read meta override
   var redirectUrl = null; // final landing page to send user to (read from DOM or init option)
 
   function byId(id) { return document.getElementById(id); }
@@ -80,52 +79,28 @@
     } catch (e) { /* ignore */ }
   }
 
-  // Perform server logout then redirect to landing page (redirectTarget)
+  function submitLogoutForm() {
+    var logoutForm = byId('appLogoutForm');
+    if (logoutForm) {
+      logoutForm.submit();
+      return true;
+    }
+
+    return false;
+  }
+
+  // Perform logout by submitting the shared POST form, then fallback only if markup is missing.
   async function logoutFlow(redirectTarget) {
     // Clear client-side survey data first
     clearSurveyLocalStorage();
 
-    // compute endpoint and target
-    var endpoint = logoutEndpoint || ((window && window.BASE_URL) ? (window.BASE_URL + '/index.php?page=logout') : '/index.php?page=logout');
     var target = redirectTarget || redirectUrl || '/';
 
-    // Send request to server logout endpoint (best-effort)
-    try {
-      // Use same-origin credentials so session cookie is sent, and mark as XHR
-      var resp = await fetch(endpoint, {
-        method: 'GET',
-        credentials: 'same-origin',
-        headers: {
-          'Accept': 'application/json, text/plain, */*',
-          'X-Requested-With': 'XMLHttpRequest'
-        }
-      });
-
-      // If server returned JSON, check success; otherwise proceed anyway
-      var contentType = resp.headers.get('Content-Type') || '';
-      if (contentType.indexOf('application/json') !== -1) {
-        var json = await resp.json();
-        if (json && json.success === true) {
-          // server-side session destroyed
-          window.location.href = target;
-          return;
-        } else {
-          // server responded but indicated failure - still redirect as fallback
-          console.debug('Logout: server responded but success !== true', json);
-          window.location.href = target;
-          return;
-        }
-      } else {
-        // Not JSON (maybe redirect HTML) - follow through and redirect client-side
-        window.location.href = target;
-        return;
-      }
-    } catch (err) {
-      // network or fetch error — still proceed to redirect
-      console.debug('header-resident: server logout request failed', err);
-      window.location.href = target;
+    if (submitLogoutForm()) {
       return;
     }
+
+    window.location.href = target;
   }
 
   // Attach header behaviours (profile open + logout)

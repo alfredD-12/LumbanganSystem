@@ -60,7 +60,7 @@ class User {
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':username', $username);
         $stmt->execute();
-        return $stmt->rowCount() > 0;
+        return $stmt->fetch(PDO::FETCH_ASSOC) !== false;
     }
 
     /**
@@ -71,7 +71,7 @@ class User {
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':email', $email);
         $stmt->execute();
-        return $stmt->rowCount() > 0;
+        return $stmt->fetch(PDO::FETCH_ASSOC) !== false;
     }
 
     /**

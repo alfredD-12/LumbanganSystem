@@ -49,7 +49,7 @@ class AuthController
             return;
         }
 
-        if (!$this->hasValidAuthCsrfToken()) {
+        if (!csrf_request_is_valid()) {
             $this->respondJson([
                 'success' => false,
                 'code' => 'invalid_csrf',
@@ -202,19 +202,6 @@ class AuthController
         return '0.0.0.0';
     }
 
-    private function hasValidAuthCsrfToken()
-    {
-        $headerName = 'HTTP_' . str_replace('-', '_', strtoupper(csrf_header_name()));
-        $submittedToken = $_SERVER[$headerName] ?? '';
-
-        if ($submittedToken === '') {
-            $fieldName = csrf_field_name();
-            $submittedToken = $_POST[$fieldName] ?? $_POST['csrf_token'] ?? '';
-        }
-
-        return csrf_validate($submittedToken, csrf_field_name()) || csrf_validate($submittedToken, 'csrf_token');
-    }
-
     private function respondJson(array $payload, $statusCode = 200)
     {
         http_response_code((int) $statusCode);
@@ -247,180 +234,12 @@ class AuthController
      */
     public function register()
     {
-        try {
-            header('Content-Type: application/json');
-
-            // Enable error display for debugging
-            error_reporting(E_ALL);
-            ini_set('display_errors', 1);
-
-            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-                echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-                return;
-            }
-
-            csrf_require_valid_token();
-        } catch (Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
-            return;
-        }
-
-        // Get form data
-        $username = trim($_POST['username'] ?? '');
-        $email = trim($_POST['email'] ?? '');
-        $mobile = trim($_POST['mobile'] ?? '');
-        $password = $_POST['password'] ?? '';
-        $confirm_password = $_POST['confirm_password'] ?? '';
-        $first_name = trim($_POST['first_name'] ?? '');
-        $last_name = trim($_POST['last_name'] ?? '');
-        $middle_name = trim($_POST['middle_name'] ?? '');
-        $suffix = trim($_POST['suffix'] ?? '') ?: null;
-        $sex = $_POST['sex'] ?? null; // Optional - will be filled in survey
-        $birthdate = $_POST['birthdate'] ?? null; // Optional - will be filled in survey
-        $marital_status = $_POST['marital_status'] ?? 'Single';
-
-        // Log received data for debugging
-        error_log("Registration attempt - Username: $username, Email: $email, First: $first_name, Last: $last_name");
-
-        // Validate required fields (sex and birthdate are now optional)
-        if (empty($username) || empty($email) || empty($password) || empty($first_name) || empty($last_name)) {
-            echo json_encode(['success' => false, 'message' => 'Please fill in all required fields']);
-            return;
-        }
-
-        // Validate password match
-        if ($password !== $confirm_password) {
-            echo json_encode(['success' => false, 'message' => 'Passwords do not match']);
-            return;
-        }
-
-        // Validate password strength (minimum 6 characters)
-        if (strlen($password) < 6) {
-            echo json_encode(['success' => false, 'message' => 'Password must be at least 6 characters long']);
-            return;
-        }
-
-        // Validate email/contact format (accept both email and phone number)
-        $isEmail = filter_var($email, FILTER_VALIDATE_EMAIL);
-        $isPhone = preg_match('/^(09|\+639)\d{9}$/', $email); // Philippine mobile format
-
-        if (!$isEmail && !$isPhone && strlen($email) < 3) {
-            echo json_encode(['success' => false, 'message' => 'Please provide a valid email or contact number']);
-            return;
-        }
-
-        // Check if username already exists (case-insensitive)
-        if ($this->userModel->usernameExists($username)) {
-            echo json_encode(['success' => false, 'message' => 'This username is already taken. Please choose another.']);
-            return;
-        }
-
-        // Check if email/contact already exists (case-insensitive)
-        if ($this->userModel->emailExists($email)) {
-            echo json_encode(['success' => false, 'message' => 'This email or contact number is already registered.']);
-            return;
-        }
-
-        // Prepare person data
-        $personData = [
-            'first_name' => $first_name,
-            'last_name' => $last_name,
-            'middle_name' => $middle_name ?: null,
-            'suffix' => $suffix,
-            'sex' => $sex,
-            'birthdate' => $birthdate,
-            'marital_status' => $marital_status
-        ];
-
-        // Handle face embedding and image
-        $faceEmbedding = null;
-        $faceImagePath = null;
-
-        $faceEmbeddingRaw = trim($_POST['face_embedding'] ?? '');
-        $faceImageB64     = trim($_POST['face_image_b64'] ?? '');
-
-        if (!empty($faceEmbeddingRaw)) {
-            $decoded = json_decode($faceEmbeddingRaw, true);
-            if (is_array($decoded) && count($decoded) === 128) {
-                $faceEmbedding = $faceEmbeddingRaw;
-            }
-        }
-
-        // Save face image if provided
-        if (!empty($faceImageB64) && $faceEmbedding) {
-            try {
-                $uploadDir = dirname(__DIR__) . '/uploads/faces/';
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0755, true);
-                }
-                // Strip data URI prefix
-                $imgData = preg_replace('/^data:image\/\w+;base64,/', '', $faceImageB64);
-                $imgBytes = base64_decode($imgData);
-                if ($imgBytes !== false) {
-                    $filename = 'face_' . uniqid('', true) . '.jpg';
-                    file_put_contents($uploadDir . $filename, $imgBytes);
-                    $faceImagePath = 'faces/' . $filename;
-                }
-            } catch (Exception $imgEx) {
-                error_log('Face image save error: ' . $imgEx->getMessage());
-            }
-        }
-
-        // Prepare user data
-        $userData = [
-            'username'       => $username,
-            'email'          => $email,
-            'mobile'         => $mobile ?: null,
-            'password_hash'  => password_hash($password, PASSWORD_DEFAULT),
-            'face_embedding' => $faceEmbedding,
-            'face_image_path' => $faceImagePath,
-        ];
-
-        // Create user
-        try {
-            error_log("About to create user with data: " . json_encode($personData) . " | " . json_encode($userData));
-            $user_id = $this->userModel->create($personData, $userData);
-            error_log("User creation returned ID: " . ($user_id ? $user_id : 'false'));
-
-            if ($user_id) {
-                // Get the created user details
-                $user = $this->userModel->findByUsername($username);
-                error_log("Found user after creation: " . ($user ? json_encode($user) : 'null'));
-
-                if ($user) {
-                    // Set session variables and auto-login
-                    $_SESSION['user_id'] = $user['id'];
-                    $_SESSION['person_id'] = $user['person_id'];
-                    $_SESSION['username'] = $user['username'];
-                    $_SESSION['first_name'] = $user['first_name'];
-                    $_SESSION['full_name'] = trim($user['first_name'] . ' ' . ($user['middle_name'] ? $user['middle_name'] . ' ' : '') . $user['last_name'] . ' ' . ($user['suffix'] ?? ''));
-                    $_SESSION['email'] = $user['email'] ?? '';
-                    $_SESSION['mobile'] = $user['mobile'] ?? '';
-                    $_SESSION['user_type'] = 'user';
-                    $_SESSION['logged_in'] = true;
-
-                    // Update last login
-                    $this->userModel->updateLastLogin($user['id']);
-
-                    $redirectUrl = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=dashboard_resident';
-                    echo json_encode([
-                        'success' => true,
-                        'message' => 'Registration successful! Redirecting to dashboard...',
-                        'redirect' => $redirectUrl
-                    ]);
-                } else {
-                    error_log("ERROR: User created but not found in database");
-                    echo json_encode(['success' => false, 'message' => 'Registration completed but unable to retrieve user data.']);
-                }
-            } else {
-                error_log("ERROR: User creation returned false");
-                echo json_encode(['success' => false, 'message' => 'Registration failed. Please check all fields and try again.']);
-            }
-        } catch (Exception $e) {
-            error_log("EXCEPTION during user creation: " . $e->getMessage());
-            error_log("Stack trace: " . $e->getTraceAsString());
-            echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
-        }
+        header('Content-Type: application/json');
+        $this->respondJson([
+            'success' => false,
+            'code' => 'legacy_route_disabled',
+            'message' => 'Direct registration is disabled. Use the verification-based signup flow.',
+        ], 410);
     }
 
     /**
@@ -428,6 +247,26 @@ class AuthController
      */
     public function logout()
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->respondJson([
+                'success' => false,
+                'code' => 'invalid_request_method',
+                'message' => 'Logout must be submitted via POST.',
+                'retry_after' => null,
+            ], 405);
+            return;
+        }
+
+        if (!csrf_request_is_valid()) {
+            $this->respondJson([
+                'success' => false,
+                'code' => 'invalid_csrf',
+                'message' => 'Invalid CSRF token.',
+                'retry_after' => null,
+            ], 403);
+            return;
+        }
+
         // Start session if not already started
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
@@ -452,12 +291,22 @@ class AuthController
         session_destroy();
 
         // If request is AJAX/XHR, return JSON success so client fetch() can act on it
-        $isXhr = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
-            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+        $isXhr = (
+            !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest'
+        ) || (
+            !empty($_SERVER['HTTP_ACCEPT']) &&
+            stripos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false
+        );
 
         if ($isXhr) {
             header('Content-Type: application/json');
-            echo json_encode(['success' => true, 'message' => 'Logged out']);
+            echo json_encode([
+                'success' => true,
+                'code' => 'logged_out',
+                'message' => 'Logged out',
+                'retry_after' => null,
+            ]);
             return;
         }
 
@@ -520,6 +369,7 @@ if (realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__) {
                 $controller->logout();
                 break;
             case 'checkUsername':
+            case 'check_username':
                 $controller->checkUsername();
                 break;
             default:

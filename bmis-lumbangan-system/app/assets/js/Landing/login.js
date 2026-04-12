@@ -1,109 +1,14 @@
 const container = document.getElementById("loginContainer");
 const registerBtn = document.getElementById("modalRegisterBtn");
 const loginBtn = document.getElementById("modalLoginBtn");
-let loginCaptchaWidgetId = null;
 let loginCaptchaRequired = false;
-const captchaWidgetIds = {};
-
-async function ensureRecaptchaLoaded(siteKey) {
-  if (!siteKey) {
-    return false;
-  }
-
-  if (typeof grecaptcha !== "undefined" && typeof grecaptcha.ready === "function") {
-    return true;
-  }
-
-  const scriptSelector = 'script[src*="recaptcha/api.js"]';
-  let recaptchaScript = document.querySelector(scriptSelector);
-
-  if (!recaptchaScript) {
-    recaptchaScript = document.createElement("script");
-    recaptchaScript.src = "https://www.google.com/recaptcha/api.js";
-    recaptchaScript.async = true;
-    recaptchaScript.defer = true;
-    document.head.appendChild(recaptchaScript);
-  }
-
-  const timeoutMs = 6000;
-  const pollMs = 100;
-  const start = Date.now();
-
-  while (Date.now() - start < timeoutMs) {
-    if (typeof grecaptcha !== "undefined" && typeof grecaptcha.ready === "function") {
-      return true;
-    }
-    await new Promise((resolve) => setTimeout(resolve, pollMs));
-  }
-
-  return false;
-}
-
-async function ensureVisibleCaptcha(widgetKey, containerId, widgetId, siteKey) {
-  const loaded = await ensureRecaptchaLoaded(siteKey);
-  if (!loaded) {
-    return false;
-  }
-
-  await new Promise((resolve) => {
-    grecaptcha.ready(resolve);
-  });
-
-  const containerEl = document.getElementById(containerId);
-  const widgetEl = document.getElementById(widgetId);
-  if (!containerEl || !widgetEl) {
-    return false;
-  }
-
-  containerEl.style.display = "block";
-
-  if (captchaWidgetIds[widgetKey] !== undefined) {
-    return true;
-  }
-
-  try {
-    const renderedId = grecaptcha.render(widgetEl, {
-      sitekey: siteKey,
-      theme: "light",
-    });
-    captchaWidgetIds[widgetKey] = renderedId;
-    if (widgetKey === "login") {
-      loginCaptchaWidgetId = renderedId;
-    }
-    return true;
-  } catch (err) {
-    console.error("reCAPTCHA widget render error:", err);
-    return false;
-  }
-}
-
-function getVisibleCaptchaToken(widgetKey) {
-  const widgetId = captchaWidgetIds[widgetKey];
-  if (widgetId === undefined || typeof grecaptcha === "undefined") {
-    return "";
-  }
-
-  try {
-    return grecaptcha.getResponse(widgetId) || "";
-  } catch (err) {
-    console.error("reCAPTCHA getResponse error:", err);
-    return "";
-  }
-}
-
-function resetVisibleCaptcha(widgetKey) {
-  const widgetId = captchaWidgetIds[widgetKey];
-  if (widgetId !== undefined && typeof grecaptcha !== "undefined") {
-    try {
-      grecaptcha.reset(widgetId);
-    } catch (err) {
-      console.error("reCAPTCHA reset error:", err);
-    }
-  }
-}
 
 async function ensureVisibleLoginCaptcha(siteKey) {
-  return ensureVisibleCaptcha(
+  if (!window.BMISCaptcha || typeof window.BMISCaptcha.ensureVisibleCaptcha !== "function") {
+    return false;
+  }
+
+  return window.BMISCaptcha.ensureVisibleCaptcha(
     "login",
     "loginRecaptchaContainer",
     "loginRecaptchaWidget",
@@ -112,19 +17,18 @@ async function ensureVisibleLoginCaptcha(siteKey) {
 }
 
 function getVisibleLoginCaptchaToken() {
-  return getVisibleCaptchaToken("login");
+  if (!window.BMISCaptcha || typeof window.BMISCaptcha.getToken !== "function") {
+    return "";
+  }
+
+  return window.BMISCaptcha.getToken("login");
 }
 
 function resetVisibleLoginCaptcha() {
-  resetVisibleCaptcha("login");
+  if (window.BMISCaptcha && typeof window.BMISCaptcha.reset === "function") {
+    window.BMISCaptcha.reset("login");
+  }
 }
-
-window.BMISCaptcha = {
-  ensureLoaded: ensureRecaptchaLoaded,
-  ensureVisibleCaptcha,
-  getToken: getVisibleCaptchaToken,
-  reset: resetVisibleCaptcha,
-};
 
 // Desktop toggle buttons
 if (registerBtn) {
@@ -207,7 +111,7 @@ document
       const metaAuth = document.querySelector('meta[name="app-auth-endpoint"]');
       const authUrlBase = metaAuth
         ? metaAuth.content
-        : "../../controllers/AuthController.php";
+        : "../../public/index.php";
       const response = await fetch(authUrlBase + "?action=login", {
         method: "POST",
         body: formData,
@@ -306,7 +210,7 @@ if (usernameInput) {
         );
         const authUrlBase = metaAuth
           ? metaAuth.content
-          : "../../controllers/AuthController.php";
+          : "../../public/index.php";
         const response = await fetch(authUrlBase + "?action=checkUsername", {
           method: "POST",
           body: formData,

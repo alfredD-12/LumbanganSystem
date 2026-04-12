@@ -55,6 +55,11 @@ class LoginAttemptLogger
         return $this->countRecentByIdentifier($identifier, $minutes, 'failure', $scope);
     }
 
+    public function countRecentFailuresSinceLastSuccessByIdentifier($identifier, $minutes = 30, $scope = 'login')
+    {
+        return $this->countRecentByIdentifier($identifier, $minutes, 'failure', $scope, true);
+    }
+
     public function countRecentSuccessesByIdentifier($identifier, $minutes = 30, $scope = 'login')
     {
         return $this->countRecentByIdentifier($identifier, $minutes, 'success', $scope);
@@ -74,14 +79,23 @@ class LoginAttemptLogger
     {
         $storageIdentifier = $this->normalizeIdentifier($identifier, $scope);
         $windowStart = $this->clock->now()->sub(new DateInterval('PT' . (int) $minutes . 'M'))->format('Y-m-d H:i:s');
+        $lastSuccessAt = $metric === 'failures_since_success'
+            ? $this->findLastSuccessAtByIdentifier($storageIdentifier, $windowStart)
+            : null;
 
         $sql = "SELECT attempted_at
                 FROM {$this->table}
                 WHERE username = :username
                   AND attempted_at >= :window_start";
 
-        if ($metric === 'failure') {
+        if ($metric === 'failure' || $metric === 'failures_since_success') {
             $sql .= " AND attempt_result = 'failure'";
+        } elseif ($metric === 'success' || $metric === 'successes') {
+            $sql .= " AND attempt_result = 'success'";
+        }
+
+        if ($lastSuccessAt !== null) {
+            $sql .= " AND attempted_at > :last_success_at";
         }
 
         $sql .= " ORDER BY attempted_at ASC LIMIT 1";
@@ -89,6 +103,9 @@ class LoginAttemptLogger
         $stmt = $this->conn->prepare($sql);
         $stmt->bindValue(':username', $storageIdentifier);
         $stmt->bindValue(':window_start', $windowStart);
+        if ($lastSuccessAt !== null) {
+            $stmt->bindValue(':last_success_at', $lastSuccessAt);
+        }
         $stmt->execute();
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -131,10 +148,16 @@ class LoginAttemptLogger
         return $this->countRecentByIp($ipAddress, $minutes, 'success', $scope);
     }
 
-    private function countRecentByIdentifier($identifier, $minutes, $result = null, $scope = 'login')
+    public function countRecentFailuresSinceLastSuccessByIp($ipAddress, $minutes = 5, $scope = null)
+    {
+        return $this->countRecentByIp($ipAddress, $minutes, 'failure', $scope, true);
+    }
+
+    private function countRecentByIdentifier($identifier, $minutes, $result = null, $scope = 'login', $sinceLastSuccess = false)
     {
         $storageIdentifier = $this->normalizeIdentifier($identifier, $scope);
         $windowStart = $this->clock->now()->sub(new DateInterval('PT' . (int) $minutes . 'M'))->format('Y-m-d H:i:s');
+        $lastSuccessAt = $sinceLastSuccess ? $this->findLastSuccessAtByIdentifier($storageIdentifier, $windowStart) : null;
 
         $sql = "SELECT COUNT(*) AS event_count
                 FROM {$this->table}
@@ -145,6 +168,10 @@ class LoginAttemptLogger
             $sql .= " AND attempt_result = :attempt_result";
         }
 
+        if ($lastSuccessAt !== null) {
+            $sql .= " AND attempted_at > :last_success_at";
+        }
+
         $stmt = $this->conn->prepare($sql);
         $stmt->bindValue(':username', $storageIdentifier);
         $stmt->bindValue(':window_start', $windowStart);
@@ -153,15 +180,20 @@ class LoginAttemptLogger
             $stmt->bindValue(':attempt_result', $result);
         }
 
+        if ($lastSuccessAt !== null) {
+            $stmt->bindValue(':last_success_at', $lastSuccessAt);
+        }
+
         $stmt->execute();
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return (int) ($row['event_count'] ?? 0);
     }
 
-    private function countRecentByIp($ipAddress, $minutes, $result = null, $scope = null)
+    private function countRecentByIp($ipAddress, $minutes, $result = null, $scope = null, $sinceLastSuccess = false)
     {
         $windowStart = $this->clock->now()->sub(new DateInterval('PT' . (int) $minutes . 'M'))->format('Y-m-d H:i:s');
+        $lastSuccessAt = $sinceLastSuccess ? $this->findLastSuccessAtByIp($ipAddress, $windowStart, $scope) : null;
         $sql = "SELECT COUNT(*) AS event_count
                 FROM {$this->table}
                 WHERE ip_address = :ip
@@ -173,6 +205,10 @@ class LoginAttemptLogger
 
         if ($scope !== null && $scope !== '') {
             $sql .= " AND username LIKE :scope_prefix";
+        }
+
+        if ($lastSuccessAt !== null) {
+            $sql .= " AND attempted_at > :last_success_at";
         }
 
         $stmt = $this->conn->prepare($sql);
@@ -187,10 +223,60 @@ class LoginAttemptLogger
             $stmt->bindValue(':scope_prefix', $scope . ':%');
         }
 
+        if ($lastSuccessAt !== null) {
+            $stmt->bindValue(':last_success_at', $lastSuccessAt);
+        }
+
         $stmt->execute();
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return (int) ($row['event_count'] ?? 0);
+    }
+
+    private function findLastSuccessAtByIdentifier($storageIdentifier, $windowStart)
+    {
+        $stmt = $this->conn->prepare(
+            "SELECT attempted_at
+             FROM {$this->table}
+             WHERE username = :username
+               AND attempt_result = 'success'
+               AND attempted_at >= :window_start
+             ORDER BY attempted_at DESC
+             LIMIT 1"
+        );
+        $stmt->bindValue(':username', $storageIdentifier);
+        $stmt->bindValue(':window_start', $windowStart);
+        $stmt->execute();
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row['attempted_at'] ?? null;
+    }
+
+    private function findLastSuccessAtByIp($ipAddress, $windowStart, $scope = null)
+    {
+        $sql = "SELECT attempted_at
+                FROM {$this->table}
+                WHERE ip_address = :ip
+                  AND attempt_result = 'success'
+                  AND attempted_at >= :window_start";
+
+        if ($scope !== null && $scope !== '') {
+            $sql .= " AND username LIKE :scope_prefix";
+        }
+
+        $sql .= " ORDER BY attempted_at DESC LIMIT 1";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindValue(':ip', $ipAddress);
+        $stmt->bindValue(':window_start', $windowStart);
+
+        if ($scope !== null && $scope !== '') {
+            $stmt->bindValue(':scope_prefix', $scope . ':%');
+        }
+
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row['attempted_at'] ?? null;
     }
 
     private function normalizeIdentifier($identifier, $scope)

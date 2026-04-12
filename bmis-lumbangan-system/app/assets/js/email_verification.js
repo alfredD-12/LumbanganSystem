@@ -1,398 +1,564 @@
 /**
  * Email Verification JavaScript Handler
- * Manages the email verification modal and AJAX requests
+ * Manages the registration verification modal and AJAX requests.
  */
 
-// Get BASE_URL from a script tag or meta tag
 function getBaseUrl() {
-    // Try to get from a meta tag first
-    const metaBase = document.querySelector('meta[name="base-url"]');
-    if (metaBase) {
-        // Always ensure trailing slash so concatenation like BASE_URL + 'file.php' works correctly
-        const url = metaBase.content;
-        return url.endsWith('/') ? url : url + '/';
-    }
-    
-    // Fallback: construct from current location
-    const path = window.location.pathname;
-    const parts = path.split('/');
-    // Remove filename if present
-    if (parts[parts.length - 1].includes('.')) {
-        parts.pop();
-    }
-    // Go up to root (usually /Lumbangan_BMIS/bmis-lumbangan-system/)
-    while (parts.length > 0 && !parts[parts.length - 1].includes('bmis-lumbangan-system')) {
-        parts.pop();
-    }
-    return parts.join('/') + '/';
+  const metaBase = document.querySelector('meta[name="base-url"]');
+  if (metaBase) {
+    const url = metaBase.content;
+    return url.endsWith("/") ? url : `${url}/`;
+  }
+
+  const path = window.location.pathname;
+  const parts = path.split("/");
+  if (parts[parts.length - 1].includes(".")) {
+    parts.pop();
+  }
+
+  while (parts.length > 0 && !parts[parts.length - 1].includes("bmis-lumbangan-system")) {
+    parts.pop();
+  }
+
+  return `${parts.join("/")}/`;
 }
 
 const BASE_URL = getBaseUrl();
-// email_verification.php lives at the project root (one level above /app/)
-const ROOT_URL = BASE_URL.replace(/\/app\/?$/, '/');
+const ROOT_URL = BASE_URL.replace(/\/app\/?$/, "/");
 
-// Store registration data and verification state
+function getFrontControllerUrl() {
+  const metaFrontController = document.querySelector('meta[name="app-front-controller"]');
+  if (metaFrontController?.content) {
+    return metaFrontController.content;
+  }
+
+  return `${ROOT_URL}public/index.php`;
+}
+
 let registrationFormData = null;
-let verificationEmail = '';
-let verificationToken = '';
+let verificationTarget = "";
+let verificationToken = "";
 let countdownInterval = null;
+let verifyCaptchaRequired = false;
 
-/**
- * Open the email verification modal (called from registration form)
- */
+function getRecaptchaSiteKey() {
+  return document.querySelector('meta[name="recaptcha-site-key"]')?.content || "";
+}
+
+function getCsrfFieldName() {
+  return document.querySelector('meta[name="csrf-field"]')?.content || "csrf_token";
+}
+
+function getCsrfToken() {
+  return document.querySelector('meta[name="csrf-token"]')?.content || "";
+}
+
+function cloneFormData(formData) {
+  const clone = new FormData();
+  for (const [key, value] of formData.entries()) {
+    clone.append(key, value);
+  }
+  return clone;
+}
+
+function appendCsrf(formData) {
+  const fieldName = getCsrfFieldName();
+  const token = getCsrfToken();
+  if (fieldName && token && !formData.has(fieldName)) {
+    formData.append(fieldName, token);
+  }
+}
+
+async function ensureRegistrationCaptcha(step) {
+  const siteKey = getRecaptchaSiteKey();
+  if (!siteKey || !window.BMISCaptcha || typeof window.BMISCaptcha.ensureVisibleCaptcha !== "function") {
+    return false;
+  }
+
+  return window.BMISCaptcha.ensureVisibleCaptcha(
+    `registration-step${step}`,
+    `registerRecaptchaContainer${step}`,
+    `registerRecaptchaWidget${step}`,
+    siteKey,
+  );
+}
+
+function getRegistrationCaptchaToken(step) {
+  if (!window.BMISCaptcha || typeof window.BMISCaptcha.getToken !== "function") {
+    return "";
+  }
+
+  return window.BMISCaptcha.getToken(`registration-step${step}`);
+}
+
+async function waitForRegistrationCaptchaToken(step, timeoutMs = 1200) {
+  const startedAt = Date.now();
+  while (Date.now() - startedAt < timeoutMs) {
+    const token = getRegistrationCaptchaToken(step);
+    if (token) {
+      return token;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 120));
+  }
+
+  return getRegistrationCaptchaToken(step);
+}
+
+function resetRegistrationCaptcha(step) {
+  const tokenInput = document.getElementById(`registerCaptchaTokenStep${step}`);
+  if (tokenInput) {
+    tokenInput.value = "";
+  }
+
+  if (window.BMISCaptcha && typeof window.BMISCaptcha.reset === "function") {
+    window.BMISCaptcha.reset(`registration-step${step}`);
+  }
+}
+
+function hideRegistrationCaptcha(step) {
+  const tokenInput = document.getElementById(`registerCaptchaTokenStep${step}`);
+  if (tokenInput) {
+    tokenInput.value = "";
+  }
+
+  if (window.BMISCaptcha && typeof window.BMISCaptcha.hide === "function") {
+    window.BMISCaptcha.hide(`registerRecaptchaContainer${step}`);
+  }
+}
+
+async function requireRegistrationCaptcha(step, message) {
+  const rendered = await ensureRegistrationCaptcha(step);
+  if (!rendered) {
+    showEmailVerifyError(step, "Unable to load reCAPTCHA challenge. Please refresh and try again.");
+    return "";
+  }
+
+  const token = getRegistrationCaptchaToken(step);
+  const resolvedToken = token || (await waitForRegistrationCaptchaToken(step));
+  const tokenInput = document.getElementById(`registerCaptchaTokenStep${step}`);
+  if (tokenInput) {
+    tokenInput.value = resolvedToken;
+  }
+
+  if (!resolvedToken) {
+    showEmailVerifyError(step, message || "Please complete the reCAPTCHA challenge to continue.");
+    return "";
+  }
+
+  return resolvedToken;
+}
+
 function openEmailVerificationModal(formData) {
-    // Store the form data
-    registrationFormData = formData;
-    verificationEmail = formData.get('email');
-    
-    // Show modal
-    const modal = document.getElementById('emailVerifyModal');
-    
-    if (modal) {
-        modal.style.display = 'flex';
-        modal.classList.add('show');
-        document.body.style.overflow = 'hidden';
-        showEmailVerifyStep(1);
-    }
+  registrationFormData = cloneFormData(formData);
+  verificationTarget = String(formData.get("email") || formData.get("mobile") || "").trim();
+  verificationToken = "";
+  verifyCaptchaRequired = false;
+
+  const modal = document.getElementById("emailVerifyModal");
+  if (modal) {
+    modal.style.display = "flex";
+    modal.classList.add("show");
+    document.body.style.overflow = "hidden";
+    showEmailVerifyStep(1);
+    clearEmailVerifyErrors();
+    hideRegistrationCaptcha(2);
+    setTimeout(() => {
+      ensureRegistrationCaptcha(1).catch(() => {});
+    }, 0);
+  }
 }
 
-/**
- * Close the email verification modal
- */
 function closeEmailVerifyModal() {
-    const modal = document.getElementById('emailVerifyModal');
-    if (modal) {
-        modal.classList.remove('show');
-        setTimeout(() => {
-            modal.style.display = 'none';
-        }, 300); // Wait for fade out animation
-        document.body.style.overflow = 'auto';
-    }
-    
-    // Clear countdown
-    if (countdownInterval) {
-        clearInterval(countdownInterval);
-        countdownInterval = null;
-    }
-    
-    // Reset form
-    const codeInput = document.getElementById('emailVerifyCode');
-    if (codeInput) codeInput.value = '';
-    
-    // Clear errors
-    clearEmailVerifyErrors();
+  const modal = document.getElementById("emailVerifyModal");
+  if (modal) {
+    modal.classList.remove("show");
+    setTimeout(() => {
+      modal.style.display = "none";
+    }, 300);
+    document.body.style.overflow = "auto";
+  }
+
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+    countdownInterval = null;
+  }
+
+  const codeInput = document.getElementById("emailVerifyCode");
+  if (codeInput) {
+    codeInput.value = "";
+  }
+
+  resetRegistrationCaptcha(1);
+  resetRegistrationCaptcha(2);
+  hideRegistrationCaptcha(1);
+  hideRegistrationCaptcha(2);
+  clearEmailVerifyErrors();
 }
 
-/**
- * Back to registration (close modal and reopen login modal)
- */
 function backToRegistration() {
-    closeEmailVerifyModal();
-    
-    // Reopen login modal to registration tab
-    const loginModal = document.getElementById('loginModal');
-    if (loginModal) {
-        loginModal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-        
-        // Switch to sign up view
-        const container = document.getElementById('loginContainer');
-        if (container) {
-            container.classList.add('login-active');
-        }
-    }
+  closeEmailVerifyModal();
+
+  const loginModal = document.getElementById("loginModal");
+  if (loginModal) {
+    loginModal.style.display = "flex";
+    loginModal.classList.add("show");
+    document.body.style.overflow = "hidden";
+  }
+
+  const container = document.getElementById("loginContainer");
+  if (container) {
+    container.classList.add("active");
+  }
 }
 
-/**
- * Show specific step in the modal
- */
 function showEmailVerifyStep(step) {
-    document.getElementById('emailVerifyStep1').style.display = step === 1 ? 'block' : 'none';
-    document.getElementById('emailVerifyStep2').style.display = step === 2 ? 'block' : 'none';
-    document.getElementById('emailVerifyStep3').style.display = step === 3 ? 'block' : 'none';
+  document.getElementById("emailVerifyStep1").style.display = step === 1 ? "block" : "none";
+  document.getElementById("emailVerifyStep2").style.display = step === 2 ? "block" : "none";
+  document.getElementById("emailVerifyStep3").style.display = step === 3 ? "block" : "none";
 }
 
-/**
- * Clear all error messages
- */
 function clearEmailVerifyErrors() {
-    const errors = ['emailVerifyStep1Error', 'emailVerifyStep2Error'];
-    errors.forEach(id => {
-        const errorDiv = document.getElementById(id);
-        if (errorDiv) {
-            errorDiv.style.display = 'none';
-            const span = errorDiv.querySelector('span');
-            if (span) span.textContent = '';
-        }
-    });
+  ["emailVerifyStep1Error", "emailVerifyStep2Error"].forEach((id) => {
+    const errorDiv = document.getElementById(id);
+    if (!errorDiv) {
+      return;
+    }
+
+    errorDiv.style.display = "none";
+    errorDiv.style.background = "";
+    errorDiv.style.borderLeftColor = "";
+    const span = errorDiv.querySelector("span");
+    const icon = errorDiv.querySelector("i");
+    if (span) {
+      span.textContent = "";
+      span.style.color = "";
+    }
+    if (icon) {
+      icon.className = "fas fa-exclamation-circle";
+      icon.style.color = "";
+    }
+  });
 }
 
-/**
- * Show error message
- */
 function showEmailVerifyError(step, message) {
-    const errorDiv = document.getElementById(`emailVerifyStep${step}Error`);
-    if (errorDiv) {
-        const span = errorDiv.querySelector('span');
-        if (span) span.textContent = message;
-        errorDiv.style.display = 'block';
-    }
+  const errorDiv = document.getElementById(`emailVerifyStep${step}Error`);
+  if (!errorDiv) {
+    return;
+  }
+
+  const span = errorDiv.querySelector("span");
+  if (span) {
+    span.textContent = message;
+  }
+  errorDiv.style.display = "block";
 }
 
-/**
- * Step 1: Send verification code to email
- */
-function sendVerificationCode() {
-    clearEmailVerifyErrors();
-    
-    if (!registrationFormData) {
-        showEmailVerifyError(1, 'No registration data found. Please try again.');
-        return;
-    }
-    
-    // Disable button and show loading
-    const btn = event.target;
-    const originalText = btn.innerHTML;
+function showEmailVerifySuccess(step, message) {
+  const errorDiv = document.getElementById(`emailVerifyStep${step}Error`);
+  if (!errorDiv) {
+    return;
+  }
+
+  const span = errorDiv.querySelector("span");
+  const icon = errorDiv.querySelector("i");
+  errorDiv.style.display = "block";
+  errorDiv.style.background = "#f0fff4";
+  errorDiv.style.borderLeftColor = "#48bb78";
+
+  if (icon) {
+    icon.className = "fas fa-check-circle";
+    icon.style.color = "#48bb78";
+  }
+
+  if (span) {
+    span.textContent = message;
+    span.style.color = "#2f855a";
+  }
+}
+
+async function sendVerificationCode(buttonEl) {
+  clearEmailVerifyErrors();
+
+  if (!registrationFormData) {
+    showEmailVerifyError(1, "No registration data found. Please try again.");
+    return;
+  }
+
+  const captchaToken = await requireRegistrationCaptcha(
+    1,
+    "Please complete the reCAPTCHA challenge before requesting a verification code.",
+  );
+  if (!captchaToken) {
+    return;
+  }
+
+  const btn = buttonEl || event?.target;
+  const originalText = btn ? btn.innerHTML : "";
+  if (btn) {
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
-    
-    fetch(ROOT_URL + 'email_verification.php?action=send_code', {
-        method: 'POST',
-        body: registrationFormData
-    })
-    .then(res => res.text())
-    .then(text => {
-        btn.disabled = false;
-        btn.innerHTML = originalText;
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch (e) {
-            console.error('[send_code] Non-JSON response:', text);
-            showEmailVerifyError(1, 'Server error. Please try again.');
-            return;
-        }
-        if (data.success) {
-            // Show email in step 2
-            const emailDisplay = document.getElementById('emailVerifyEmailDisplay');
-            if (emailDisplay) emailDisplay.textContent = verificationEmail;
-            // Start countdown timer
-            startEmailVerifyCountdown();
-            // Move to step 2
-            showEmailVerifyStep(2);
-        } else {
-            showEmailVerifyError(1, data.message || 'Failed to send verification code');
-        }
-    })
-    .catch(err => {
-        btn.disabled = false;
-        btn.innerHTML = originalText;
-        console.error('[send_code] fetch error:', err);
-        showEmailVerifyError(1, 'Network error. Please try again.');
+  }
+
+  try {
+    const formData = cloneFormData(registrationFormData);
+    appendCsrf(formData);
+    formData.set("captcha_token", captchaToken);
+
+    const response = await fetch(`${getFrontControllerUrl()}?action=send_verification_code`, {
+      method: "POST",
+      body: formData,
+      credentials: "same-origin",
     });
+
+    const text = await response.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (parseError) {
+      console.error("[send_code] Non-JSON response:", text);
+      showEmailVerifyError(1, "Server error. Please try again.");
+      return;
+    }
+
+    if (data.success) {
+      verificationTarget = data.target || verificationTarget;
+      const emailDisplay = document.getElementById("emailVerifyEmailDisplay");
+      if (emailDisplay) {
+        emailDisplay.textContent = verificationTarget;
+      }
+
+      startEmailVerifyCountdown();
+      verifyCaptchaRequired = false;
+      showEmailVerifyStep(2);
+      clearEmailVerifyErrors();
+      hideRegistrationCaptcha(1);
+      resetRegistrationCaptcha(1);
+      hideRegistrationCaptcha(2);
+      resetRegistrationCaptcha(2);
+      return;
+    }
+
+    showEmailVerifyError(1, data.message || "Failed to send verification code.");
+  } catch (error) {
+    console.error("[send_code] fetch error:", error);
+    showEmailVerifyError(1, "Network error. Please try again.");
+  } finally {
+    resetRegistrationCaptcha(1);
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
+  }
 }
 
-/**
- * Step 2: Verify the code entered by user
- */
-function verifyEmailCode(e) {
-    e.preventDefault();
-    clearEmailVerifyErrors();
-    
-    const code = document.getElementById('emailVerifyCode').value.trim();
-    
-    if (!code || code.length !== 6) {
-        showEmailVerifyError(2, 'Please enter a valid 6-digit code');
-        return;
-    }
-    
-    const formData = new FormData();
-    formData.append('email', verificationEmail);
-    formData.append('code', code);
-    
-    // Disable button and show loading
-    const btn = e.target.querySelector('button[type="submit"]');
-    const originalText = btn.innerHTML;
+async function verifyEmailCode(e) {
+  e.preventDefault();
+  clearEmailVerifyErrors();
+
+  const code = document.getElementById("emailVerifyCode")?.value.trim() || "";
+  if (!code || code.length !== 6) {
+    showEmailVerifyError(2, "Please enter a valid 6-digit code.");
+    return;
+  }
+
+  const btn = e.target.querySelector('button[type="submit"]');
+  const originalText = btn ? btn.innerHTML : "";
+  if (btn) {
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
-    
-    fetch(ROOT_URL + 'email_verification.php?action=verify_code', {
-        method: 'POST',
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-        btn.disabled = false;
-        btn.innerHTML = originalText;
-        
-        if (data.success) {
-            verificationToken = data.token;
-            
-            // Clear countdown
-            if (countdownInterval) {
-                clearInterval(countdownInterval);
-            }
-            
-            // Complete registration
-            completeRegistration();
-        } else {
-            showEmailVerifyError(2, data.message || 'Invalid or expired code');
-        }
-    })
-    .catch(err => {
-        btn.disabled = false;
-        btn.innerHTML = originalText;
-        showEmailVerifyError(2, 'An error occurred. Please try again.');
-    });
-}
+  }
 
-/**
- * Step 3: Complete registration and create account
- */
-function completeRegistration() {
-    showEmailVerifyStep(3);
-    
+  try {
     const formData = new FormData();
-    formData.append('token', verificationToken);
+    appendCsrf(formData);
+    formData.append("verification_target", verificationTarget);
+    formData.append("email", verificationTarget);
+    formData.append("code", code);
 
-    // Forward face data that was captured during face scan
-    if (registrationFormData) {
-        const faceEmbedding = registrationFormData.get('face_embedding');
-        const faceImageB64  = registrationFormData.get('face_image_b64');
-        if (faceEmbedding)  formData.append('face_embedding',  faceEmbedding);
-        if (faceImageB64)   formData.append('face_image_b64',  faceImageB64);
+    if (verifyCaptchaRequired) {
+      const captchaToken = await requireRegistrationCaptcha(
+        2,
+        "Please complete the reCAPTCHA challenge before verifying your code.",
+      );
+      if (!captchaToken) {
+        return;
+      }
+      formData.set("captcha_token", captchaToken);
+    } else {
+      const existingToken = getRegistrationCaptchaToken(2);
+      if (existingToken) {
+        formData.set("captcha_token", existingToken);
+      }
     }
-    
-    fetch(ROOT_URL + 'email_verification.php?action=complete_registration', {
-        method: 'POST',
-        body: formData
-    })
-    .then(res => res.text())
-    .then(text => {
-        try {
-            const data = JSON.parse(text);
-            
-            if (data.success) {
-                // Immediate redirect
-                if (data.redirect) {
-                    window.location.href = data.redirect;
-                } else {
-                    // Force redirect
-                    window.location.href = BASE_URL + 'public/index.php?page=dashboard_resident';
-                }
-            } else {
-                // Show error and go back to step 2
-                showEmailVerifyStep(2);
-                showEmailVerifyError(2, data.message || 'Registration failed. Please try again.');
-            }
-        } catch (e) {
-            showEmailVerifyStep(2);
-            showEmailVerifyError(2, 'Invalid server response. Please try again.');
-        }
-    })
-    .catch(err => {
-        showEmailVerifyStep(2);
-        showEmailVerifyError(2, 'An error occurred during registration. Please try again.');
-    });
-}
 
-/**
- * Resend verification code
- */
-function resendVerificationCode() {
-    clearEmailVerifyErrors();
-    
-    const formData = new FormData();
-    formData.append('email', verificationEmail);
-    
-    fetch(ROOT_URL + 'email_verification.php?action=resend_code', {
-        method: 'POST',
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            // Clear and restart countdown
-            if (countdownInterval) {
-                clearInterval(countdownInterval);
-            }
-            startEmailVerifyCountdown();
-            
-            // Clear code input
-            const codeInput = document.getElementById('emailVerifyCode');
-            if (codeInput) codeInput.value = '';
-            
-            // Show success message briefly
-            const errorDiv = document.getElementById('emailVerifyStep2Error');
-            if (errorDiv) {
-                errorDiv.style.background = '#f0fff4';
-                errorDiv.style.borderLeftColor = '#48bb78';
-                const span = errorDiv.querySelector('span');
-                const icon = errorDiv.querySelector('i');
-                if (icon) {
-                    icon.className = 'fas fa-check-circle';
-                    icon.style.color = '#48bb78';
-                }
-                if (span) {
-                    span.textContent = 'New code sent to your email';
-                    span.style.color = '#2f855a';
-                }
-                errorDiv.style.display = 'block';
-                
-                // Hide after 3 seconds
-                setTimeout(() => {
-                    errorDiv.style.display = 'none';
-                    errorDiv.style.background = '#fee';
-                    errorDiv.style.borderLeftColor = '#e53e3e';
-                    if (icon) {
-                        icon.className = 'fas fa-exclamation-circle';
-                        icon.style.color = '#e53e3e';
-                    }
-                    if (span) span.style.color = '#c53030';
-                }, 3000);
-            }
-        } else {
-            showEmailVerifyError(2, data.message || 'Failed to resend code');
-        }
-    })
-    .catch(err => {
-        showEmailVerifyError(2, 'An error occurred. Please try again.');
-        console.error('Error:', err);
+    const response = await fetch(`${getFrontControllerUrl()}?action=verify_registration_code`, {
+      method: "POST",
+      body: formData,
+      credentials: "same-origin",
     });
-}
 
-/**
- * Start countdown timer (1 hour = 3600 seconds)
- */
-function startEmailVerifyCountdown() {
-    let timeLeft = 3600; // 1 hour in seconds
-    
-    const timerElement = document.getElementById('emailVerifyTimer');
-    
-    if (countdownInterval) {
+    const data = await response.json();
+    if (data.success) {
+      verificationToken = data.token;
+      verifyCaptchaRequired = false;
+      if (countdownInterval) {
         clearInterval(countdownInterval);
+      }
+      completeRegistration();
+      return;
     }
-    
-    countdownInterval = setInterval(() => {
-        timeLeft--;
-        
-        if (timeLeft <= 0) {
-            clearInterval(countdownInterval);
-            if (timerElement) timerElement.textContent = 'Expired';
-            showEmailVerifyError(2, 'Verification code has expired. Please request a new code.');
-            return;
-        }
-        
-        // Format time as MM:SS
-        const minutes = Math.floor(timeLeft / 60);
-        const seconds = timeLeft % 60;
-        if (timerElement) {
-            timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-        }
-    }, 1000);
+
+    if ((data.code || "") === "captcha_required") {
+      verifyCaptchaRequired = true;
+      await ensureRegistrationCaptcha(2);
+      showEmailVerifyError(2, data.message || "Complete the reCAPTCHA challenge, then verify again.");
+      return;
+    }
+
+    showEmailVerifyError(2, data.message || "Invalid or expired verification code.");
+  } catch (error) {
+    console.error("[verify_code] error:", error);
+    showEmailVerifyError(2, "An error occurred. Please try again.");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
+
+    if (verifyCaptchaRequired) {
+      resetRegistrationCaptcha(2);
+    }
+  }
 }
 
-// Make function globally accessible
+async function completeRegistration() {
+  showEmailVerifyStep(3);
+
+  try {
+    const formData = new FormData();
+    appendCsrf(formData);
+    formData.append("token", verificationToken);
+
+    if (registrationFormData) {
+      const faceEmbedding = registrationFormData.get("face_embedding");
+      const faceImageB64 = registrationFormData.get("face_image_b64");
+      if (faceEmbedding) {
+        formData.append("face_embedding", faceEmbedding);
+      }
+      if (faceImageB64) {
+        formData.append("face_image_b64", faceImageB64);
+      }
+    }
+
+    const response = await fetch(`${getFrontControllerUrl()}?action=complete_registration`, {
+      method: "POST",
+      body: formData,
+      credentials: "same-origin",
+    });
+
+    const text = await response.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (parseError) {
+      showEmailVerifyStep(2);
+      showEmailVerifyError(2, "Invalid server response. Please try again.");
+      return;
+    }
+
+    if (data.success) {
+      window.location.href = data.redirect || `${BASE_URL}public/index.php?page=dashboard_resident`;
+      return;
+    }
+
+    showEmailVerifyStep(2);
+    showEmailVerifyError(2, data.message || "Registration failed. Please try again.");
+  } catch (error) {
+    console.error("[complete_registration] error:", error);
+    showEmailVerifyStep(2);
+    showEmailVerifyError(2, "An error occurred during registration. Please try again.");
+  }
+}
+
+async function resendVerificationCode() {
+  clearEmailVerifyErrors();
+
+  const captchaToken = await requireRegistrationCaptcha(
+    2,
+    "Please complete the reCAPTCHA challenge before requesting a new code.",
+  );
+  if (!captchaToken) {
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    appendCsrf(formData);
+    formData.append("verification_target", verificationTarget);
+    formData.append("email", verificationTarget);
+    formData.append("captcha_token", captchaToken);
+
+    const response = await fetch(`${getFrontControllerUrl()}?action=resend_verification_code`, {
+      method: "POST",
+      body: formData,
+      credentials: "same-origin",
+    });
+
+    const data = await response.json();
+    if (data.success) {
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+      }
+      startEmailVerifyCountdown();
+      const codeInput = document.getElementById("emailVerifyCode");
+      if (codeInput) {
+        codeInput.value = "";
+      }
+      showEmailVerifySuccess(2, data.message || "New verification code sent.");
+      return;
+    }
+
+    if ((data.code || "") === "captcha_required") {
+      await ensureRegistrationCaptcha(2);
+    }
+    showEmailVerifyError(2, data.message || "Failed to resend code.");
+  } catch (error) {
+    console.error("[resend_code] error:", error);
+    showEmailVerifyError(2, "An error occurred. Please try again.");
+  } finally {
+    resetRegistrationCaptcha(2);
+  }
+}
+
+function startEmailVerifyCountdown() {
+  let timeLeft = 3600;
+  const timerElement = document.getElementById("emailVerifyTimer");
+
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+  }
+
+  countdownInterval = setInterval(() => {
+    timeLeft -= 1;
+
+    if (timeLeft <= 0) {
+      clearInterval(countdownInterval);
+      if (timerElement) {
+        timerElement.textContent = "Expired";
+      }
+      showEmailVerifyError(2, "Verification code has expired. Please request a new code.");
+      return;
+    }
+
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    if (timerElement) {
+      timerElement.textContent = `${minutes}:${String(seconds).padStart(2, "0")}`;
+    }
+  }, 1000);
+}
+
 window.openEmailVerificationModal = openEmailVerificationModal;
 window.closeEmailVerifyModal = closeEmailVerifyModal;
 window.backToRegistration = backToRegistration;

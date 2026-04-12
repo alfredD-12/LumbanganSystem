@@ -36,11 +36,10 @@ render_favicon();
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
   <title><?php echo h($pageTitle ?? 'Barangay Lumbangan System'); ?></title>
 
-  <!-- Server-provided logout endpoint for header JS to call (centralized via index page routing) -->
-  <meta name="app-auth-logout" content="<?php echo h(rtrim(BASE_PUBLIC, '/') . '/index.php?page=logout'); ?>">
+  <meta name="app-auth-logout" content="<?php echo h(rtrim(BASE_PUBLIC, '/') . '/index.php?action=logout'); ?>">
+  <meta name="app-landing-url" content="<?php echo h(rtrim(BASE_PUBLIC, '/') . '/index.php?page=landing'); ?>">
   <meta name="csrf-token" content="<?php echo h($csrfToken); ?>">
   <meta name="csrf-header" content="<?php echo h($csrfHeader); ?>">
   <meta name="csrf-field" content="<?php echo h($csrfField); ?>">
@@ -58,7 +57,6 @@ render_favicon();
   <!-- If may iba kayong need or idagdag na link pakilagay nalang sa baba -->
   <link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/Survey/wizard_personal.css?v=<?php echo time(); ?>">
   <link rel="stylesheet" href="<?php echo rtrim(BASE_URL, '/'); ?>/assets/css/Survey/bhw-float.css?v=<?php echo time(); ?>">
-  <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/csrf-protection.js"></script>
   <!-- Notification System CSS -->
   <link rel="stylesheet" href="<?php echo BASE_URL . 'assets/css/notifications.css'; ?>">
   <style>
@@ -307,7 +305,7 @@ render_favicon();
                 <hr class="dropdown-divider">
               </li>
               <li>
-                <a class="dropdown-item text-danger" href="<?php echo rtrim(BASE_PUBLIC, '/'); ?>/index.php?page=logout">
+                <a class="dropdown-item text-danger" href="#" id="hdr_logout_btn" data-logout-target="<?php echo h(rtrim(BASE_PUBLIC, '/') . '/index.php?page=landing'); ?>">
                   <i class="fas fa-sign-out-alt"></i>
                   Logout
                 </a>
@@ -318,6 +316,9 @@ render_favicon();
       </div>
     </div>
   </nav>
+  <form id="appLogoutForm" method="post" action="<?php echo h(rtrim(BASE_PUBLIC, '/') . '/index.php?action=logout'); ?>" style="display:none;">
+    <?php echo csrf_input(); ?>
+  </form>
 
   <!-- Notifications Modal -->
 <div class="modal fade" id="notificationsModal" tabindex="-1" aria-hidden="true">

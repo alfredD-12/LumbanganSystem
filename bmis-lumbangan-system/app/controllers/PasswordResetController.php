@@ -44,7 +44,7 @@ class PasswordResetController
             return;
         }
 
-        if (!$this->hasValidAuthCsrfToken()) {
+        if (!csrf_request_is_valid()) {
             $this->respondJson($this->invalidCsrfResponse(), 403);
             return;
         }
@@ -93,7 +93,7 @@ class PasswordResetController
             return;
         }
 
-        if (!$this->hasValidAuthCsrfToken()) {
+        if (!csrf_request_is_valid()) {
             $this->respondJson($this->invalidCsrfResponse(), 403);
             return;
         }
@@ -147,7 +147,7 @@ class PasswordResetController
             return;
         }
 
-        if (!$this->hasValidAuthCsrfToken()) {
+        if (!csrf_request_is_valid()) {
             $this->respondJson($this->invalidCsrfResponse(), 403);
             return;
         }
@@ -223,19 +223,6 @@ class PasswordResetController
         }
 
         return '0.0.0.0';
-    }
-
-    private function hasValidAuthCsrfToken()
-    {
-        $headerName = 'HTTP_' . str_replace('-', '_', strtoupper(csrf_header_name()));
-        $submittedToken = $_SERVER[$headerName] ?? '';
-
-        if ($submittedToken === '') {
-            $fieldName = csrf_field_name();
-            $submittedToken = $_POST[$fieldName] ?? $_POST['csrf_token'] ?? '';
-        }
-
-        return csrf_validate($submittedToken, csrf_field_name()) || csrf_validate($submittedToken, 'csrf_token');
     }
 
     private function invalidCsrfResponse()

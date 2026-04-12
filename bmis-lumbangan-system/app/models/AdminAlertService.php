@@ -20,12 +20,25 @@ class AdminAlertService implements SecurityAlertServiceInterface
     {
         $alertThreshold = defined('ADMIN_ALERT_THRESHOLD_IP') ? (int) ADMIN_ALERT_THRESHOLD_IP : 10;
         $distributedIpThreshold = defined('DISTRIBUTED_ATTACK_DISTINCT_IP_THRESHOLD') ? (int) DISTRIBUTED_ATTACK_DISTINCT_IP_THRESHOLD : 5;
-        $ipFailures = $logger->countRecentFailuresByIp($ipAddress, 5);
+        $ipWindowMinutes = 5;
+        $identifierWindowMinutes = $this->getIdentifierWindowMinutes($scope);
+        $ipFailures = $logger->countRecentFailuresByIp($ipAddress, $ipWindowMinutes);
+        $identifierFailures = $logger->countRecentFailuresByIdentifier($target, $identifierWindowMinutes, $scope);
+        $distinctIpCount = $logger->countDistinctFailedIpByIdentifier($target, 10, $scope);
 
         if ($ipFailures >= $alertThreshold) {
             $alertType = 'ip_threshold';
             if ($this->shouldSendAlert($alertType, $ipAddress, 60)) {
-                $details = sprintf('[%s] IP %s reached %d failures in 5 minutes.', $scope, $ipAddress, $ipFailures);
+                $details = sprintf(
+                    '[%s] IP %s reached %d failed attempts in %d minutes. Identifier %s has %d failed attempts in %d minutes.',
+                    $scope,
+                    $ipAddress,
+                    $ipFailures,
+                    $ipWindowMinutes,
+                    $target,
+                    $identifierFailures,
+                    $identifierWindowMinutes
+                );
                 $emailSent = $this->sendAlertEmail($alertType, $ipAddress, $ipFailures, $details);
                 $this->logAlert($alertType, $ipAddress, $ipFailures, $emailSent, $details);
             }
@@ -34,20 +47,53 @@ class AdminAlertService implements SecurityAlertServiceInterface
         if ($justLocked) {
             $alertType = 'account_lockout';
             if ($this->shouldSendAlert($alertType, $target, 30)) {
-                $details = sprintf('[%s] Identifier %s was temporarily locked after repeated failures from IP %s.', $scope, $target, $ipAddress);
-                $emailSent = $this->sendAlertEmail($alertType, $target, $ipFailures, $details);
-                $this->logAlert($alertType, $target, $ipFailures, $emailSent, $details);
+                $details = sprintf(
+                    '[%s] Identifier %s was temporarily locked after %d failed attempts within %d minutes from IP %s. The triggering IP recorded %d failed attempts in %d minutes.',
+                    $scope,
+                    $target,
+                    $identifierFailures,
+                    $identifierWindowMinutes,
+                    $ipAddress,
+                    $ipFailures,
+                    $ipWindowMinutes
+                );
+                $emailSent = $this->sendAlertEmail($alertType, $target, $identifierFailures, $details);
+                $this->logAlert($alertType, $target, $identifierFailures, $emailSent, $details);
             }
         }
 
-        $distinctIpCount = $logger->countDistinctFailedIpByIdentifier($target, 10, $scope);
         if ($distinctIpCount >= $distributedIpThreshold) {
             $alertType = 'distributed_attack';
             if ($this->shouldSendAlert($alertType, $target, 60)) {
-                $details = sprintf('[%s] Identifier %s received failures from %d distinct IPs within 10 minutes.', $scope, $target, $distinctIpCount);
+                $details = sprintf(
+                    '[%s] Identifier %s received %d failed attempts from %d distinct IPs within 10 minutes.',
+                    $scope,
+                    $target,
+                    $identifierFailures,
+                    $distinctIpCount
+                );
                 $emailSent = $this->sendAlertEmail($alertType, $target, $distinctIpCount, $details);
                 $this->logAlert($alertType, $target, $distinctIpCount, $emailSent, $details);
             }
+        }
+    }
+
+    private function getIdentifierWindowMinutes($scope)
+    {
+        switch ((string) $scope) {
+            case 'registration_request':
+                return (int) REGISTRATION_REQUEST_WINDOW_MINUTES;
+            case 'registration_verify':
+                return (int) REGISTRATION_VERIFY_WINDOW_MINUTES;
+            case 'password_reset_request':
+                return (int) PASSWORD_RESET_REQUEST_WINDOW_MINUTES;
+            case 'password_reset_verify':
+                return (int) PASSWORD_RESET_VERIFY_WINDOW_MINUTES;
+            case 'password_reset_submit':
+                return (int) PASSWORD_RESET_SUBMIT_WINDOW_MINUTES;
+            case 'login':
+            default:
+                return (int) ACCOUNT_RATE_LIMIT_WINDOW_MINUTES;
         }
     }
 

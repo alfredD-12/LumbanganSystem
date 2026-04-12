@@ -100,8 +100,6 @@ class AuthSecurityService
 
         $captchaRequired = $context->hasIdentifier() && $this->shouldRequireCaptcha($context, $policy);
         if ($captchaRequired && !$this->captchaVerifier->verify($context->captchaToken, $context->ipAddress, $context->captchaAction)) {
-            $this->recordCaptchaFailure($context);
-
             return [
                 'allowed' => false,
                 'response' => [
@@ -184,6 +182,10 @@ class AuthSecurityService
 
     private function shouldRequireCaptcha(AuthSecurityContext $context, array $policy)
     {
+        if (!empty($policy['captcha_always'])) {
+            return true;
+        }
+
         $identifierCount = $this->countWindowEvents(
             $context,
             $policy['captcha_metric'],
@@ -199,31 +201,16 @@ class AuthSecurityService
         return $identifierCount >= $policy['captcha_trigger_threshold']
             || $ipCount >= $policy['captcha_trigger_threshold'];
     }
-
-    private function recordCaptchaFailure(AuthSecurityContext $context)
-    {
-        $this->rateLimitService->recordFailure($context->ipAddress);
-        $this->loginAttemptLogger->logAttempt(
-            $context->identifier,
-            $context->ipAddress,
-            $context->userAgent,
-            'failure',
-            'captcha_failed',
-            $context->scope
-        );
-
-        $target = $context->hasLockoutKey() ? $context->lockoutKey : $context->getScopedIdentifier();
-        $this->alertService->evaluateAndSend(
-            $context->ipAddress,
-            $target,
-            $context->scope,
-            $this->loginAttemptLogger,
-            false
-        );
-    }
-
     private function countWindowEvents(AuthSecurityContext $context, $metric, $minutes)
     {
+        if ($metric === 'failures_since_success') {
+            return $this->loginAttemptLogger->countRecentFailuresSinceLastSuccessByIdentifier(
+                $context->getScopedIdentifier(),
+                $minutes,
+                $context->scope
+            );
+        }
+
         if ($metric === 'successes') {
             return $this->loginAttemptLogger->countRecentSuccessesByIdentifier(
                 $context->getScopedIdentifier(),
@@ -249,6 +236,14 @@ class AuthSecurityService
 
     private function countIpWindowEvents(AuthSecurityContext $context, $metric, $minutes)
     {
+        if ($metric === 'failures_since_success') {
+            return $this->loginAttemptLogger->countRecentFailuresSinceLastSuccessByIp(
+                $context->ipAddress,
+                $minutes,
+                $context->scope
+            );
+        }
+
         if ($metric === 'successes') {
             return $this->loginAttemptLogger->countRecentSuccessesByIp(
                 $context->ipAddress,
@@ -295,7 +290,34 @@ class AuthSecurityService
                 'captcha_metric' => 'successes',
                 'captcha_window_minutes' => PASSWORD_RESET_REQUEST_WINDOW_MINUTES,
                 'captcha_trigger_threshold' => PASSWORD_RESET_REQUEST_CAPTCHA_TRIGGER_THRESHOLD,
+                'captcha_always' => false,
                 'ip_limit_message' => 'Too many password reset attempts from your network. Please try again shortly.',
+                'lockout' => false,
+                'lockout_message' => '',
+            ],
+            'registration_request' => [
+                'identifier_limit' => REGISTRATION_REQUEST_MAX_ATTEMPTS,
+                'identifier_metric' => 'successes',
+                'identifier_window_minutes' => REGISTRATION_REQUEST_WINDOW_MINUTES,
+                'identifier_limit_message' => 'Too many registration verification requests. Please try again later.',
+                'captcha_metric' => 'successes',
+                'captcha_window_minutes' => REGISTRATION_REQUEST_WINDOW_MINUTES,
+                'captcha_trigger_threshold' => 0,
+                'captcha_always' => REGISTRATION_REQUEST_CAPTCHA_ALWAYS,
+                'ip_limit_message' => 'Too many registration attempts from your network. Please try again shortly.',
+                'lockout' => false,
+                'lockout_message' => '',
+            ],
+            'registration_verify' => [
+                'identifier_limit' => REGISTRATION_VERIFY_MAX_FAILURES,
+                'identifier_metric' => 'failures_since_success',
+                'identifier_window_minutes' => REGISTRATION_VERIFY_WINDOW_MINUTES,
+                'identifier_limit_message' => 'Too many verification attempts. Please request a new code or try again later.',
+                'captcha_metric' => 'failures_since_success',
+                'captcha_window_minutes' => REGISTRATION_VERIFY_WINDOW_MINUTES,
+                'captcha_trigger_threshold' => REGISTRATION_VERIFY_CAPTCHA_TRIGGER_THRESHOLD,
+                'captcha_always' => false,
+                'ip_limit_message' => 'Too many verification attempts from your network. Please try again shortly.',
                 'lockout' => false,
                 'lockout_message' => '',
             ],
@@ -307,6 +329,7 @@ class AuthSecurityService
                 'captcha_metric' => 'failures',
                 'captcha_window_minutes' => PASSWORD_RESET_VERIFY_WINDOW_MINUTES,
                 'captcha_trigger_threshold' => PASSWORD_RESET_VERIFY_CAPTCHA_TRIGGER_THRESHOLD,
+                'captcha_always' => false,
                 'ip_limit_message' => 'Too many verification attempts from your network. Please try again shortly.',
                 'lockout' => false,
                 'lockout_message' => '',
@@ -319,6 +342,7 @@ class AuthSecurityService
                 'captcha_metric' => 'failures',
                 'captcha_window_minutes' => PASSWORD_RESET_SUBMIT_WINDOW_MINUTES,
                 'captcha_trigger_threshold' => PASSWORD_RESET_SUBMIT_CAPTCHA_TRIGGER_THRESHOLD,
+                'captcha_always' => false,
                 'ip_limit_message' => 'Too many password reset attempts from your network. Please try again shortly.',
                 'lockout' => false,
                 'lockout_message' => '',

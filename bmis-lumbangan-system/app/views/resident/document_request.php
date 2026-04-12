@@ -111,7 +111,7 @@ include __DIR__ . '/../../components/resident_components/header-resident.php';
                     <div class="modal-content overflow-auto">
 
                         <!--  FORM STARTS HERE -->
-                        <form action="DocumentRequestController.php" method="POST" enctype="multipart/form-data">
+                        <form action="<?php echo h(rtrim(BASE_PUBLIC, '/') . '/index.php?action=submitRequest'); ?>" method="POST" enctype="multipart/form-data">
                             <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
                             <div class="modal-header modal-header-color">
                                 <h5 class="modal-title" id="newRequestModalLabel">New Document Request</h5>

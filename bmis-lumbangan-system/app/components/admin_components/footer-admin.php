@@ -38,6 +38,23 @@
       const BASE_URL = "<?php echo BASE_URL; ?>";
       const BASE_PUBLIC = "<?php echo BASE_PUBLIC; ?>";
     </script>
+    <script>
+      if (typeof window.handleLogout !== 'function') {
+        window.handleLogout = function(event) {
+          if (event && event.preventDefault) {
+            event.preventDefault();
+          }
+
+          const logoutForm = document.getElementById('appLogoutForm');
+          if (logoutForm) {
+            logoutForm.submit();
+            return;
+          }
+
+          window.location.href = '<?php echo rtrim(BASE_PUBLIC, '/'); ?>/index.php?page=landing';
+        };
+      }
+    </script>
     <!-- Admin Complaint Page JavaScript -->
     <script src="<?php echo BASE_URL . 'assets/js/complaint/admin.js'; ?>"></script>
     <!-- Notification System JavaScript -->

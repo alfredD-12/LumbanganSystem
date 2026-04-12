@@ -42,6 +42,23 @@ if (!function_exists('integration_make_password_reset_controller')) {
     }
 }
 
+if (!function_exists('integration_make_email_verification_controller')) {
+    function integration_make_email_verification_controller(PDO $pdo, FakeClock $clock, FakeCaptchaVerifier $captcha, FakeSecurityAlertService $alerts, FakeRegistrationMailSender $mailSender, FakeRegistrationSmsSender $smsSender)
+    {
+        [, , , $security] = integration_make_auth_dependencies($pdo, $clock, $captcha, $alerts);
+
+        return new EmailVerificationController([
+            'db' => $pdo,
+            'verificationModel' => new EmailVerification($pdo, $clock),
+            'userModel' => new User($pdo),
+            'authSecurityService' => $security,
+            'mailSender' => $mailSender,
+            'smsSender' => $smsSender,
+            'clock' => $clock,
+        ]);
+    }
+}
+
 if (!function_exists('integration_login_attempt')) {
     function integration_login_attempt(AuthController $controller, $username, $password, $captchaToken = '')
     {
@@ -57,6 +74,59 @@ if (!function_exists('integration_login_attempt')) {
     }
 }
 
+if (!function_exists('integration_send_verification_code')) {
+    function integration_send_verification_code(EmailVerificationController $controller, array $payload, $captchaToken = '')
+    {
+        test_apply_post_request(array_merge($payload, ['captcha_token' => $captchaToken]));
+
+        return test_capture_json(function () use ($controller) {
+            $controller->sendVerificationCode();
+        });
+    }
+}
+
+if (!function_exists('integration_resend_verification_code')) {
+    function integration_resend_verification_code(EmailVerificationController $controller, $identifier, $captchaToken = '')
+    {
+        test_apply_post_request([
+            'verification_target' => $identifier,
+            'email' => $identifier,
+            'captcha_token' => $captchaToken,
+        ]);
+
+        return test_capture_json(function () use ($controller) {
+            $controller->resendCode();
+        });
+    }
+}
+
+if (!function_exists('integration_verify_registration_code')) {
+    function integration_verify_registration_code(EmailVerificationController $controller, $identifier, $code, $captchaToken = '')
+    {
+        test_apply_post_request([
+            'verification_target' => $identifier,
+            'email' => $identifier,
+            'code' => $code,
+            'captcha_token' => $captchaToken,
+        ]);
+
+        return test_capture_json(function () use ($controller) {
+            $controller->verifyCode();
+        });
+    }
+}
+
+if (!function_exists('integration_complete_registration')) {
+    function integration_complete_registration(EmailVerificationController $controller, $token, array $extra = [])
+    {
+        test_apply_post_request(array_merge(['token' => $token], $extra));
+
+        return test_capture_json(function () use ($controller) {
+            $controller->completeRegistration();
+        });
+    }
+}
+
 it('covers the full login failure to lockout to recovery lifecycle on mysql', function () {
     $pdo = MysqlAuthTestDatabase::recreate();
     $clock = new FakeClock('2026-04-12 08:00:00');
@@ -66,7 +136,7 @@ it('covers the full login failure to lockout to recovery lifecycle on mysql', fu
     MysqlAuthTestDatabase::seedResidentUser($pdo);
     $controller = integration_make_auth_controller($pdo, $clock, $captcha, $alerts);
 
-    for ($i = 0; $i < 4; $i++) {
+    for ($i = 0; $i < CAPTCHA_TRIGGER_THRESHOLD; $i++) {
         $response = integration_login_attempt($controller, 'resident', 'wrong-password');
         expect($response['json']['code'])->toBe('invalid_credentials');
     }
@@ -75,6 +145,9 @@ it('covers the full login failure to lockout to recovery lifecycle on mysql', fu
     expect($captchaRequired['json']['code'])->toBe('captcha_required');
 
     $captcha->setTokenResult('valid-captcha', true);
+    $fourthFailure = integration_login_attempt($controller, 'resident', 'wrong-password', 'valid-captcha');
+    expect($fourthFailure['json']['code'])->toBe('invalid_credentials');
+
     $locked = integration_login_attempt($controller, 'resident', 'wrong-password', 'valid-captcha');
     expect($locked['json']['code'])->toBe('account_locked');
 
@@ -139,6 +212,56 @@ it('covers the full password reset lifecycle on mysql with fake mail and captcha
     });
 
     expect($reused['json']['code'])->toBe('invalid_reset_token');
+});
+
+it('covers the full registration verification lifecycle on mysql with fake mail and captcha adapters', function () {
+    $pdo = MysqlAuthTestDatabase::recreate();
+    $clock = new FakeClock('2026-04-12 10:00:00');
+    $captcha = new FakeCaptchaVerifier();
+    $alerts = new FakeSecurityAlertService();
+    $mailSender = new FakeRegistrationMailSender();
+    $smsSender = new FakeRegistrationSmsSender();
+
+    $controller = integration_make_email_verification_controller($pdo, $clock, $captcha, $alerts, $mailSender, $smsSender);
+    $payload = [
+        'username' => 'mysqlsignup',
+        'email' => 'mysqlsignup@example.com',
+        'password' => 'secret123',
+        'confirm_password' => 'secret123',
+        'first_name' => 'Mysql',
+        'last_name' => 'Signup',
+    ];
+
+    $withoutCaptcha = integration_send_verification_code($controller, $payload);
+    expect($withoutCaptcha['json']['code'])->toBe('captcha_required');
+
+    $captcha->setTokenResult('valid-captcha', true);
+    $sent = integration_send_verification_code($controller, $payload, 'valid-captcha');
+    expect($sent['json']['success'])->toBeTrue();
+    expect(count($mailSender->sent))->toBe(1);
+
+    $identifier = $sent['json']['target'];
+    $resent = integration_resend_verification_code($controller, $identifier, 'valid-captcha');
+    expect($resent['json']['success'])->toBeTrue();
+    expect(count($mailSender->sent))->toBe(2);
+
+    $latestCode = test_query_value($pdo, "SELECT code FROM email_verifications WHERE email = :identifier", [':identifier' => $identifier]);
+
+    for ($i = 0; $i < REGISTRATION_VERIFY_CAPTCHA_TRIGGER_THRESHOLD; $i++) {
+        $invalid = integration_verify_registration_code($controller, $identifier, '000000');
+    }
+    expect($invalid['json']['code'])->toBe('invalid_verification_code');
+
+    $captchaRequired = integration_verify_registration_code($controller, $identifier, $latestCode);
+    expect($captchaRequired['json']['code'])->toBe('captcha_required');
+
+    $verified = integration_verify_registration_code($controller, $identifier, $latestCode, 'valid-captcha');
+    expect($verified['json']['success'])->toBeTrue();
+
+    $completed = integration_complete_registration($controller, $verified['json']['token']);
+    expect($completed['json']['success'])->toBeTrue();
+    expect((int) test_query_value($pdo, "SELECT COUNT(*) FROM users WHERE username = 'mysqlsignup'"))->toBe(1);
+    expect(test_query_value($pdo, "SELECT verified_at FROM email_verifications WHERE email = :identifier", [':identifier' => $identifier]))->not->toBeNull();
 });
 
 it('removes expired security records without deleting active locks or valid reset tokens', function () {

@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS login_attempts;
 DROP TABLE IF EXISTS account_lockouts;
 DROP TABLE IF EXISTS ip_rate_limits;
 DROP TABLE IF EXISTS password_resets;
+DROP TABLE IF EXISTS email_verifications;
 DROP TABLE IF EXISTS officials;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS persons;
@@ -76,6 +77,21 @@ CREATE TABLE password_resets (
     UNIQUE KEY uq_password_resets_token (token),
     UNIQUE KEY uq_password_resets_user_code (user_id, code),
     CONSTRAINT fk_password_resets_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE email_verifications (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    email VARCHAR(255) NOT NULL,
+    code VARCHAR(6) NOT NULL,
+    token VARCHAR(64) NOT NULL,
+    person_data LONGTEXT NOT NULL,
+    user_data LONGTEXT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME NOT NULL,
+    verified_at DATETIME DEFAULT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_email_verifications_email (email),
+    UNIQUE KEY uq_email_verifications_token (token)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE ip_rate_limits (

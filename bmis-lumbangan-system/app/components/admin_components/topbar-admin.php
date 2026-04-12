@@ -88,7 +88,7 @@ $assetBase = defined('BASE_URL') ? rtrim(BASE_URL, '/') : '..';
 if (!defined('BASE_PUBLIC')) {
     @require_once dirname(__DIR__, 2) . '/config/config.php';
 }
-$logoutUrl = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=logout';
+$logoutUrl = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=landing';
 ?>
 
 <script>
@@ -217,6 +217,11 @@ $logoutUrl = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.p
                     if (k && k.indexOf && k.indexOf('survey_') === 0) localStorage.removeItem(k);
                 });
             } catch (e) {}
+            var logoutForm = document.getElementById('appLogoutForm');
+            if (logoutForm) {
+                logoutForm.submit();
+                return;
+            }
             window.location.href = '<?php echo $logoutUrl; ?>';
         };
     }

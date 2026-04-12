@@ -28,6 +28,7 @@ bmis-lumbangan-system/api/*.php
 !bmis-lumbangan-system/api/check_face_duplicate.php
 
 bmis-lumbangan-system/.github/
+bmis-lumbangan-system/app/uploads/faces/*
 
 # Security/runtime artifacts
 bmis-lumbangan-system/app/logs/*.log

@@ -65,6 +65,18 @@ CREATE TABLE password_resets (
     created_at TEXT DEFAULT NULL
 );
 
+CREATE TABLE email_verifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL UNIQUE,
+    code TEXT NOT NULL,
+    token TEXT NOT NULL UNIQUE,
+    person_data TEXT NOT NULL,
+    user_data TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at TEXT NOT NULL,
+    verified_at TEXT DEFAULT NULL
+);
+
 CREATE TABLE ip_rate_limits (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     ip_address TEXT NOT NULL UNIQUE,

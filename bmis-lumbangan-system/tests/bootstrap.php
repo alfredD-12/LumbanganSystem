@@ -29,6 +29,10 @@ require_once __DIR__ . '/../app/services/GoogleCaptchaVerifier.php';
 require_once __DIR__ . '/../app/services/SecurityAlertServiceInterface.php';
 require_once __DIR__ . '/../app/services/PasswordResetMailerInterface.php';
 require_once __DIR__ . '/../app/services/PasswordResetMailer.php';
+require_once __DIR__ . '/../app/services/RegistrationMailSenderInterface.php';
+require_once __DIR__ . '/../app/services/RegistrationSmsSenderInterface.php';
+require_once __DIR__ . '/../app/services/RegistrationMailSender.php';
+require_once __DIR__ . '/../app/services/RegistrationSmsSender.php';
 require_once __DIR__ . '/../app/services/AuthSecurityContext.php';
 require_once __DIR__ . '/../app/services/SecurityCleanupService.php';
 require_once __DIR__ . '/../app/models/RateLimitService.php';
@@ -38,9 +42,19 @@ require_once __DIR__ . '/../app/models/AdminAlertService.php';
 require_once __DIR__ . '/../app/models/User.php';
 require_once __DIR__ . '/../app/models/Official.php';
 require_once __DIR__ . '/../app/models/PasswordReset.php';
+require_once __DIR__ . '/../app/models/EmailVerification.php';
 require_once __DIR__ . '/../app/services/AuthSecurityService.php';
 require_once __DIR__ . '/../app/controllers/AuthController.php';
 require_once __DIR__ . '/../app/controllers/PasswordResetController.php';
+require_once __DIR__ . '/../app/controllers/EmailVerificationController.php';
+require_once __DIR__ . '/Support/FakeClock.php';
+require_once __DIR__ . '/Support/FakeCaptchaVerifier.php';
+require_once __DIR__ . '/Support/FakeSecurityAlertService.php';
+require_once __DIR__ . '/Support/FakePasswordResetMailer.php';
+require_once __DIR__ . '/Support/FakeRegistrationMailSender.php';
+require_once __DIR__ . '/Support/FakeRegistrationSmsSender.php';
+require_once __DIR__ . '/Support/SqliteAuthTestDatabase.php';
+require_once __DIR__ . '/Support/MysqlAuthTestDatabase.php';
 
 function test_reset_http_state()
 {
@@ -54,12 +68,15 @@ function test_reset_http_state()
     $_COOKIE = [];
     $_REQUEST = [];
     $_SESSION = [];
+    unset($GLOBALS['__csrf_raw_input']);
+    $httpHost = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $_SERVER = [];
 
     $_SERVER['REQUEST_METHOD'] = 'GET';
     $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
     $_SERVER['HTTP_USER_AGENT'] = 'Pest';
     $_SERVER['HTTP_ACCEPT'] = 'application/json';
-    $_SERVER['HTTP_HOST'] = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $_SERVER['HTTP_HOST'] = $httpHost;
 
     http_response_code(200);
 }
@@ -92,7 +109,16 @@ function test_capture_json(callable $callback)
 {
     http_response_code(200);
     ob_start();
-    $callback();
+    try {
+        $callback();
+    } catch (Throwable $e) {
+        if (class_exists('CsrfRejectedException') && $e instanceof CsrfRejectedException) {
+            // Expected control flow in CSRF tests: response already written.
+        } else {
+            ob_end_clean();
+            throw $e;
+        }
+    }
     $raw = trim((string) ob_get_clean());
 
     return [
@@ -100,6 +126,25 @@ function test_capture_json(callable $callback)
         'raw' => $raw,
         'json' => $raw !== '' ? json_decode($raw, true) : null,
     ];
+}
+
+function test_capture_front_controller_action($action, array $post = [], array $server = [], array $get = [])
+{
+    test_reset_http_state();
+
+    $_GET = array_merge(['action' => $action], $get);
+    $_SERVER = array_merge($_SERVER, [
+        'REQUEST_METHOD' => 'POST',
+        'REMOTE_ADDR' => '127.0.0.1',
+        'HTTP_USER_AGENT' => 'Pest',
+        'HTTP_ACCEPT' => 'application/json',
+    ], $server);
+    $_POST = $post;
+    $_REQUEST = array_merge($_GET, $_POST);
+
+    return test_capture_json(function () {
+        include dirname(__DIR__) . '/public/index.php';
+    });
 }
 
 function test_query_value(PDO $pdo, $sql, array $params = [])

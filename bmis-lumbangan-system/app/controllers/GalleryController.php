@@ -206,7 +206,8 @@ class GalleryController {
 }
 
 // Handle request if called directly
-if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
+$currentPhpSelf = $_SERVER['PHP_SELF'] ?? '';
+if ($currentPhpSelf !== '' && basename($currentPhpSelf) === basename(__FILE__)) {
     $controller = new GalleryController();
     $controller->handleRequest();
 }

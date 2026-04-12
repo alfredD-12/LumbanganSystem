@@ -1,22 +1,30 @@
 <?php
 
+require_once dirname(__DIR__) . '/services/SystemClock.php';
+
 class EmailVerification {
     private $conn;
     private $table = 'email_verifications';
+    private $clock;
 
-    public function __construct($db) {
+    public function __construct($db, ClockInterface $clock = null) {
         $this->conn = $db;
+        $this->clock = $clock ?: new SystemClock();
     }
 
     /**
      * Create a new email verification record with temporary registration data
      */
-    public function createVerification($email, $registrationData) {
+    public function createVerification($identifier, $registrationData) {
         // Generate 6-digit code
-        $code = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+        $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         
         // Generate unique token
         $token = bin2hex(random_bytes(32));
+        $createdAt = $this->clock->now()->format('Y-m-d H:i:s');
+        $expiresAt = $this->clock->now()
+            ->add(new DateInterval('PT1H'))
+            ->format('Y-m-d H:i:s');
         
         // Store registration data as JSON
         $personData = json_encode([
@@ -31,32 +39,34 @@ class EmailVerification {
         
         $userData = json_encode([
             'username' => $registrationData['username'],
-            'email' => $email,
+            'email' => $registrationData['email'] ?? '',
             'mobile' => $registrationData['mobile'] ?? '',
             'password_hash' => $registrationData['password_hash']
         ]);
         
-        // Delete any existing pending verifications for this email
-        $this->deletePendingByEmail($email);
+        // Delete any existing pending verifications for this identifier
+        $this->deletePendingByIdentifier($identifier);
         
         // Insert new verification
         $query = "INSERT INTO " . $this->table . " 
-                  (email, code, token, person_data, user_data, expires_at) 
-                  VALUES (:email, :code, :token, :person_data, :user_data, DATE_ADD(NOW(), INTERVAL 1 HOUR))";
+                  (email, code, token, person_data, user_data, created_at, expires_at) 
+                  VALUES (:identifier, :code, :token, :person_data, :user_data, :created_at, :expires_at)";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':identifier', $identifier);
         $stmt->bindParam(':code', $code);
         $stmt->bindParam(':token', $token);
         $stmt->bindParam(':person_data', $personData);
         $stmt->bindParam(':user_data', $userData);
+        $stmt->bindParam(':created_at', $createdAt);
+        $stmt->bindParam(':expires_at', $expiresAt);
         
         if ($stmt->execute()) {
             return [
                 'success' => true,
                 'code' => $code,
                 'token' => $token,
-                'email' => $email
+                'identifier' => $identifier
             ];
         }
         
@@ -66,37 +76,37 @@ class EmailVerification {
     /**
      * Verify the code entered by user
      */
-    public function verifyCode($email, $code) {
+    public function verifyCode($identifier, $code) {
+        $now = $this->clock->now()->format('Y-m-d H:i:s');
         $query = "SELECT * FROM " . $this->table . " 
-                  WHERE email = :email 
+                  WHERE email = :identifier 
                   AND code = :code 
                   AND verified_at IS NULL 
-                  AND expires_at > NOW()
+                  AND expires_at > :now
                   LIMIT 1";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':identifier', $identifier);
         $stmt->bindParam(':code', $code);
+        $stmt->bindParam(':now', $now);
         $stmt->execute();
-        
-        if ($stmt->rowCount() > 0) {
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            return $row;
-        }
-        
-        return null;
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row !== false ? $row : null;
     }
 
     /**
      * Mark verification as complete
      */
     public function markAsVerified($token) {
+        $verifiedAt = $this->clock->now()->format('Y-m-d H:i:s');
         $query = "UPDATE " . $this->table . " 
-                  SET verified_at = NOW() 
+                  SET verified_at = :verified_at 
                   WHERE token = :token";
         
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':token', $token);
+        $stmt->bindParam(':verified_at', $verifiedAt);
         
         return $stmt->execute();
     }
@@ -105,63 +115,89 @@ class EmailVerification {
      * Get verification by token
      */
     public function getByToken($token) {
+        $now = $this->clock->now()->format('Y-m-d H:i:s');
         $query = "SELECT * FROM " . $this->table . " 
                   WHERE token = :token 
                   AND verified_at IS NULL 
-                  AND expires_at > NOW()
+                  AND expires_at > :now
                   LIMIT 1";
         
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':token', $token);
+        $stmt->bindParam(':now', $now);
         $stmt->execute();
-        
-        if ($stmt->rowCount() > 0) {
-            return $stmt->fetch(PDO::FETCH_ASSOC);
-        }
-        
-        return null;
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row !== false ? $row : null;
     }
 
     /**
      * Delete pending verifications for an email
      */
-    private function deletePendingByEmail($email) {
+    private function deletePendingByIdentifier($identifier) {
         // Delete ALL verification records for this email (pending AND verified)
         // so old verified rows don't cause a duplicate-entry error on re-registration attempts
         $query = "DELETE FROM " . $this->table . " 
-                  WHERE email = :email";
+                  WHERE email = :identifier";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':identifier', $identifier);
         $stmt->execute();
     }
 
     /**
      * Check if email has pending verification
      */
-    public function hasPendingVerification($email) {
+    public function hasPendingVerification($identifier) {
+        $now = $this->clock->now()->format('Y-m-d H:i:s');
         $query = "SELECT id FROM " . $this->table . " 
-                  WHERE email = :email 
+                  WHERE email = :identifier 
                   AND verified_at IS NULL 
-                  AND expires_at > NOW()
+                  AND expires_at > :now
                   LIMIT 1";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':identifier', $identifier);
+        $stmt->bindParam(':now', $now);
         $stmt->execute();
-        
-        return $stmt->rowCount() > 0;
+
+        return $stmt->fetch(PDO::FETCH_ASSOC) !== false;
+    }
+
+    public function getPendingVerification($identifier)
+    {
+        $now = $this->clock->now()->format('Y-m-d H:i:s');
+        $query = "SELECT *
+                  FROM " . $this->table . "
+                  WHERE email = :identifier
+                    AND verified_at IS NULL
+                    AND expires_at > :now
+                  LIMIT 1";
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':identifier', $identifier);
+        $stmt->bindParam(':now', $now);
+        $stmt->execute();
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row !== false ? $row : null;
     }
 
     /**
      * Clean up expired verifications (optional - can be run via cron)
      */
     public function cleanupExpired() {
+        $now = $this->clock->now()->format('Y-m-d H:i:s');
+        $verifiedCutoff = $this->clock->now()
+            ->sub(new DateInterval('PT24H'))
+            ->format('Y-m-d H:i:s');
         $query = "DELETE FROM " . $this->table . " 
-                  WHERE expires_at < NOW() 
-                  OR (verified_at IS NOT NULL AND verified_at < DATE_SUB(NOW(), INTERVAL 24 HOUR))";
+                  WHERE expires_at < :now
+                  OR (verified_at IS NOT NULL AND verified_at < :verified_cutoff)";
         
         $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':now', $now);
+        $stmt->bindParam(':verified_cutoff', $verifiedCutoff);
         return $stmt->execute();
     }
 }

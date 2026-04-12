@@ -1,6 +1,6 @@
 <!-- Email Verification Modal (Matches Forget Password Modal Design) -->
 <div id="emailVerifyModal" class="login-modal-overlay" style="display: none;">
-  <div style="position: relative; animation: modalSlideIn 0.5s ease;">
+  <div class="auth-modal-shell" style="position: relative; animation: modalSlideIn 0.5s ease;">
     
     <!-- Close Button -->
     <button onclick="closeEmailVerifyModal()" style="
@@ -34,7 +34,7 @@
     ">
 
     <!-- Main Container -->
-    <div style="
+    <div class="auth-modal-card register-auth-card" style="
       background-color: #fff;
       border-radius: 100px;
       box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5);
@@ -60,7 +60,14 @@
           <span></span>
         </div>
 
-        <button type="button" onclick="sendVerificationCode()" style="
+        <input type="hidden" id="registerCaptchaTokenStep1" value="">
+        <div id="registerRecaptchaContainer1" class="auth-recaptcha-slot" style="display: none; margin-bottom: 16px;">
+          <div class="auth-recaptcha-slot-inner">
+            <div id="registerRecaptchaWidget1"></div>
+          </div>
+        </div>
+
+        <button type="button" onclick="sendVerificationCode(this)" style="
           padding: 10px 45px;
           background-color: #2600ff;
           color: white;
@@ -105,6 +112,7 @@
         </div>
 
         <form onsubmit="verifyEmailCode(event)" style="display: flex; flex-direction: column;">
+          <?php if (function_exists('csrf_input')) echo csrf_input(); ?>
           <input type="text" placeholder="000000" maxlength="6" id="emailVerifyCode" required style="
             padding: 12px 15px;
             margin-bottom: 15px;
@@ -120,6 +128,13 @@
           <div id="emailVerifyStep2Error" style="display: none; color: #d32f2f; margin-bottom: 15px; font-size: 13px; font-weight: 500;">
             <i class="fas fa-exclamation-circle" style="margin-right: 6px;"></i>
             <span></span>
+          </div>
+
+          <input type="hidden" id="registerCaptchaTokenStep2" value="">
+          <div id="registerRecaptchaContainer2" class="auth-recaptcha-slot" style="display: none; margin-bottom: 16px;">
+            <div class="auth-recaptcha-slot-inner">
+              <div id="registerRecaptchaWidget2"></div>
+            </div>
           </div>
 
           <button type="submit" style="
@@ -210,12 +225,13 @@
 /* Mobile responsive styles */
 @media (max-width: 768px) {
   #emailVerifyModal {
-    align-items: center !important;
+    align-items: flex-start !important;
     justify-content: center !important;
   }
   
-  #emailVerifyModal > div {
-    margin: 0 15px;
+  #emailVerifyModal > .auth-modal-shell {
+    width: min(540px, 100%);
+    margin: 40px auto 16px;
   }
   
   #emailVerifyModal img[alt="batangas-logo"] {
@@ -223,7 +239,7 @@
     top: -60px !important;
   }
   
-  #emailVerifyModal > div > div {
+  #emailVerifyModal > .auth-modal-shell > .auth-modal-card {
     max-width: 100% !important;
     padding: 50px 25px 30px !important;
     border-radius: 40px !important;
@@ -238,7 +254,7 @@
     font-size: 0.85rem !important;
   }
   
-  #emailVerifyModal > div > button {
+  #emailVerifyModal > .auth-modal-shell > button {
     width: 35px !important;
     height: 35px !important;
     top: -40px !important;
@@ -267,7 +283,7 @@
     top: -50px !important;
   }
   
-  #emailVerifyModal > div > div {
+  #emailVerifyModal > .auth-modal-shell > .auth-modal-card {
     padding: 40px 20px 25px !important;
     border-radius: 30px !important;
   }
@@ -305,6 +321,11 @@
   
   #emailVerifyStep3 > div i {
     font-size: 40px !important;
+  }
+
+  #emailVerifyModal .auth-recaptcha-slot-inner {
+    transform: scale(0.92);
+    transform-origin: top center;
   }
 }
 </style>

@@ -1,0 +1,17 @@
+PHPUnit Started (PHPUnit 11.5.50 using PHP 8.3.28 (cli) on WINNT)
+Test Runner Configured
+Bootstrap Finished (C:\laragon\www\Lumbangan_BMIS\bmis-lumbangan-system\tests/bootstrap.php)
+Event Facade Sealed
+Test Suite Loaded (3 tests)
+Test Runner Started
+Test Suite Sorted
+Test Runner Execution Started (3 tests)
+Test Suite Started (P\Tests\Feature\CsrfProtectionFeatureTest, 3 tests)
+Before First Test Method Called (P\Tests\Feature\CsrfProtectionFeatureTest::setUpBeforeClass)
+Before First Test Method Finished:
+- P\Tests\Feature\CsrfProtectionFeatureTest::setUpBeforeClass
+Test Preparation Started (P\Tests\Feature\CsrfProtectionFeatureTest::__pest_evaluable_it_rejects_missing_csrf_tokens_on_protected_front_controller_actions_before_controller_work_begins)
+Before Test Method Called (P\Tests\Feature\CsrfProtectionFeatureTest::setUp)
+Before Test Method Finished:
+- P\Tests\Feature\CsrfProtectionFeatureTest::setUp
+Test Prepared (P\Tests\Feature\CsrfProtectionFeatureTest::__pest_evaluable_it_rejects_missing_csrf_tokens_on_protected_front_controller_actions_before_controller_work_begins)

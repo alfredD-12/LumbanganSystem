@@ -44,6 +44,7 @@ render_favicon();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?php echo htmlspecialchars(csrf_token(), ENT_QUOTES, 'UTF-8'); ?>">
+    <meta name="csrf-field" content="<?php echo htmlspecialchars(csrf_field_name(), ENT_QUOTES, 'UTF-8'); ?>">
     <title>Dashboard - Barangay Lumbangan</title>
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
@@ -184,6 +185,10 @@ render_favicon();
             </div>
         </div>
     </nav>
+
+    <form id="appLogoutForm" method="post" action="<?php echo htmlspecialchars(rtrim(BASE_PUBLIC, '/'), ENT_QUOTES, 'UTF-8'); ?>/index.php?action=logout" style="display:none;">
+        <?php echo csrf_input(); ?>
+    </form>
 
     <!-- Welcome Banner - Enhanced Interactive Design -->
     <section class="welcome-banner" id="dashboard" style="background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(224,242,254,0.3) 50%, transparent 100%); padding: 5rem 0 5rem; position: relative; overflow: hidden; border-bottom: 1px solid rgba(30,58,95,0.08);">
@@ -2023,8 +2028,30 @@ render_favicon();
                     return;
                 }
 
-                var logoutUrl = '<?php echo (defined("BASE_PUBLIC") ? rtrim(BASE_PUBLIC, "/") : rtrim(dirname(__DIR__, 2) . "/public", "/")); ?>/index.php?page=landing';
-                window.location.href = logoutUrl;
+                var logoutAction = '<?php echo htmlspecialchars(rtrim(BASE_PUBLIC, '/'), ENT_QUOTES, 'UTF-8'); ?>/index.php?action=logout';
+                var csrfFieldMeta = document.querySelector('meta[name="csrf-field"]');
+                var csrfTokenMeta = document.querySelector('meta[name="csrf-token"]');
+                var csrfField = csrfFieldMeta ? csrfFieldMeta.content : 'csrf_token';
+                var csrfToken = csrfTokenMeta ? csrfTokenMeta.content : '';
+
+                if (csrfToken) {
+                    var dynamicForm = document.createElement('form');
+                    dynamicForm.method = 'post';
+                    dynamicForm.action = logoutAction;
+                    dynamicForm.style.display = 'none';
+
+                    var tokenInput = document.createElement('input');
+                    tokenInput.type = 'hidden';
+                    tokenInput.name = csrfField;
+                    tokenInput.value = csrfToken;
+                    dynamicForm.appendChild(tokenInput);
+
+                    document.body.appendChild(dynamicForm);
+                    dynamicForm.submit();
+                    return;
+                }
+
+                window.location.href = '<?php echo htmlspecialchars(rtrim(BASE_PUBLIC, '/'), ENT_QUOTES, 'UTF-8'); ?>/index.php?page=landing';
             };
         }
     </script>

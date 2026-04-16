@@ -67,12 +67,18 @@ class DocumentRequestController
         if (!isUser()) {
             http_response_code(401);
             echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+            if (defined('APP_ENV') && APP_ENV === 'testing') {
+                return;
+            }
             exit;
         }
 
         // 1️⃣ Basic validation
         if (!isset($_POST['document_type_id'], $_POST['purpose'])) {
             echo json_encode(['success' => false, 'message' => 'Missing required fields.']);
+            if (defined('APP_ENV') && APP_ENV === 'testing') {
+                return;
+            }
             exit;
         }
 

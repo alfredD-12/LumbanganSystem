@@ -55,6 +55,7 @@ require_once __DIR__ . '/Support/FakeRegistrationMailSender.php';
 require_once __DIR__ . '/Support/FakeRegistrationSmsSender.php';
 require_once __DIR__ . '/Support/SqliteAuthTestDatabase.php';
 require_once __DIR__ . '/Support/MysqlAuthTestDatabase.php';
+require_once __DIR__ . '/Support/MysqlRegressionTestDatabase.php';
 
 function test_reset_http_state()
 {
@@ -140,6 +141,40 @@ function test_capture_front_controller_action($action, array $post = [], array $
         'HTTP_ACCEPT' => 'application/json',
     ], $server);
     $_POST = $post;
+    $_REQUEST = array_merge($_GET, $_POST);
+
+    return test_capture_json(function () {
+        include dirname(__DIR__) . '/public/index.php';
+    });
+}
+
+function test_capture_front_controller_action_with_csrf(
+    $action,
+    array $post = [],
+    array $session = [],
+    array $server = [],
+    array $get = [],
+    $token = 'test-csrf-token'
+) {
+    test_reset_http_state();
+
+    foreach ($session as $key => $value) {
+        $_SESSION[$key] = $value;
+    }
+
+    test_seed_csrf_token($token);
+
+    $_GET = array_merge(['action' => $action], $get);
+    $_SERVER = array_merge($_SERVER, [
+        'REQUEST_METHOD' => 'POST',
+        'REMOTE_ADDR' => '127.0.0.1',
+        'HTTP_USER_AGENT' => 'Pest',
+        'HTTP_ACCEPT' => 'application/json',
+    ], $server);
+
+    $_POST = array_merge($post, [
+        csrf_field_name() => $token,
+    ]);
     $_REQUEST = array_merge($_GET, $_POST);
 
     return test_capture_json(function () {

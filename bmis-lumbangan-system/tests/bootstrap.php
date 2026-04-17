@@ -56,6 +56,7 @@ require_once __DIR__ . '/Support/FakeRegistrationSmsSender.php';
 require_once __DIR__ . '/Support/SqliteAuthTestDatabase.php';
 require_once __DIR__ . '/Support/MysqlAuthTestDatabase.php';
 require_once __DIR__ . '/Support/MysqlRegressionTestDatabase.php';
+require_once __DIR__ . '/Support/FaceDuplicateApiHttpHarness.php';
 
 function test_reset_http_state()
 {

@@ -8,6 +8,7 @@ class Complaint {
     public function __construct() {
         $database = new Database();
         $this->pdo = $database->getConnection();
+        $this->ensurePoliceForwardingColumns();
     }
 
     /**
@@ -35,6 +36,8 @@ class Complaint {
                          i.location,
                          i.narrative,
                          i.status_id,
+                         i.forwarded_to_police,
+                         i.forwarded_to_police_at,
                          i.created_at,
                          i.updated_at,
                          i.resolved_at,
@@ -78,6 +81,20 @@ class Complaint {
             $query .= " AND i.case_type_id = :case_type_id";
             $params[':case_type_id'] = $filters['case_type_id'];
         }
+
+        // Police Portal guard: optionally exclude resident-submitted complaints.
+        // Resident submissions have a non-NULL `user_id`.
+        if (!empty($filters['exclude_resident'])) {
+            $query .= " AND i.user_id IS NULL";
+        }
+
+        if (!empty($filters['police_forwarded'])) {
+            $query .= " AND i.forwarded_to_police = 1";
+        }
+
+        if (!empty($filters['active_only'])) {
+            $query .= " AND i.status_id <> 3 AND LOWER(COALESCE(s.label, '')) <> 'resolved'";
+        }
         
         $query .= " ORDER BY i.created_at DESC";
         
@@ -109,6 +126,16 @@ class Complaint {
      * Create new complaint
      */
     public function create($data) {
+        $statusId = $this->getDefaultStatusId();
+        if ($statusId === null) {
+            throw new Exception('Complaint status is not configured. Please seed the statuses table.');
+        }
+
+        $caseTypeId = $this->resolveCaseTypeId($data['case_type_id'] ?? null);
+        if ($caseTypeId === null) {
+            throw new Exception('Case types are not configured. Please seed the case_types table.');
+        }
+
         $stmt = $this->pdo->prepare("INSERT INTO {$this->table_name} (
             user_id, incident_title, blotter_type, complainant_name, complainant_type,
             complainant_gender, complainant_contact, complainant_birthday, complainant_address,
@@ -120,7 +147,7 @@ class Complaint {
             :complainant_gender, :complainant_contact, :complainant_birthday, :complainant_address,
             :offender_name, :offender_type, :offender_gender, :offender_address, :offender_description,
             :case_type_id, :date_of_incident, :time_of_incident,
-            :location, :narrative, 1
+            :location, :narrative, :status_id
         )");
 
         $params = [
@@ -138,11 +165,12 @@ class Complaint {
             ':offender_gender' => $data['offender_gender'] ?? null,
             ':offender_address' => $data['offender_address'] ?? null,
             ':offender_description' => $data['offender_description'] ?? null,
-            ':case_type_id' => $data['case_type_id'],
+            ':case_type_id' => $caseTypeId,
             ':date_of_incident' => $data['date_of_incident'],
             ':time_of_incident' => $data['time_of_incident'] ?? '00:00',
             ':location' => $data['location'],
-            ':narrative' => $data['narrative']
+            ':narrative' => $data['narrative'],
+            ':status_id' => $statusId
         ];
 
         if ($stmt->execute($params)) {
@@ -156,6 +184,11 @@ class Complaint {
      * Update complaint
      */
     public function update($id, $data) {
+        $caseTypeId = $this->resolveCaseTypeId($data['case_type_id'] ?? null);
+        if ($caseTypeId === null) {
+            throw new Exception('Case types are not configured. Please seed the case_types table.');
+        }
+
         $stmt = $this->pdo->prepare("UPDATE {$this->table_name} SET 
             user_id = :user_id,
             incident_title = :incident_title,
@@ -194,7 +227,7 @@ class Complaint {
             ':offender_gender' => $data['offender_gender'] ?? null,
             ':offender_address' => $data['offender_address'] ?? null,
             ':offender_description' => $data['offender_description'] ?? null,
-            ':case_type_id' => $data['case_type_id'],
+            ':case_type_id' => $caseTypeId,
             ':date_of_incident' => $data['date_of_incident'],
             ':time_of_incident' => $data['time_of_incident'] ?? '00:00',
             ':location' => $data['location'],
@@ -236,6 +269,46 @@ class Complaint {
     }
 
     /**
+     * Mark an existing complaint as available to the Police Portal.
+     */
+    public function forwardToPolice($id) {
+        $complaint = $this->getById($id);
+        if (!$complaint) {
+            return false;
+        }
+
+        $statusLabel = strtolower(trim((string) ($complaint['status_label'] ?? '')));
+        if ((int) ($complaint['status_id'] ?? 0) === 3 || $statusLabel === 'resolved') {
+            return false;
+        }
+
+        $stmt = $this->pdo->prepare("UPDATE {$this->table_name} SET
+            forwarded_to_police = 1,
+            forwarded_to_police_at = COALESCE(forwarded_to_police_at, CURRENT_TIMESTAMP),
+            updated_at = CURRENT_TIMESTAMP
+            WHERE id = :id");
+
+        return $stmt->execute([':id' => $id]);
+    }
+
+    /**
+     * Add forwarding columns for existing installations that predate this workflow.
+     */
+    private function ensurePoliceForwardingColumns() {
+        try {
+            $stmt = $this->pdo->query("SHOW COLUMNS FROM {$this->table_name} LIKE 'forwarded_to_police'");
+            if (!$stmt || !$stmt->fetch(PDO::FETCH_ASSOC)) {
+                $this->pdo->exec("ALTER TABLE {$this->table_name}
+                    ADD COLUMN forwarded_to_police TINYINT(1) NOT NULL DEFAULT 0 AFTER status_id,
+                    ADD COLUMN forwarded_to_police_at DATETIME DEFAULT NULL AFTER forwarded_to_police,
+                    ADD KEY idx_incident_forwarded_to_police (forwarded_to_police)");
+            }
+        } catch (Exception $e) {
+            error_log('Unable to ensure police forwarding columns: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Delete complaint
      */
     public function delete($id) {
@@ -253,6 +326,67 @@ class Complaint {
             'investigating' => (int) $this->pdo->query("SELECT COUNT(*) FROM {$this->table_name} WHERE status_id = 2")->fetchColumn(),
             'resolved' => (int) $this->pdo->query("SELECT COUNT(*) FROM {$this->table_name} WHERE status_id = 3")->fetchColumn()
         ];
+    }
+
+    /**
+     * Ensure a valid default status exists and return its id.
+     */
+    private function getDefaultStatusId() {
+        $count = (int) $this->pdo->query("SELECT COUNT(*) FROM statuses")->fetchColumn();
+        if ($count === 0) {
+            $seed = $this->pdo->prepare("INSERT INTO statuses (label) VALUES (?), (?), (?), (?)");
+            $seed->execute(['Pending', 'Investigating', 'Resolved', 'Ongoing']);
+        }
+
+        $stmt = $this->pdo->prepare("SELECT id FROM statuses WHERE LOWER(label) = 'pending' LIMIT 1");
+        $stmt->execute();
+        $id = $stmt->fetchColumn();
+        if ($id) {
+            return (int) $id;
+        }
+
+        $fallback = $this->pdo->query("SELECT id FROM statuses ORDER BY id ASC LIMIT 1")->fetchColumn();
+        return $fallback ? (int) $fallback : null;
+    }
+
+    /**
+     * Resolve the provided case type id or return a safe default.
+     */
+    private function resolveCaseTypeId($caseTypeId) {
+        $incomingId = (int) $caseTypeId;
+
+        $count = (int) $this->pdo->query("SELECT COUNT(*) FROM case_types")->fetchColumn();
+        if ($count === 0) {
+            $seed = $this->pdo->prepare("INSERT INTO case_types (label) VALUES (?), (?), (?)");
+            $seed->execute(['Criminal', 'Civil', 'Others']);
+        }
+
+        if ($incomingId > 0) {
+            $stmt = $this->pdo->prepare("SELECT id FROM case_types WHERE id = ? LIMIT 1");
+            $stmt->execute([$incomingId]);
+            $id = $stmt->fetchColumn();
+            if ($id) {
+                return (int) $id;
+            }
+        }
+
+        $labelMap = [
+            1 => 'Criminal',
+            2 => 'Civil',
+            3 => 'Others'
+        ];
+
+        if ($incomingId > 0 && isset($labelMap[$incomingId])) {
+            $stmt = $this->pdo->prepare("SELECT id FROM case_types WHERE LOWER(label) = LOWER(?) LIMIT 1");
+            $stmt->execute([$labelMap[$incomingId]]);
+            $id = $stmt->fetchColumn();
+            if ($id) {
+                return (int) $id;
+            }
+        }
+
+        $fallback = $this->pdo->query("SELECT id FROM case_types ORDER BY id ASC LIMIT 1")->fetchColumn();
+        return $fallback ? (int) $fallback : null;
     }
 
     /**

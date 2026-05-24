@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../models/Complaint.php';
 require_once __DIR__ . '/../helpers/csrf_helper.php';
+require_once __DIR__ . '/../helpers/session_bootstrap.php';
 
 class AdminController {
     private $complaintModel;
@@ -15,7 +16,7 @@ class AdminController {
     public function getOfficialProfile() {
         header('Content-Type: application/json');
 
-        if (session_status() === PHP_SESSION_NONE) session_start();
+        bmis_start_session();
         if (empty($_SESSION['official_id'])) {
             echo json_encode(['success' => false, 'message' => 'Not logged in as official']);
             return;
@@ -45,7 +46,7 @@ class AdminController {
 
         csrf_require_valid_token();
 
-        if (session_status() === PHP_SESSION_NONE) session_start();
+        bmis_start_session();
         $official_id = $_SESSION['official_id'] ?? ($_POST['official_id'] ?? null);
         if (!$official_id) {
             echo json_encode(['success' => false, 'message' => 'Not logged in']);
@@ -242,6 +243,72 @@ class AdminController {
             }
         } catch (Exception $e) {
             error_log('Error in AdminController::updateComplaintStatus: ' . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * AJAX: Forward an existing complaint to the Police Portal.
+     */
+    public function sendComplaintToPolice() {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            return;
+        }
+
+        csrf_require_valid_token();
+
+        $id = $_POST['id'] ?? null;
+        if (!$id) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'No complaint ID provided']);
+            return;
+        }
+
+        try {
+            $complaint = $this->complaintModel->getById($id);
+            if (!$complaint) {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'message' => 'Complaint not found']);
+                return;
+            }
+
+            $statusLabel = strtolower(trim((string) ($complaint['status_label'] ?? '')));
+            if ((int) ($complaint['status_id'] ?? 0) === 3 || $statusLabel === 'resolved') {
+                http_response_code(400);
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'This complaint cannot be sent to the Police Portal because it has already been resolved by the Barangay Admin.'
+                ]);
+                return;
+            }
+
+            if (!empty($complaint['forwarded_to_police'])) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Complaint was already sent to police.',
+                    'data' => $complaint
+                ]);
+                return;
+            }
+
+            if ($this->complaintModel->forwardToPolice($id)) {
+                $record = $this->complaintModel->getById($id);
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Complaint sent to police successfully.',
+                    'data' => $record
+                ]);
+                return;
+            }
+
+            throw new Exception('Failed to send complaint to police');
+        } catch (Exception $e) {
+            error_log('Error in AdminController::sendComplaintToPolice: ' . $e->getMessage());
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }

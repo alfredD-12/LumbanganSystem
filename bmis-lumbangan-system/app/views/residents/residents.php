@@ -70,7 +70,7 @@
  * Public-facing complaint browsing interface
  * Variables available: $complaints, $statistics, $statuses, $caseTypes
  */
-$baseUrl = '/Lumbangan_BMIS/public';
+$baseUrl = defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '/Lumbangan_BMIS/public';
 // If the view is accessed directly (no controller), try to load data here
 if (!isset($complaints) || !isset($statistics) || !isset($statuses) || !isset($caseTypes)) {
     $modelPath = __DIR__ . '/../../models/Complaint.php';
@@ -141,62 +141,6 @@ if (!isset($complaints) || !isset($statistics) || !isset($statuses) || !isset($c
         <!-- Page content (header is provided by header-resident.php) -->
 
         <div class="container-xxl px-4 py-4">
-            <!-- Statistics Summary -->
-            <div class="row g-3 mb-4">
-                <div class="col-md-3">
-                    <div class="card gradient-card-blue h-100">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <p class="mb-0 opacity-75">Total</p>
-                                    <h3 class="mb-0"><?php echo $statistics['total'] ?? 0; ?></h3>
-                                </div>
-                                <i class="fas fa-file-alt icon-large"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card gradient-card-yellow h-100">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <p class="mb-0 opacity-75">Pending</p>
-                                    <h3 class="mb-0"><?php echo $statistics['pending'] ?? 0; ?></h3>
-                                </div>
-                                <i class="fas fa-clock icon-large"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card gradient-card-purple h-100">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <p class="mb-0 opacity-75">Investigating</p>
-                                    <h3 class="mb-0"><?php echo $statistics['investigating'] ?? 0; ?></h3>
-                                </div>
-                                <i class="fas fa-search icon-large"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card gradient-card-green h-100">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <p class="mb-0 opacity-75">Resolved</p>
-                                    <h3 class="mb-0"><?php echo $statistics['resolved'] ?? 0; ?></h3>
-                                </div>
-                                <i class="fas fa-check-circle icon-large"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Add New Complaint Button -->
             <div class="d-flex justify-content-end mb-3">
                 <button class="btn btn-primary d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#newComplaintModal">
@@ -266,54 +210,59 @@ if (!isset($complaints) || !isset($statistics) || !isset($statuses) || !isset($c
             <div class="complaints-list">
                 <?php if (!empty($complaints)): ?>
                     <?php foreach ($complaints as $complaint): ?>
-                        <div class="card incident-card mb-3" 
+                        <div class="card incident-card complaint-card" id="incident-<?php echo (int) $complaint['id']; ?>"
                              data-search="<?php echo strtolower(htmlspecialchars($complaint['incident_title'] . ' ' . $complaint['complainant_name'] . ' ' . $complaint['location'] . ' ' . ($complaint['offender_name'] ?? '') . ' ' . $complaint['blotter_type'])); ?>"
                              data-status="<?php echo strtolower(htmlspecialchars($complaint['status_label'])); ?>"
                              data-case="<?php echo strtolower(htmlspecialchars($complaint['case_type'])); ?>">
-                            <div class="card-body p-4">
-                                <div class="d-flex justify-content-between align-items-start mb-3">
-                                    <h5 class="card-title mb-0"><?php echo htmlspecialchars($complaint['incident_title'] ?? 'Untitled'); ?></h5>
-                                    <div>
-                                        <span class="status-badge status-<?php echo strtolower($complaint['status_label']); ?> me-2">
-                                            <?php if (strtolower($complaint['status_label']) === 'resolved' && !empty($complaint['updated_at'])): ?>
-                                                <i class="fas fa-check-circle"></i> Resolved
-                                                <small class="d-block"><?php echo date('M j, Y', strtotime($complaint['updated_at'])); ?></small>
-                                            <?php else: ?>
-                                                <?php echo htmlspecialchars($complaint['status_label']); ?>
-                                            <?php endif; ?>
-                                        </span>
+                            <div class="complaint-card__layout">
+                                <div class="complaint-card__header">
+                                    <h5 class="card-title complaint-card__title" title="<?php echo htmlspecialchars($complaint['incident_title'] ?? 'Untitled'); ?>">
+                                        <?php echo htmlspecialchars($complaint['incident_title'] ?? 'Untitled'); ?>
+                                    </h5>
+                                    <span class="status-badge status-<?php echo strtolower($complaint['status_label']); ?>">
+                                        <?php if (strtolower($complaint['status_label']) === 'resolved' && !empty($complaint['updated_at'])): ?>
+                                            <i class="fas fa-check-circle"></i> Resolved
+                                            <small class="d-block"><?php echo date('M j, Y', strtotime($complaint['updated_at'])); ?></small>
+                                        <?php else: ?>
+                                            <?php echo htmlspecialchars($complaint['status_label']); ?>
+                                        <?php endif; ?>
+                                    </span>
+                                </div>
+
+                                <div class="complaint-card__subheader">
+                                    <div class="complaint-card__complainant">
+                                        <span class="complaint-card__label">Complainant:</span>
+                                        <strong><?php echo htmlspecialchars($complaint['complainant_name'] ?? 'N/A'); ?></strong>
+                                    </div>
+                                    <div class="complaint-card__types">
                                         <span class="status-badge case-<?php echo strtolower($complaint['case_type']); ?>">
                                             <?php echo htmlspecialchars($complaint['case_type']); ?>
                                         </span>
                                     </div>
                                 </div>
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <strong class="text-muted">Complainant:</strong> 
-                                        <?php echo htmlspecialchars($complaint['complainant_name'] ?? 'N/A'); ?>
+
+                                <div class="complaint-card__info">
+                                    <div class="complaint-card__info-row" title="<?php echo htmlspecialchars($complaint['location'] ?? 'N/A'); ?>">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <span class="complaint-card__info-text"><?php echo htmlspecialchars($complaint['location'] ?? 'N/A'); ?></span>
                                     </div>
-                                    <div class="col-md-6">
-                                        <strong class="text-muted">Date:</strong> 
-                                        <?php echo date('M d, Y', strtotime($complaint['date_of_incident'])); ?>
+                                    <div class="complaint-card__info-row" title="<?php echo htmlspecialchars($complaint['narrative'] ?? 'No description'); ?>">
+                                        <i class="fas fa-file-alt"></i>
+                                        <span class="complaint-card__info-text complaint-card__info-text--clamp"><?php echo htmlspecialchars(substr($complaint['narrative'] ?? 'No description', 0, 200)) . '...'; ?></span>
                                     </div>
-                                    <div class="col-md-6">
-                                        <strong class="text-muted">Location:</strong> 
-                                        <?php echo htmlspecialchars($complaint['location'] ?? 'N/A'); ?>
+                                    <div class="complaint-card__info-row">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <span class="complaint-card__info-text"><?php echo date('M d, Y', strtotime($complaint['date_of_incident'])); ?></span>
                                     </div>
-                                    <div class="col-md-6">
-                                        <strong class="text-muted">Blotter Type:</strong> 
-                                        <?php echo htmlspecialchars($complaint['blotter_type'] ?? 'N/A'); ?>
-                                    </div>
-                                    <div class="col-12">
-                                        <strong class="text-muted">Description:</strong>
-                                        <p class="mb-0"><?php echo htmlspecialchars(substr($complaint['narrative'] ?? 'No description', 0, 200)) . '...'; ?></p>
-                                    </div>
-                                    <div class="col-12 mt-3">
-                                        <button class="btn btn-primary btn-sm view-details-btn" data-id="<?php echo $complaint['id']; ?>">
-                                            <i class="fas fa-eye"></i> View Full Details
-                                        </button>
+                                    <div class="complaint-card__info-row complaint-card__info-row--muted">
+                                        <i class="fas fa-tag"></i>
+                                        <span class="complaint-card__info-text"><?php echo htmlspecialchars($complaint['blotter_type'] ?? 'N/A'); ?></span>
                                     </div>
                                 </div>
+
+                                <button type="button" class="view-details-btn complaint-card__link" data-id="<?php echo $complaint['id']; ?>">
+                                    <i class="fas fa-eye"></i> View Details
+                                </button>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -606,9 +555,11 @@ if (!isset($complaints) || !isset($statistics) || !isset($statuses) || !isset($c
 
             const formData = new FormData(this);
 
-            fetch('/Lumbangan_BMIS/bmis-lumbangan-system/public/index.php?action=createComplaint', {
+            fetch(<?php echo json_encode($baseUrl . '/index.php?action=complaint_save'); ?>, {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'same-origin',
+                headers: { 'Accept': 'application/json' }
             })
             .then(response => response.json())
             .then(data => {

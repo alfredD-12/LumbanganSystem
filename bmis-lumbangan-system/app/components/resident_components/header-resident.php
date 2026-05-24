@@ -1,8 +1,8 @@
 <?php
 
-if (session_status() !== PHP_SESSION_ACTIVE) {
-  session_start();
-}
+require_once __DIR__ . '/../../helpers/session_bootstrap.php';
+
+bmis_start_session();
 
 require_once __DIR__ . '/../../helpers/csrf_helper.php';
 $csrfToken = csrf_token();
@@ -43,7 +43,10 @@ render_favicon();
   <meta name="csrf-token" content="<?php echo h($csrfToken); ?>">
   <meta name="csrf-header" content="<?php echo h($csrfHeader); ?>">
   <meta name="csrf-field" content="<?php echo h($csrfField); ?>">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
 
+  <script src="<?php echo BASE_URL . 'assets/js/auth/browser-session-guard.js'; ?>"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">

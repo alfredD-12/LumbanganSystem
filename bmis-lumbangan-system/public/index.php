@@ -17,6 +17,7 @@ require_once __DIR__ . '/../app/controllers/SurveyController.php';
 // Load announcement helpers (provides base_url/assets_url/uploads_url/announcement_image_url)
 require_once __DIR__ . '/../app/helpers/announcement_helper.php';
 require_once __DIR__ . '/../app/controllers/AdminController.php';
+require_once __DIR__ . '/../app/controllers/PoliceController.php';
 // Note: Survey controller is handled above for legacy procedural implementation
 require_once __DIR__ . '/../app/controllers/ResidentController.php';
 //  Handle AJAX/API actions
@@ -34,6 +35,10 @@ if ($action) {
         'updateComplaint',
         'deleteComplaint',
         'updateComplaintStatus',
+        'sendComplaintToPolice',
+        'police_updateComplaintStatus',
+        'police_sendComplaintEmail',
+        'police_change_password',
         'create_assessment',
         'save_personal',
         'save_vitals',
@@ -178,6 +183,31 @@ if ($action) {
         case 'updateComplaintStatus':
             $admin = new AdminController();
             $admin->updateComplaintStatus();
+            break;
+
+        case 'sendComplaintToPolice':
+            $admin = new AdminController();
+            $admin->sendComplaintToPolice();
+            break;
+
+        case 'police_updateComplaintStatus':
+            $policeController = new PoliceController();
+            $policeController->updateComplaintStatus();
+            break;
+
+        case 'police_getComplaintDetails':
+            $policeController = new PoliceController();
+            $policeController->getComplaintDetails();
+            break;
+
+        case 'police_sendComplaintEmail':
+            $policeController = new PoliceController();
+            $policeController->sendComplaintEmail();
+            break;
+
+        case 'police_change_password':
+            $policeController = new PoliceController();
+            $policeController->changePassword();
             break;
         /*
          * Survey AJAX actions routed through front controller to SurveyController
@@ -449,11 +479,7 @@ if ($action) {
 $page = $_GET['page'] ?? null;
 
 if (!$page) {
-    if (isLoggedIn() && isUser()) {
-        $page = 'dashboard_resident';
-    } else {
-        $page = 'landing';
-    }
+    $page = 'landing';
 }
 
 switch ($page) {
@@ -463,11 +489,6 @@ switch ($page) {
         return;
 
     case 'landing':
-        if (isLoggedIn() && isUser()) {
-            $redirect = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=dashboard_resident';
-            header('Location: ' . $redirect);
-            exit;
-        }
         include __DIR__ . '/../app/views/landing/landing.php';
         break;
 
@@ -522,6 +543,16 @@ switch ($page) {
             exit;
         }
         include __DIR__ . '/../app/views/admin_Dash/SecDash.php';
+        break;
+    case 'dashboard_police':
+        if (!isPolice()) {
+            $redirect = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=landing';
+            header('Location: ' . $redirect);
+            exit;
+        }
+
+        $policeController = new PoliceController();
+        $policeController->dashboard();
         break;
     case 'survey_wizard_personal':
         require_once __DIR__ . '/../app/controllers/SurveyController.php';

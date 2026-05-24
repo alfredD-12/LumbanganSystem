@@ -102,11 +102,14 @@ CREATE TABLE incidents (
   location VARCHAR(255) NOT NULL,
   narrative TEXT NOT NULL,
   status_id INT NOT NULL DEFAULT 1,
+  forwarded_to_police TINYINT(1) NOT NULL DEFAULT 0,
+  forwarded_to_police_at DATETIME DEFAULT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   KEY idx_incidents_status (status_id),
   KEY idx_incidents_case_type (case_type_id),
+  KEY idx_incidents_forwarded_to_police (forwarded_to_police),
   KEY idx_incidents_user (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

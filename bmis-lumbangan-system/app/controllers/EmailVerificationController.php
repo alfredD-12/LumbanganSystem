@@ -1,6 +1,7 @@
 <?php
 
 @require_once dirname(__DIR__) . '/config/config.php';
+require_once dirname(__DIR__) . '/helpers/session_bootstrap.php';
 require_once dirname(__DIR__) . '/config/Database.php';
 require_once dirname(__DIR__) . '/models/EmailVerification.php';
 require_once dirname(__DIR__) . '/models/User.php';
@@ -312,9 +313,8 @@ class EmailVerificationController
             $this->verificationModel->markAsVerified($token);
             $this->db->commit();
 
-            if (session_status() === PHP_SESSION_NONE) {
-                session_start();
-            }
+            bmis_start_session();
+            session_regenerate_id(true);
 
             $_SESSION['user_id'] = $userId;
             $_SESSION['person_id'] = $personId;

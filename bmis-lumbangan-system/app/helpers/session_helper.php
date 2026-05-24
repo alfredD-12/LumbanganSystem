@@ -4,9 +4,9 @@
  */
 
 // Start session if not already started
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once __DIR__ . '/session_bootstrap.php';
+
+bmis_start_session();
 
 /**
  * Check if user is logged in
@@ -27,6 +27,18 @@ function isUser() {
  */
 function isOfficial() {
     return isLoggedIn() && isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'official';
+}
+
+/**
+ * Check if logged in official has police role
+ */
+function isPolice() {
+    if (!isOfficial()) {
+        return false;
+    }
+
+    $role = strtolower(trim((string) ($_SESSION['role'] ?? '')));
+    return $role === 'police';
 }
 
 /**
@@ -92,6 +104,17 @@ function requireUser() {
  */
 function requireOfficial() {
     if (!isOfficial()) {
+        $redirect = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=landing';
+        header('Location: ' . $redirect);
+        exit();
+    }
+}
+
+/**
+ * Require police login - redirect if not logged in as police
+ */
+function requirePolice() {
+    if (!isPolice()) {
         $redirect = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=landing';
         header('Location: ' . $redirect);
         exit();

@@ -60,7 +60,10 @@ if (file_exists(__DIR__ . '/../../helpers/official_profile_helper.php')) {
     <meta name="csrf-field" content="<?php echo htmlspecialchars($csrfField, ENT_QUOTES, 'UTF-8'); ?>">
     <meta name="app-auth-logout" content="<?php echo htmlspecialchars(rtrim(BASE_PUBLIC, '/') . '/index.php?action=logout', ENT_QUOTES, 'UTF-8'); ?>">
     <meta name="app-landing-url" content="<?php echo htmlspecialchars(rtrim(BASE_PUBLIC, '/') . '/index.php?page=landing', ENT_QUOTES, 'UTF-8'); ?>">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
     <title><?php echo htmlspecialchars($pageTitle ?? 'Barangay Lumbangan Admin System'); ?></title>
+    <script src="<?php echo BASE_URL . 'assets/js/auth/browser-session-guard.js'; ?>"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
     <!-- Combined Admin Header CSS -->
@@ -180,7 +183,14 @@ if (file_exists(__DIR__ . '/../../helpers/official_profile_helper.php')) {
                 <img src="<?php echo BASE_URL; ?>uploads/BMISlogo.png" alt="BMIS Logo" style="width: 60px; height: 60px; object-fit: contain;">
             </div>
             <h4>BARANGAY</h4>
-            <small>Admin Portal</small>
+            <?php
+            $portalLabel = 'Admin Portal';
+            if ((isset($_GET['page']) && $_GET['page'] === 'dashboard_police')
+                || (isset($_SESSION['official_role']) && strtolower((string) $_SESSION['official_role']) === 'police')) {
+                $portalLabel = 'Police Portal';
+            }
+            ?>
+            <small><?php echo htmlspecialchars($portalLabel, ENT_QUOTES, 'UTF-8'); ?></small>
         </div>
 
         <ul class="sidebar-menu">

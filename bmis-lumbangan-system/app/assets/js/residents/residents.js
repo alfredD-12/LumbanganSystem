@@ -3,8 +3,8 @@
  * For: app/views/residents/residents.php
  */
 
-// Base URL
-const baseUrl = '/Lumbangan_BMIS/bmis-lumbangan-system/public';
+// Base URL (prefer server-provided public path)
+const basePublic = (window.SURVEY_API || '').replace(/\/index\.php$/, '') || window.BASE_PUBLIC || '';
 
 // Format time to 12-hour format with AM/PM
 function formatTime(timeString) {
@@ -25,7 +25,7 @@ document.querySelectorAll('.view-details-btn').forEach(btn => {
     btn.addEventListener('click', function() {
         const id = this.dataset.id;
         // Use front-controller AJAX action that returns JSON for resident views
-        const url = `${baseUrl}/index.php?action=complaint_getDetails&id=${id}`;
+        const url = `${basePublic}/index.php?action=complaint_getDetails&id=${id}`;
         console.log('Fetching complaint details from:', url);
         
         fetch(url)

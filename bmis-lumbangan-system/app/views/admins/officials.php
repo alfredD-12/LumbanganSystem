@@ -122,6 +122,7 @@ require_once dirname(__DIR__, 2) . '/components/admin_components/header-admin.ph
                             <option value="">-- Select role --</option>
                             <option>Barangay Captain</option>
                             <option>Barangay Secretary</option>
+                            <option>Police</option>
                             <option>Barangay Health Worker President</option>
                             <option>Barangay Conciliation Panel</option>
                             <option>Barangay Tanod</option>

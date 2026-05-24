@@ -3,7 +3,9 @@
  * Helper to expose the logged-in official's profile and render client-side bootstrap hooks
  */
 
-if (session_status() === PHP_SESSION_NONE) session_start();
+require_once __DIR__ . '/session_bootstrap.php';
+
+bmis_start_session();
 
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/Official.php';

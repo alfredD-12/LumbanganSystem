@@ -7,11 +7,6 @@
 
 header('Content-Type: application/json');
 
-// Start session if not already started
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
 // Include required files
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../helpers/session_helper.php';

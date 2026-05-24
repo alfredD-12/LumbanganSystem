@@ -1018,3 +1018,251 @@ body,
                 border-color 0.3s ease,
                 box-shadow 0.3s ease;
 }
+
+/* Compact complaint views */
+.complaints-list.view-card {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 0.85rem;
+}
+
+.complaints-list.view-card .incident-card {
+    margin-bottom: 0 !important;
+    height: 100%;
+}
+
+.complaints-list.view-card .incident-card .card-body {
+    padding: 1rem !important;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.complaints-list.view-card .incident-card .card-title {
+    font-size: 1.05rem;
+    line-height: 1.25;
+    margin-bottom: 0 !important;
+}
+
+.complaints-list.view-card .incident-card .card-body > .d-flex:first-child {
+    gap: 0.65rem;
+    margin-bottom: 0.75rem !important;
+}
+
+.complaints-list.view-card .incident-card .card-body > .d-flex:first-child > div:last-child {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.complaints-list.view-card .incident-card .row.g-3 {
+    --bs-gutter-x: 0.75rem;
+    --bs-gutter-y: 0.45rem;
+    margin-top: 0;
+    flex: 1;
+}
+
+.complaints-list.view-card .incident-card .col-md-6,
+.complaints-list.view-card .incident-card .col-12 {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.complaints-list.view-card .incident-card .text-muted,
+.complaints-list.view-list .incident-card .text-muted {
+    font-size: 0.78rem;
+}
+
+.complaints-list.view-card .incident-card strong {
+    display: inline;
+    margin-bottom: 0;
+}
+
+.complaints-list.view-card .incident-card p {
+    line-height: 1.35;
+}
+
+.complaints-list.view-card .incident-card .col-12.mt-3 {
+    margin-top: 0.75rem !important;
+}
+
+.complaints-list.view-card .incident-card .col-12.mt-3 .d-flex {
+    flex-wrap: wrap;
+}
+
+.complaints-list.view-card .incident-card .btn-sm,
+.complaints-list.view-list .incident-card .btn-sm {
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
+}
+
+.complaints-list.view-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.complaints-list.view-list .incident-card {
+    margin-bottom: 0 !important;
+}
+
+.complaints-list.view-list .incident-card .card-body {
+    padding: 0.85rem 1rem !important;
+}
+
+.complaints-list.view-list .incident-card .card-body > .d-flex:first-child {
+    align-items: center !important;
+    gap: 0.75rem;
+    margin-bottom: 0.55rem !important;
+}
+
+.complaints-list.view-list .incident-card .card-title {
+    font-size: 1rem;
+    line-height: 1.25;
+    margin-bottom: 0 !important;
+}
+
+.complaints-list.view-list .incident-card .card-body > .d-flex:first-child > div:last-child {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.complaints-list.view-list .incident-card .row.g-3 {
+    --bs-gutter-x: 0.8rem;
+    --bs-gutter-y: 0.35rem;
+    align-items: center;
+    margin-top: 0;
+}
+
+.complaints-list.view-list .incident-card .col-md-6 {
+    width: 25%;
+}
+
+.complaints-list.view-list .incident-card .col-12 {
+    width: 50%;
+}
+
+.complaints-list.view-list .incident-card .col-12.mt-3 {
+    width: 50%;
+    margin-top: 0 !important;
+}
+
+.complaints-list.view-list .incident-card .col-12.mt-3 .d-flex {
+    align-items: center;
+    justify-content: flex-end !important;
+    flex-wrap: wrap;
+}
+
+.complaints-list.view-list .incident-card strong {
+    display: inline;
+    margin-bottom: 0;
+}
+
+.complaints-list.view-list .incident-card p {
+    display: inline;
+    line-height: 1.35;
+}
+
+@media (max-width: 1199.98px) {
+    .complaints-list.view-list .incident-card .col-md-6,
+    .complaints-list.view-list .incident-card .col-12,
+    .complaints-list.view-list .incident-card .col-12.mt-3 {
+        width: 100%;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .complaints-list.view-card {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Default compact admin complaint layout */
+.complaints-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 0.6rem;
+}
+
+.complaints-list .incident-card {
+    margin-bottom: 0 !important;
+}
+
+.complaints-list .incident-card .card-body {
+    padding: 0.75rem 0.85rem !important;
+}
+
+.complaints-list .incident-card .card-body > .d-flex:first-child {
+    gap: 0.45rem;
+    margin-bottom: 0.45rem !important;
+}
+
+.complaints-list .incident-card .card-title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    font-size: 0.95rem;
+    line-height: 1.2;
+}
+
+.complaints-list .incident-card .status-badge {
+    padding: 0.18rem 0.45rem;
+    font-size: 0.75rem;
+    line-height: 1.2;
+}
+
+.complaints-list .incident-card .row.g-3 {
+    --bs-gutter-x: 0.55rem;
+    --bs-gutter-y: 0.28rem;
+}
+
+.complaints-list .incident-card .col-md-6,
+.complaints-list .incident-card .col-12 {
+    font-size: 0.8rem;
+    line-height: 1.25;
+}
+
+.complaints-list .incident-card .text-muted {
+    margin-right: 0.2rem;
+    font-size: 0.72rem;
+}
+
+.complaints-list .incident-card p {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    margin: 0;
+}
+
+.complaints-list .incident-card .col-12.mt-3 {
+    margin-top: 0.5rem !important;
+}
+
+.complaints-list .incident-card .col-12.mt-3 .d-flex {
+    gap: 0.35rem !important;
+}
+
+.complaints-list .incident-card .btn-sm {
+    padding: 0.25rem 0.45rem;
+    font-size: 0.78rem;
+    line-height: 1.25;
+}
+
+@media (min-width: 1400px) {
+    .complaints-list {
+        grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    }
+}
+
+@media (max-width: 575.98px) {
+    .complaints-list {
+        grid-template-columns: 1fr;
+    }
+}

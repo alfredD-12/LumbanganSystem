@@ -89,6 +89,7 @@ if (!defined('BASE_PUBLIC')) {
     @require_once dirname(__DIR__, 2) . '/config/config.php';
 }
 $logoutUrl = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=landing';
+$logoutAction = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?action=logout';
 ?>
 
 <script>
@@ -222,6 +223,36 @@ $logoutUrl = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.p
                 logoutForm.submit();
                 return;
             }
+
+            // Pages using only the topbar may not render a hidden logout form.
+            // Create a POST logout form with CSRF token to reliably destroy the session.
+            try {
+                var metaToken = document.querySelector('meta[name="csrf-token"]');
+                var metaField = document.querySelector('meta[name="csrf-field"]');
+
+                var csrfToken = (window.CSRF_TOKEN || (metaToken && metaToken.getAttribute('content')) || '').toString();
+                var csrfField = (window.CSRF_FIELD || (metaField && metaField.getAttribute('content')) || 'csrf_token').toString();
+
+                var f = document.createElement('form');
+                f.method = 'post';
+                f.action = '<?php echo $logoutAction; ?>';
+                f.style.display = 'none';
+
+                if (csrfToken) {
+                    var i = document.createElement('input');
+                    i.type = 'hidden';
+                    i.name = csrfField;
+                    i.value = csrfToken;
+                    f.appendChild(i);
+                }
+
+                document.body.appendChild(f);
+                f.submit();
+                return;
+            } catch (e) {
+                // Ignore and fall back to a plain redirect.
+            }
+
             window.location.href = '<?php echo $logoutUrl; ?>';
         };
     }

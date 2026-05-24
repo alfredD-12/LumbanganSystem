@@ -122,6 +122,9 @@ document
 
       if (result.success) {
         hideLoginError();
+        try {
+          window.sessionStorage.setItem("bmis_active_browser_session", "1");
+        } catch (error) {}
         window.location.href = result.redirect;
         return;
       }

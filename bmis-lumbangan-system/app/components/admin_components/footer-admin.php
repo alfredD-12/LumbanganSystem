@@ -51,12 +51,37 @@
             return;
           }
 
+          // Some pages may not render the hidden logout form. Create one and POST to logout.
+          try {
+            var metaToken = document.querySelector('meta[name="csrf-token"]');
+            var metaField = document.querySelector('meta[name="csrf-field"]');
+            var csrfToken = (window.CSRF_TOKEN || (metaToken && metaToken.getAttribute('content')) || '').toString();
+            var csrfField = (window.CSRF_FIELD || (metaField && metaField.getAttribute('content')) || 'csrf_token').toString();
+
+            var f = document.createElement('form');
+            f.method = 'post';
+            f.action = '<?php echo rtrim(BASE_PUBLIC, '/'); ?>/index.php?action=logout';
+            f.style.display = 'none';
+
+            if (csrfToken) {
+              var i = document.createElement('input');
+              i.type = 'hidden';
+              i.name = csrfField;
+              i.value = csrfToken;
+              f.appendChild(i);
+            }
+
+            document.body.appendChild(f);
+            f.submit();
+            return;
+          } catch (e) {}
+
           window.location.href = '<?php echo rtrim(BASE_PUBLIC, '/'); ?>/index.php?page=landing';
         };
       }
     </script>
     <!-- Admin Complaint Page JavaScript -->
-    <script src="<?php echo BASE_URL . 'assets/js/complaint/admin.js'; ?>"></script>
+    <script src="<?php echo rtrim(BASE_URL, '/'); ?>/assets/js/complaint/admin.js?v=<?php echo filemtime(__DIR__ . '/../../assets/js/complaint/admin.js'); ?>"></script>
     <!-- Notification System JavaScript -->
     <script src="<?php echo BASE_URL . 'assets/js/notifications.js'; ?>"></script>
 

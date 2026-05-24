@@ -3,8 +3,31 @@
  * For: app/views/complaint/admin.php
  */
 
-// Define baseUrl globally for the confirmDeleteComplaint function
-const baseUrl = '/Lumbangan_BMIS/bmis-lumbangan-system/public';
+// Define baseUrl globally for the confirmDeleteComplaint function.
+// Use server-provided BASE_PUBLIC when available (supports different base folders/docroots).
+const baseUrl = (() => {
+    try {
+        if (typeof BASE_PUBLIC !== 'undefined' && BASE_PUBLIC) {
+            return String(BASE_PUBLIC).replace(/\/+$/, '');
+        }
+    } catch (e) {}
+
+    // Fallback: derive from current URL
+    try {
+        const href = window.location.href;
+        if (href.includes('/index.php')) {
+            return href.split('/index.php')[0];
+        }
+        const url = new URL(href);
+        const idx = url.pathname.toLowerCase().lastIndexOf('/public');
+        if (idx !== -1) {
+            return url.origin + url.pathname.slice(0, idx + '/public'.length);
+        }
+        return url.origin;
+    } catch (e) {
+        return '';
+    }
+})();
 
 // Only run if we're on the complaints page
 if (document.getElementById('complaintForm')) {
@@ -12,15 +35,27 @@ if (document.getElementById('complaintForm')) {
     // Helper: safely parse JSON responses (throws if content-type isn't JSON)
     function parseJsonResponse(res) {
         const ct = res.headers.get('content-type') || '';
-        if (!res.ok) throw new Error('Network response was not ok');
         if (!ct.includes('application/json')) {
             return res.text().then(t => { throw new Error('Expected JSON, got: ' + ct + '\n' + t); });
         }
-        return res.json();
+        return res.json().then(data => {
+            if (!res.ok) {
+                throw new Error(data.message || `Request failed. Please try again.`);
+            }
+
+            return data;
+        });
     }
     
     // Make parseJsonResponse global for confirmDeleteComplaint
     window.parseJsonResponse = parseJsonResponse;
+
+    function appendCsrfToken(formData) {
+        const token = document.querySelector('#complaintForm input[name="csrf_token"]');
+        if (token && token.value && !formData.has(token.name)) {
+            formData.append(token.name, token.value);
+        }
+    }
 
     // Helper: render a complaint card HTML (matches server-side markup)
     function renderComplaintCard(c) {
@@ -132,7 +167,7 @@ if (document.getElementById('complaintForm')) {
                     const id = this.dataset.id;
                     const statusesData = document.getElementById('statusesData')?.textContent;
                     const statuses = statusesData ? JSON.parse(statusesData) : [];
-                    fetch(`${baseUrl}/index.php?action=getComplaint&id=${id}`).then(parseJsonResponse).then(data => {
+                    fetch(`index.php?action=getComplaint&id=${id}`).then(parseJsonResponse).then(data => {
                         // reuse existing details rendering
                         // trigger the existing handler by simulating click? we'll call existing code fragment instead
                         const isResolved = data.status_id == 3;
@@ -151,7 +186,7 @@ if (document.getElementById('complaintForm')) {
             if (!btn._bound) {
                 btn.addEventListener('click', function() {
                     const id = this.dataset.id;
-                    fetch(`${baseUrl}/index.php?action=getComplaint&id=${id}`)
+                    fetch(`index.php?action=getComplaint&id=${id}`)
                         .then(parseJsonResponse)
                         .then(data => {
                             document.getElementById('complaintId').value = data.id;
@@ -211,7 +246,10 @@ if (document.getElementById('complaintForm')) {
         const data = e.detail;
         const statusesData = document.getElementById('statusesData')?.textContent;
         const statuses = statusesData ? JSON.parse(statusesData) : [];
-        const isResolved = data.status_id == 3;
+        const statusLabel = String(data.status_label || '').trim().toLowerCase();
+        const isResolved = data.status_id == 3 || statusLabel === 'resolved';
+        const isForwardedToPolice = Number(data.forwarded_to_police || 0) === 1;
+        const forwardedAt = data.forwarded_to_police_at ? new Date(data.forwarded_to_police_at).toLocaleString() : '';
 
         let statusUpdateHtml = '';
         if (!isResolved) {
@@ -351,13 +389,35 @@ if (document.getElementById('complaintForm')) {
                             <small class="text-muted d-block">Narrative</small>
                             <p class="mb-0 mt-1">${data.narrative}</p>
                         </div>
+                        <div class="col-12 mt-3">
+                            ${isResolved ? `
+                                <div class="alert alert-success mb-3">
+                                    <i class="fas fa-lock me-2"></i>
+                                    This complaint is resolved and can no longer be sent to the Police Portal.
+                                </div>
+                            ` : ''}
+                            ${isForwardedToPolice ? `
+                                <div class="alert alert-info mb-3">
+                                    <i class="fas fa-shield-alt me-2"></i>
+                                    This complaint has been sent to the Police Portal${forwardedAt ? ' on ' + forwardedAt : ''}.
+                                </div>
+                            ` : ''}
+                            ${!isResolved ? `
+                                <div class="d-flex justify-content-end">
+                                    <button type="button" class="btn ${isForwardedToPolice ? 'btn-outline-secondary' : 'btn-primary'}" id="sendToPoliceBtn" data-id="${data.id}" ${isForwardedToPolice ? 'disabled' : ''}>
+                                        <i class="fas fa-paper-plane me-2"></i>${isForwardedToPolice ? 'Sent to Police' : 'Send to Police'}
+                                    </button>
+                                </div>
+                            ` : ''}
+                        </div>
                     </div>
                 </div>
             </div>
         `;
 
         document.getElementById('detailsContent').innerHTML = html;
-        new bootstrap.Modal(document.getElementById('detailsModal')).show();
+        const detailsModalEl = document.getElementById('detailsModal');
+        bootstrap.Modal.getOrCreateInstance(detailsModalEl).show();
     });
 
     // Format time to 12-hour format with AM/PM
@@ -382,9 +442,9 @@ if (document.getElementById('complaintForm')) {
         const complaintId = document.getElementById('complaintId').value;
         
         // Use front-controller action endpoints that return JSON
-        let url = `${baseUrl}/index.php?action=createComplaint`;
+        let url = `index.php?action=createComplaint`;
         if (complaintId) {
-            url = `${baseUrl}/index.php?action=updateComplaint&id=${complaintId}`;
+            url = `index.php?action=updateComplaint&id=${complaintId}`;
         }
         
         fetch(url, {
@@ -476,8 +536,9 @@ if (document.getElementById('complaintForm')) {
         const formData = new FormData();
         formData.append('id', complaintId);
         formData.append('status_id', statusId);
+        appendCsrfToken(formData);
 
-        fetch(`${baseUrl}/index.php?action=updateComplaintStatus`, {
+        fetch(`index.php?action=updateComplaintStatus`, {
             method: 'POST',
             body: formData
         })
@@ -514,6 +575,46 @@ if (document.getElementById('complaintForm')) {
             showError('Error updating status: ' + (err.message || err));
         });
     }
+
+    document.getElementById('detailsModal').addEventListener('click', function(e) {
+        const btn = e.target.closest('#sendToPoliceBtn');
+        if (!btn || btn.disabled) return;
+
+        const complaintId = btn.dataset.id;
+        const formData = new FormData();
+        formData.append('id', complaintId);
+        appendCsrfToken(formData);
+
+        btn.disabled = true;
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+
+        fetch(`index.php?action=sendComplaintToPolice`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(parseJsonResponse)
+        .then(data => {
+            if (data.success) {
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-outline-secondary');
+                btn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Sent to Police';
+                if (data.data) {
+                    document.dispatchEvent(new CustomEvent('complaint:detailsLoaded', { detail: data.data }));
+                }
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+                showError(data.message || 'Failed to send complaint to police.');
+            }
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+            console.error('Error sending complaint to police:', err);
+            showError(err.message || 'Failed to send complaint to police.');
+        });
+    });
     
     // Filtering functionality
     if (document.getElementById('statusFilter')) {
@@ -521,12 +622,11 @@ if (document.getElementById('complaintForm')) {
         document.getElementById('caseTypeFilter').addEventListener('change', filterAllCards);
         document.getElementById('applyFilter').addEventListener('click', filterAllCards);
         
-        const cards = document.querySelectorAll('.incident-card');
-        
         function filterAllCards() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
             const statusValue = document.getElementById('statusFilter').value.toLowerCase().trim();
             const caseValue = document.getElementById('caseTypeFilter').value.toLowerCase().trim();
+            const cards = document.querySelectorAll('.incident-card');
             let visibleCount = 0;
             
             cards.forEach(card => {
@@ -562,22 +662,36 @@ if (document.getElementById('complaintForm')) {
         
         filterAllCards();
     }
+
 }
 
 // Show success notification
 function showSuccess(message) {
     document.getElementById('successMessage').textContent = message;
-    const modal = new bootstrap.Modal(document.getElementById('successModal'));
+    const modalEl = document.getElementById('successModal');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
     modal.show();
+    modalEl.addEventListener('hidden.bs.modal', cleanupOrphanModalBackdrop, { once: true });
     setTimeout(() => modal.hide(), 2000);
 }
 
 // Show error notification
 function showError(message) {
     document.getElementById('errorMessage').textContent = message;
-    const modal = new bootstrap.Modal(document.getElementById('errorModal'));
+    const modalEl = document.getElementById('errorModal');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
     modal.show();
+    modalEl.addEventListener('hidden.bs.modal', cleanupOrphanModalBackdrop, { once: true });
     setTimeout(() => modal.hide(), 3000);
+}
+
+function cleanupOrphanModalBackdrop() {
+    if (document.querySelector('.modal.show')) return;
+
+    document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.removeProperty('overflow');
+    document.body.style.removeProperty('padding-right');
 }
 
 // Confirm delete complaint function
@@ -588,7 +702,7 @@ function confirmDeleteComplaint() {
     const delForm = new FormData();
     delForm.append('id', id);
     
-    fetch(`${baseUrl}/index.php?action=deleteComplaint`, { method: 'POST', body: delForm })
+    fetch(`index.php?action=deleteComplaint`, { method: 'POST', body: delForm })
         .then(window.parseJsonResponse)
         .then(data => {
             if (data.success) {

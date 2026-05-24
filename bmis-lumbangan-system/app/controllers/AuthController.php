@@ -1,10 +1,7 @@
 <?php
 
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
-
 @require_once dirname(__DIR__) . '/config/config.php';
+require_once dirname(__DIR__) . '/helpers/session_bootstrap.php';
 require_once dirname(__DIR__) . '/config/Database.php';
 require_once dirname(__DIR__) . '/models/User.php';
 require_once dirname(__DIR__) . '/models/Official.php';
@@ -104,6 +101,8 @@ class AuthController
                     return;
                 }
 
+                session_regenerate_id(true);
+
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['person_id'] = $user['person_id'];
                 $_SESSION['username'] = $user['username'];
@@ -126,6 +125,8 @@ class AuthController
 
         if ($official) {
             if (password_verify($password, $official['password_hash'])) {
+                session_regenerate_id(true);
+
                 $_SESSION['official_id'] = $official['id'];
                 $_SESSION['username'] = $official['username'];
                 $_SESSION['full_name'] = $official['full_name'];
@@ -137,7 +138,9 @@ class AuthController
 
                 $loginSuccess = true;
                 $authenticatedUserType = 'official';
-                $redirectUrl = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=dashboard_official';
+                $isPolice = strtolower(trim((string) ($official['role'] ?? ''))) === 'police';
+                $redirectPage = $isPolice ? 'dashboard_police' : 'dashboard_official';
+                $redirectUrl = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=' . $redirectPage;
             }
         }
 
@@ -269,24 +272,12 @@ class AuthController
 
         // Start session if not already started
         if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
+            bmis_start_session();
         }
 
         // Clear session variables and destroy session data
         $_SESSION = [];
-        if (ini_get("session.use_cookies")) {
-            $params = session_get_cookie_params();
-            // Remove the session cookie on client
-            setcookie(
-                session_name(),
-                '',
-                time() - 42000,
-                $params["path"],
-                $params["domain"],
-                $params["secure"],
-                $params["httponly"]
-            );
-        }
+        bmis_expire_session_cookie();
         session_unset();
         session_destroy();
 

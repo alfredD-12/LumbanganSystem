@@ -23,7 +23,8 @@ class RhuAnalyticsController
         $summary = $this->analytics->getSummary($filters);
         $purokBreakdown = $this->analytics->getPurokBreakdown($filters);
         $monthlyTrend = $this->analytics->getMonthlyTrend($filters);
-        $recentAssessments = $this->analytics->getApprovedAssessments($filters, 12);
+        $assessmentLimit = $filters['rows'] === 'all' ? null : (int) $filters['rows'];
+        $recentAssessments = $this->analytics->getApprovedAssessments($filters, $assessmentLimit);
         $priorityAssessments = $this->analytics->getTopPriorityAssessments($filters, 6);
         $puroks = $this->analytics->getPuroks();
         $referralStatuses = $this->analytics->getReferralStatuses();
@@ -84,7 +85,7 @@ class RhuAnalyticsController
                 $_SESSION['official_id'] ?? null
             );
 
-            echo json_encode(['success' => (bool) $ok, 'message' => $ok ? 'Referral status updated.' : 'No changes saved.']);
+            echo json_encode(['success' => (bool) $ok, 'message' => $ok ? 'Follow-up status updated.' : 'No changes saved.']);
         } catch (Throwable $e) {
             http_response_code(422);
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
@@ -103,7 +104,7 @@ class RhuAnalyticsController
         header('Content-Disposition: attachment; filename="rhu-approved-assessments-' . date('Ymd-His') . '.csv"');
 
         $out = fopen('php://output', 'w');
-        fputcsv($out, ['Assessment ID', 'Resident', 'Purok', 'Age', 'Sex', 'BP', 'BMI', 'Risk Level', 'Referral Status', 'Approved Date']);
+        fputcsv($out, ['Assessment ID', 'Resident', 'Purok', 'Age', 'Sex', 'BP', 'BMI', 'Risk Level', 'Follow-up Status', 'Approved Date']);
 
         foreach ($rows as $row) {
             fputcsv($out, [
@@ -115,7 +116,7 @@ class RhuAnalyticsController
                 (($row['bp_systolic'] ?? null) ?: '-') . '/' . (($row['bp_diastolic'] ?? null) ?: '-'),
                 $row['bmi'] ?? '',
                 $row['risk_level'] ?? 'Low',
-                $row['referral_status'] ?? 'Pending Review',
+                $row['referral_status'] ?? 'Pending',
                 !empty($row['approved_at']) ? date('Y-m-d', strtotime($row['approved_at'])) : ($row['survey_date'] ?? ''),
             ]);
         }
@@ -174,7 +175,7 @@ class RhuAnalyticsController
                             <td><?php echo htmlspecialchars($row['purok_name'] ?? 'Unassigned'); ?></td>
                             <td><?php echo htmlspecialchars(($row['age'] ?? 'N/A') . ' / ' . ($row['sex'] ?? 'N/A')); ?></td>
                             <td><?php echo htmlspecialchars($row['risk_level'] ?? 'Low'); ?></td>
-                            <td><?php echo htmlspecialchars($row['referral_status'] ?? 'Pending Review'); ?></td>
+                            <td><?php echo htmlspecialchars($row['referral_status'] ?? 'Pending'); ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -222,6 +223,7 @@ class RhuAnalyticsController
             'risk_type' => trim((string) ($source['risk_type'] ?? '')),
             'risk_level' => trim((string) ($source['risk_level'] ?? '')),
             'trend_months' => $this->validTrendMonths($source['trend_months'] ?? '') ?: '6',
+            'rows' => $this->validRows($source['rows'] ?? '') ?: '12',
         ];
     }
 
@@ -234,6 +236,12 @@ class RhuAnalyticsController
     {
         $value = (string) $value;
         return in_array($value, ['3', '6', '12', '24'], true) ? $value : '';
+    }
+
+    private function validRows($value)
+    {
+        $value = (string) $value;
+        return in_array($value, ['12', '25', '50', 'all'], true) ? $value : '';
     }
 
     private function displayName(array $row, $privacyMode)

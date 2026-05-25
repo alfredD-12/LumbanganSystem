@@ -7,10 +7,8 @@ class RhuAnalytics
     private $db;
 
     private const REFERRAL_STATUSES = [
-        'Pending Review',
-        'Referred',
-        'Seen by RHU',
-        'Follow-up Needed',
+        'Pending',
+        'In Progress',
         'Completed',
     ];
 
@@ -124,6 +122,10 @@ class RhuAnalytics
         $trendMonths = isset($filters['trend_months']) && in_array((string) $filters['trend_months'], ['3', '6', '12', '24'], true)
             ? (int) $filters['trend_months']
             : 6;
+        $endMonth = $this->monthFromDate($filters['date_to'] ?? '') ?: new DateTimeImmutable('first day of this month');
+        $startMonth = $endMonth->modify('-' . ($trendMonths - 1) . ' months');
+        $params[':trend_start'] = $startMonth->format('Y-m-01');
+        $params[':trend_end'] = $endMonth->modify('last day of this month')->format('Y-m-d');
 
         $sql = "
             SELECT
@@ -139,14 +141,29 @@ class RhuAnalytics
             LEFT JOIN lifestyle_risk lr ON lr.cvd_id = a.id
             LEFT JOIN rhu_referrals rr ON rr.assessment_id = a.id
             WHERE {$where}
+              AND COALESCE(a.survey_date, DATE(a.answered_at)) BETWEEN :trend_start AND :trend_end
             GROUP BY month_key
-            ORDER BY month_key DESC
-            LIMIT {$trendMonths}
+            ORDER BY month_key ASC
         ";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
-        return array_reverse($stmt->fetchAll(PDO::FETCH_ASSOC));
+        $rowsByMonth = [];
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $rowsByMonth[$row['month_key']] = $row;
+        }
+
+        $trend = [];
+        for ($i = 0; $i < $trendMonths; $i++) {
+            $month = $startMonth->modify('+' . $i . ' months')->format('Y-m');
+            $trend[] = [
+                'month_key' => $month,
+                'approved_count' => (int) ($rowsByMonth[$month]['approved_count'] ?? 0),
+                'high_risk' => (int) ($rowsByMonth[$month]['high_risk'] ?? 0),
+            ];
+        }
+
+        return $trend;
     }
 
     public function getApprovedAssessments(array $filters = [], $limit = 8)
@@ -228,7 +245,7 @@ class RhuAnalytics
     public function updateReferralStatus($assessmentId, $status, $notes, $officialId = null)
     {
         if (!in_array($status, self::REFERRAL_STATUSES, true)) {
-            throw new InvalidArgumentException('Invalid referral status.');
+            throw new InvalidArgumentException('Invalid follow-up status.');
         }
 
         $stmt = $this->db->prepare("
@@ -275,7 +292,11 @@ class RhuAnalytics
                 COALESCE(d.screen_positive, 0) AS diabetes_positive,
                 COALESCE(ang.screen_positive, 0) AS angina_positive,
                 COALESCE(ang.needs_doctor_referral, 0) AS needs_doctor_referral,
-                COALESCE(rr.status, 'Pending Review') AS referral_status,
+                CASE
+                    WHEN rr.status = 'Completed' THEN 'Completed'
+                    WHEN rr.status IN ('In Progress', 'Referred', 'Seen by RHU', 'Follow-up Needed') THEN 'In Progress'
+                    ELSE 'Pending'
+                END AS referral_status,
                 rr.notes AS referral_notes,
                 rr.updated_at AS referral_updated_at,
                 ({$riskScore}) AS risk_score
@@ -410,13 +431,26 @@ class RhuAnalytics
         return $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
     }
 
+    private function monthFromDate($value)
+    {
+        if (!is_string($value) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+            return null;
+        }
+
+        try {
+            return new DateTimeImmutable(substr($value, 0, 7) . '-01');
+        } catch (Exception $e) {
+            return null;
+        }
+    }
+
     private function ensureReferralTable()
     {
         $this->db->exec("
             CREATE TABLE IF NOT EXISTS rhu_referrals (
                 id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
                 assessment_id BIGINT UNSIGNED NOT NULL,
-                status VARCHAR(64) NOT NULL DEFAULT 'Pending Review',
+                status VARCHAR(64) NOT NULL DEFAULT 'Pending',
                 notes TEXT DEFAULT NULL,
                 updated_by_official_id BIGINT UNSIGNED DEFAULT NULL,
                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

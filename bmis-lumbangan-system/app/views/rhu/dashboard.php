@@ -15,6 +15,8 @@ $trendApproved = array_map(static fn($row) => (int) ($row['approved_count'] ?? 0
 $trendHighRisk = array_map(static fn($row) => (int) ($row['high_risk'] ?? 0), $monthlyTrend);
 $trendMonths = in_array((string) ($filters['trend_months'] ?? '6'), ['3', '6', '12', '24'], true) ? (string) $filters['trend_months'] : '6';
 $trendBadge = 'Last ' . $trendMonths . ' months';
+$rowsFilter = in_array((string) ($filters['rows'] ?? '12'), ['12', '25', '50', 'all'], true) ? (string) $filters['rows'] : '12';
+$assessmentBadge = $rowsFilter === 'all' ? 'All matching' : 'Recent ' . $rowsFilter;
 $purokLabels = array_map(static fn($row) => (string) ($row['purok_name'] ?? 'Unassigned'), $purokBreakdown);
 $purokHighRisk = array_map(static fn($row) => (int) ($row['high_risk'] ?? 0), $purokBreakdown);
 
@@ -54,6 +56,11 @@ function rhu_risk_class($level)
     if ($level === 'high') return 'high';
     if ($level === 'moderate') return 'moderate';
     return 'low';
+}
+
+function rhu_help($text)
+{
+    return '<span class="rhu-help" tabindex="0" role="img" aria-label="' . rhu_h($text) . '" data-tooltip="' . rhu_h($text) . '"><i class="fas fa-circle-question"></i></span>';
 }
 ?>
 <!DOCTYPE html>
@@ -321,6 +328,75 @@ function rhu_risk_class($level)
             letter-spacing: .04em;
         }
 
+        .label-with-help,
+        .title-with-help {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .rhu-help {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            color: #98a2b3;
+            cursor: help;
+            outline: none;
+        }
+
+        .rhu-help:hover,
+        .rhu-help:focus {
+            color: var(--blue);
+        }
+
+        .rhu-help::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: 50%;
+            bottom: calc(100% + 9px);
+            width: max-content;
+            max-width: 260px;
+            transform: translateX(-50%) translateY(4px);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 20;
+            padding: 9px 10px;
+            border-radius: 8px;
+            background: #101828;
+            color: #fff;
+            box-shadow: 0 10px 24px rgba(16, 24, 40, .18);
+            font-size: .74rem;
+            font-weight: 500;
+            line-height: 1.4;
+            letter-spacing: 0;
+            text-transform: none;
+            white-space: normal;
+        }
+
+        .rhu-help::before {
+            content: "";
+            position: absolute;
+            left: 50%;
+            bottom: calc(100% + 3px);
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #101828;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 21;
+        }
+
+        .rhu-help:hover::after,
+        .rhu-help:hover::before,
+        .rhu-help:focus::after,
+        .rhu-help:focus::before {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
         .rhu-kpi-icon {
             width: 34px;
             height: 34px;
@@ -470,7 +546,10 @@ function rhu_risk_class($level)
         }
 
         .rhu-table-wrap {
-            overflow-x: auto;
+            max-height: 560px;
+            overflow: auto;
+            border: 1px solid var(--line);
+            border-radius: 10px;
         }
 
         .rhu-table {
@@ -488,6 +567,10 @@ function rhu_risk_class($level)
             text-transform: uppercase;
             letter-spacing: .04em;
             border-bottom: 1px solid var(--line);
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            background: #fff;
         }
 
         .rhu-table td {
@@ -785,6 +868,15 @@ function rhu_risk_class($level)
                     </select>
                 </div>
                 <div class="field">
+                    <label for="rows">Rows</label>
+                    <select id="rows" name="rows">
+                        <option value="12" <?php echo rhu_selected($rowsFilter, '12'); ?>>Recent 12</option>
+                        <option value="25" <?php echo rhu_selected($rowsFilter, '25'); ?>>Recent 25</option>
+                        <option value="50" <?php echo rhu_selected($rowsFilter, '50'); ?>>Recent 50</option>
+                        <option value="all" <?php echo rhu_selected($rowsFilter, 'all'); ?>>All matching</option>
+                    </select>
+                </div>
+                <div class="field">
                     <label for="privacy">Privacy</label>
                     <select id="privacy" name="privacy">
                         <option value="full" <?php echo rhu_selected($privacyMode, 'full'); ?>>Show names</option>
@@ -813,33 +905,33 @@ function rhu_risk_class($level)
         </section>
 
         <section class="rhu-kpis" aria-label="RHU overview">
-            <article class="rhu-kpi"><div class="rhu-kpi-top"><div class="rhu-kpi-label">Approved Surveys</div><div class="rhu-kpi-icon"><i class="fas fa-clipboard-check"></i></div></div><div class="rhu-kpi-value"><?php echo number_format($summary['approved_assessments']); ?></div><div class="rhu-kpi-note">Validated records</div></article>
-            <article class="rhu-kpi"><div class="rhu-kpi-top"><div class="rhu-kpi-label">Residents Assessed</div><div class="rhu-kpi-icon"><i class="fas fa-users"></i></div></div><div class="rhu-kpi-value"><?php echo number_format($summary['residents_assessed']); ?></div><div class="rhu-kpi-note">Unique residents</div></article>
-            <article class="rhu-kpi alert"><div class="rhu-kpi-top"><div class="rhu-kpi-label">Needs Monitoring</div><div class="rhu-kpi-icon"><i class="fas fa-triangle-exclamation"></i></div></div><div class="rhu-kpi-value"><?php echo number_format($summary['high_risk']); ?></div><div class="rhu-kpi-note">Moderate to critical</div></article>
-            <article class="rhu-kpi good"><div class="rhu-kpi-top"><div class="rhu-kpi-label">Doctor Referrals</div><div class="rhu-kpi-icon"><i class="fas fa-user-doctor"></i></div></div><div class="rhu-kpi-value"><?php echo number_format($summary['doctor_referrals']); ?></div><div class="rhu-kpi-note">Marked for follow-up</div></article>
+            <article class="rhu-kpi"><div class="rhu-kpi-top"><div class="rhu-kpi-label label-with-help">Approved Surveys <?php echo rhu_help('Approved health surveys are records already validated by the barangay side and available for RHU monitoring.'); ?></div><div class="rhu-kpi-icon"><i class="fas fa-clipboard-check"></i></div></div><div class="rhu-kpi-value"><?php echo number_format($summary['approved_assessments']); ?></div><div class="rhu-kpi-note">Validated records</div></article>
+            <article class="rhu-kpi"><div class="rhu-kpi-top"><div class="rhu-kpi-label label-with-help">Residents Assessed <?php echo rhu_help('Counts unique residents with approved health assessment records in the current filters.'); ?></div><div class="rhu-kpi-icon"><i class="fas fa-users"></i></div></div><div class="rhu-kpi-value"><?php echo number_format($summary['residents_assessed']); ?></div><div class="rhu-kpi-note">Unique residents</div></article>
+            <article class="rhu-kpi alert"><div class="rhu-kpi-top"><div class="rhu-kpi-label label-with-help">Needs Monitoring <?php echo rhu_help('Residents with at least one health risk signal, such as raised BP, diabetes screening positive, obesity, lifestyle risk, or doctor referral flag.'); ?></div><div class="rhu-kpi-icon"><i class="fas fa-triangle-exclamation"></i></div></div><div class="rhu-kpi-value"><?php echo number_format($summary['high_risk']); ?></div><div class="rhu-kpi-note">Moderate to critical</div></article>
+            <article class="rhu-kpi good"><div class="rhu-kpi-top"><div class="rhu-kpi-label label-with-help">Doctor Referrals <?php echo rhu_help('Residents whose screening indicates they may need referral or medical review.'); ?></div><div class="rhu-kpi-icon"><i class="fas fa-user-doctor"></i></div></div><div class="rhu-kpi-value"><?php echo number_format($summary['doctor_referrals']); ?></div><div class="rhu-kpi-note">Marked for follow-up</div></article>
         </section>
 
         <section class="rhu-risk-summary" aria-label="Risk level summary">
-            <div class="rhu-risk-item"><div class="rhu-risk-label">Low Risk</div><div class="rhu-risk-value"><?php echo number_format($summary['low_risk']); ?></div></div>
-            <div class="rhu-risk-item"><div class="rhu-risk-label">Moderate Risk</div><div class="rhu-risk-value"><?php echo number_format($summary['moderate_risk']); ?></div></div>
-            <div class="rhu-risk-item"><div class="rhu-risk-label">High Risk</div><div class="rhu-risk-value"><?php echo number_format($summary['high_level_risk']); ?></div></div>
-            <div class="rhu-risk-item"><div class="rhu-risk-label">Critical Risk</div><div class="rhu-risk-value"><?php echo number_format($summary['critical_risk']); ?></div></div>
+            <div class="rhu-risk-item"><div class="rhu-risk-label label-with-help">Low Risk <?php echo rhu_help('No major risk signal was found in the approved assessment.'); ?></div><div class="rhu-risk-value"><?php echo number_format($summary['low_risk']); ?></div></div>
+            <div class="rhu-risk-item"><div class="rhu-risk-label label-with-help">Moderate Risk <?php echo rhu_help('One or two risk signals were found and may need routine monitoring.'); ?></div><div class="rhu-risk-value"><?php echo number_format($summary['moderate_risk']); ?></div></div>
+            <div class="rhu-risk-item"><div class="rhu-risk-label label-with-help">High Risk <?php echo rhu_help('Several risk signals were found and the resident should be prioritized for RHU review.'); ?></div><div class="rhu-risk-value"><?php echo number_format($summary['high_level_risk']); ?></div></div>
+            <div class="rhu-risk-item"><div class="rhu-risk-label label-with-help">Critical Risk <?php echo rhu_help('Highest risk group based on multiple screening flags; should be reviewed first.'); ?></div><div class="rhu-risk-value"><?php echo number_format($summary['critical_risk']); ?></div></div>
         </section>
 
         <section class="rhu-grid">
             <article class="rhu-panel">
-                <div class="rhu-panel-header"><div><h2 class="rhu-panel-title">Monthly Trend</h2><div class="rhu-panel-subtitle">Approved surveys and monitoring needs</div></div><span class="rhu-panel-badge"><?php echo rhu_h($trendBadge); ?></span></div>
+                <div class="rhu-panel-header"><div><h2 class="rhu-panel-title title-with-help">Monthly Trend <?php echo rhu_help('Shows approved health surveys per month and how many of those records need monitoring. Use the Trend filter to change the range.'); ?></h2><div class="rhu-panel-subtitle">Approved surveys and monitoring needs</div></div><span class="rhu-panel-badge"><?php echo rhu_h($trendBadge); ?></span></div>
                 <div class="rhu-chart"><canvas id="monthlyTrendChart"></canvas></div>
             </article>
             <article class="rhu-panel">
-                <div class="rhu-panel-header"><div><h2 class="rhu-panel-title">Risk by Purok</h2><div class="rhu-panel-subtitle">Highest monitoring counts</div></div></div>
+                <div class="rhu-panel-header"><div><h2 class="rhu-panel-title title-with-help">Risk by Purok <?php echo rhu_help('Compares puroks by number of residents needing monitoring so RHU can prioritize areas.'); ?></h2><div class="rhu-panel-subtitle">Highest monitoring counts</div></div></div>
                 <div class="rhu-chart"><canvas id="purokRiskChart"></canvas></div>
             </article>
         </section>
 
         <section class="rhu-grid">
             <article class="rhu-panel">
-                <div class="rhu-panel-header"><div><h2 class="rhu-panel-title">Residents Needing Immediate Follow-up</h2><div class="rhu-panel-subtitle">Prioritized by risk level and referral flags</div></div><span class="rhu-panel-badge"><?php echo number_format(count($priorityAssessments)); ?> shown</span></div>
+                <div class="rhu-panel-header"><div><h2 class="rhu-panel-title title-with-help">Residents Needing Immediate Follow-up <?php echo rhu_help('Priority list of high-risk residents. Use View to inspect details and update the follow-up status.'); ?></h2><div class="rhu-panel-subtitle">Prioritized by risk level and follow-up flags</div></div><span class="rhu-panel-badge"><?php echo number_format(count($priorityAssessments)); ?> shown</span></div>
                 <div class="rhu-list">
                     <?php if (empty($priorityAssessments)): ?>
                         <div class="rhu-empty">No priority residents for the current filters.</div>
@@ -848,7 +940,7 @@ function rhu_risk_class($level)
                             <div class="rhu-list-item actionable">
                                 <div>
                                     <div class="rhu-list-title"><?php echo rhu_h(rhu_name($row, $privacyMode)); ?></div>
-                                    <div class="rhu-list-meta"><?php echo rhu_h($row['purok_name'] ?? 'Unassigned'); ?> | <?php echo rhu_h(($row['age'] ?? 'N/A') . ' / ' . ($row['sex'] ?? 'N/A')); ?> | <?php echo rhu_h($row['referral_status'] ?? 'Pending Review'); ?></div>
+                                    <div class="rhu-list-meta"><?php echo rhu_h($row['purok_name'] ?? 'Unassigned'); ?> | <?php echo rhu_h(($row['age'] ?? 'N/A') . ' / ' . ($row['sex'] ?? 'N/A')); ?> | <?php echo rhu_h($row['referral_status'] ?? 'Pending'); ?></div>
                                 </div>
                                 <span class="rhu-pill <?php echo rhu_risk_class($row['risk_level'] ?? 'Low'); ?>"><?php echo rhu_h($row['risk_level'] ?? 'Low'); ?></span>
                                 <div class="rhu-priority-action">
@@ -861,7 +953,7 @@ function rhu_risk_class($level)
             </article>
 
             <article class="rhu-panel">
-                <div class="rhu-panel-header"><div><h2 class="rhu-panel-title">Priority Puroks</h2><div class="rhu-panel-subtitle">Sorted by monitoring need</div></div></div>
+                <div class="rhu-panel-header"><div><h2 class="rhu-panel-title title-with-help">Priority Puroks <?php echo rhu_help('Puroks are sorted by number of residents needing monitoring to support area-based planning.'); ?></h2><div class="rhu-panel-subtitle">Sorted by monitoring need</div></div></div>
                 <div class="rhu-list">
                     <?php if (empty($purokBreakdown)): ?>
                         <div class="rhu-empty">No purok analytics available yet.</div>
@@ -878,10 +970,10 @@ function rhu_risk_class($level)
         </section>
 
         <section class="rhu-panel">
-            <div class="rhu-panel-header"><div><h2 class="rhu-panel-title">Approved Assessments</h2><div class="rhu-panel-subtitle">Click view to inspect health details and update referral tracking</div></div><span class="rhu-panel-badge"><?php echo number_format(count($recentAssessments)); ?> shown</span></div>
+            <div class="rhu-panel-header"><div><h2 class="rhu-panel-title title-with-help">Approved Assessments <?php echo rhu_help('Shows the selected number of approved health records. Change the Rows filter to show more or all matching results.'); ?></h2><div class="rhu-panel-subtitle">Click view to inspect health details and update follow-up status</div></div><span class="rhu-panel-badge"><?php echo rhu_h($assessmentBadge); ?> · <?php echo number_format(count($recentAssessments)); ?> shown</span></div>
             <div class="rhu-table-wrap">
                 <table class="rhu-table">
-                    <thead><tr><th>Resident</th><th>Purok</th><th>Age / Sex</th><th>BP</th><th>BMI</th><th>Risk</th><th>Referral</th><th>Approved</th><th>Action</th></tr></thead>
+                    <thead><tr><th>Resident</th><th>Purok</th><th>Age / Sex</th><th>BP</th><th>BMI</th><th>Risk</th><th>Follow-up</th><th>Approved</th><th>Action</th></tr></thead>
                     <tbody>
                         <?php if (empty($recentAssessments)): ?>
                             <tr><td colspan="9" class="rhu-empty">No approved assessments found for the current filters.</td></tr>
@@ -895,7 +987,7 @@ function rhu_risk_class($level)
                                     <td><?php echo rhu_h(($assessment['bp_systolic'] ?: '-') . '/' . ($assessment['bp_diastolic'] ?: '-')); ?></td>
                                     <td><?php echo $assessment['bmi'] !== null ? rhu_h(number_format((float) $assessment['bmi'], 1)) : '-'; ?></td>
                                     <td><span class="rhu-pill <?php echo rhu_risk_class($assessment['risk_level'] ?? 'Low'); ?>"><?php echo rhu_h($assessment['risk_level'] ?? 'Low'); ?></span></td>
-                                    <td><span class="status-pill" data-referral-status="<?php echo (int) $assessment['id']; ?>"><?php echo rhu_h($assessment['referral_status'] ?? 'Pending Review'); ?></span></td>
+                                    <td><span class="status-pill" data-referral-status="<?php echo (int) $assessment['id']; ?>"><?php echo rhu_h($assessment['referral_status'] ?? 'Pending'); ?></span></td>
                                     <td><?php echo $approvedDate ? rhu_h(date('M d, Y', strtotime($approvedDate))) : '-'; ?></td>
                                     <td><div class="row-actions"><button class="tiny-button" type="button" data-view-assessment="<?php echo (int) $assessment['id']; ?>"><i class="fas fa-eye"></i> View</button></div></td>
                                 </tr>
@@ -952,7 +1044,7 @@ function rhu_risk_class($level)
                     { label: 'Needs Monitoring', data: trendHighRisk, borderColor: '#b42318', backgroundColor: 'rgba(180, 35, 24, .06)', borderWidth: 2, tension: .32, fill: true, pointRadius: 3 }
                 ]
             },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: chartText, usePointStyle: true, boxWidth: 8 } } }, scales: { x: { grid: { display: false }, ticks: { font: chartText, color: '#667085' } }, y: { beginAtZero: true, ticks: { precision: 0, font: chartText, color: '#667085' }, grid: { color: '#eef0f3' } } } }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: chartText, usePointStyle: true, boxWidth: 8 } } }, scales: { x: { grid: { display: false }, ticks: { font: chartText, color: '#667085', autoSkip: true, maxTicksLimit: 8, maxRotation: 0 } }, y: { beginAtZero: true, ticks: { precision: 0, font: chartText, color: '#667085' }, grid: { color: '#eef0f3' } } } }
         });
 
         new Chart(document.getElementById('purokRiskChart'), {
@@ -1028,7 +1120,7 @@ function rhu_risk_class($level)
             document.getElementById('assessmentModalContent').innerHTML = `
                 <div class="detail-grid">
                     ${detailItem('Risk Level', data.risk_level || 'Low')}
-                    ${detailItem('Referral Status', data.referral_status || 'Pending Review')}
+                    ${detailItem('Follow-up Status', data.referral_status || 'Pending')}
                     ${detailItem('Approved', data.approved_at ? new Date(data.approved_at).toLocaleDateString() : (data.survey_date || '-'))}
                     ${detailItem('Blood Pressure', `${data.bp_systolic || '-'}/${data.bp_diastolic || '-'}`)}
                     ${detailItem('BMI', data.bmi || '-')}
@@ -1090,8 +1182,8 @@ function rhu_risk_class($level)
                     <input type="hidden" name="assessment_id" value="${escapeHtml(data.id)}">
                     <div class="referral-grid">
                         <div class="field">
-                            <label for="referralStatus">Referral Status</label>
-                            <select id="referralStatus" name="status">${referralOptions(data.referral_status || 'Pending Review')}</select>
+                            <label for="referralStatus">Follow-up Status</label>
+                            <select id="referralStatus" name="status">${referralOptions(data.referral_status || 'Pending')}</select>
                         </div>
                         <div class="field">
                             <label for="referralNotes">Notes</label>
@@ -1112,7 +1204,7 @@ function rhu_risk_class($level)
             const response = await fetch(`${basePublic}/index.php?action=rhu_update_referral`, { method: 'POST', body: formData, headers: { Accept: 'application/json' } });
             const payload = await response.json();
             if (!payload.success) {
-                showToast(payload.message || 'Unable to save referral status.');
+                showToast(payload.message || 'Unable to save follow-up status.');
                 return;
             }
 
@@ -1120,7 +1212,7 @@ function rhu_risk_class($level)
             const status = formData.get('status');
             const badge = document.querySelector(`[data-referral-status="${CSS.escape(String(id))}"]`);
             if (badge) badge.textContent = status;
-            showToast('Referral status updated.');
+            showToast('Follow-up status updated.');
         }
 
         document.querySelectorAll('[data-view-assessment]').forEach(button => {

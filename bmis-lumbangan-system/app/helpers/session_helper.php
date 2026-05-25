@@ -42,6 +42,18 @@ function isPolice() {
 }
 
 /**
+ * Check if logged in official has RHU analytics role
+ */
+function isRhu() {
+    if (!isOfficial()) {
+        return false;
+    }
+
+    $role = strtolower(trim((string) ($_SESSION['role'] ?? '')));
+    return in_array($role, ['rhu', 'rhu analytics', 'rhu staff', 'rural health unit'], true);
+}
+
+/**
  * Get logged in user/official ID
  */
 function getUserId() {
@@ -115,6 +127,17 @@ function requireOfficial() {
  */
 function requirePolice() {
     if (!isPolice()) {
+        $redirect = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=landing';
+        header('Location: ' . $redirect);
+        exit();
+    }
+}
+
+/**
+ * Require RHU role - redirect if not logged in as RHU
+ */
+function requireRhu() {
+    if (!isRhu()) {
         $redirect = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=landing';
         header('Location: ' . $redirect);
         exit();

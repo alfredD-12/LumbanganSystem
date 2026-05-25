@@ -11,7 +11,9 @@ require_once __DIR__ . '/../app/controllers/PasswordResetController.php';
 require_once __DIR__ . '/../app/controllers/AuthController.php';
 require_once __DIR__ . '/../app/controllers/EmailVerificationController.php';
 require_once __DIR__ . '/../app/controllers/GalleryController.php';
+require_once __DIR__ . '/../app/controllers/RhuAnalyticsController.php';
 require_once __DIR__ . '/../app/helpers/csrf_helper.php';
+require_once __DIR__ . '/../app/helpers/session_helper.php';
 
 require_once __DIR__ . '/../app/controllers/SurveyController.php';
 // Load announcement helpers (provides base_url/assets_url/uploads_url/announcement_image_url)
@@ -24,6 +26,24 @@ require_once __DIR__ . '/../app/controllers/ResidentController.php';
 $action = $_GET['action'] ?? $_POST['action'] ?? null;
 
 if ($action) {
+    $rhuAllowedActions = [
+        'logout',
+        'rhu_assessment_detail',
+        'rhu_update_referral',
+        'rhu_export_csv',
+        'rhu_export_pdf',
+    ];
+
+    if (function_exists('isRhu') && isRhu() && !in_array($action, $rhuAllowedActions, true)) {
+        http_response_code(403);
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'message' => 'RHU accounts can only access the RHU analytics dashboard.',
+        ]);
+        return;
+    }
+
     $csrfProtectedActions = [
         'submitRequest',
         'deleteRequest',
@@ -77,6 +97,7 @@ if ($action) {
         'gallery_delete',
         'gallery_toggle',
         'gallery_update_order',
+        'rhu_update_referral',
     ];
 
     if (in_array($action, $csrfProtectedActions, true)) {
@@ -446,6 +467,26 @@ if ($action) {
             $galleryController->handleRequest();
             break;
 
+        case 'rhu_assessment_detail':
+            $rhuController = new RhuAnalyticsController();
+            $rhuController->assessmentDetail();
+            break;
+
+        case 'rhu_update_referral':
+            $rhuController = new RhuAnalyticsController();
+            $rhuController->updateReferral();
+            break;
+
+        case 'rhu_export_csv':
+            $rhuController = new RhuAnalyticsController();
+            $rhuController->exportCsv();
+            break;
+
+        case 'rhu_export_pdf':
+            $rhuController = new RhuAnalyticsController();
+            $rhuController->exportPdf();
+            break;
+
         case 'getRequestById':
             $controller->getRequestById();
             break;
@@ -474,12 +515,16 @@ if ($action) {
 }
 
 // ✅ Handle page routing (HTML views)
-@require_once __DIR__ . '/../app/helpers/session_helper.php';
-
 $page = $_GET['page'] ?? null;
 
 if (!$page) {
     $page = 'landing';
+}
+
+if (function_exists('isRhu') && isRhu() && !in_array($page, ['dashboard_rhu', 'landing', 'logout'], true)) {
+    $redirect = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=dashboard_rhu';
+    header('Location: ' . $redirect);
+    exit;
 }
 
 switch ($page) {
@@ -517,7 +562,7 @@ switch ($page) {
         break;
     case 'admin_officials':
         // Only allow access to officials/admins
-        if (!isOfficial()) {
+        if (!isOfficial() || isRhu()) {
             $redirect = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=landing';
             header('Location: ' . $redirect);
             exit;
@@ -526,7 +571,7 @@ switch ($page) {
         break;
     case 'admin_residents':
         // Only allow access to officials/admins
-        if (!isOfficial()) {
+        if (!isOfficial() || isRhu()) {
             $redirect = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=landing';
             header('Location: ' . $redirect);
             exit;
@@ -542,7 +587,16 @@ switch ($page) {
             header('Location: ' . $redirect);
             exit;
         }
+        if (isRhu()) {
+            $redirect = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=dashboard_rhu';
+            header('Location: ' . $redirect);
+            exit;
+        }
         include __DIR__ . '/../app/views/admin_Dash/SecDash.php';
+        break;
+    case 'dashboard_rhu':
+        $rhuController = new RhuAnalyticsController();
+        $rhuController->dashboard();
         break;
     case 'dashboard_police':
         if (!isPolice()) {

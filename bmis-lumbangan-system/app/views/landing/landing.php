@@ -20,6 +20,12 @@ if (isLoggedIn()) {
     header('Location: ' . $redirect);
     exit();
   } elseif (isOfficial()) {
+    if (function_exists('isRhu') && isRhu()) {
+      $redirect = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=dashboard_rhu';
+      header('Location: ' . $redirect);
+      exit();
+    }
+
     // Redirect officials to the routed official dashboard handled by the front controller
     $redirect = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=dashboard_official';
     header('Location: ' . $redirect);

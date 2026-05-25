@@ -138,8 +138,14 @@ class AuthController
 
                 $loginSuccess = true;
                 $authenticatedUserType = 'official';
-                $isPolice = strtolower(trim((string) ($official['role'] ?? ''))) === 'police';
-                $redirectPage = $isPolice ? 'dashboard_police' : 'dashboard_official';
+                $officialRole = strtolower(trim((string) ($official['role'] ?? '')));
+                if ($officialRole === 'police') {
+                    $redirectPage = 'dashboard_police';
+                } elseif (in_array($officialRole, ['rhu', 'rhu analytics', 'rhu staff', 'rural health unit'], true)) {
+                    $redirectPage = 'dashboard_rhu';
+                } else {
+                    $redirectPage = 'dashboard_official';
+                }
                 $redirectUrl = (defined('BASE_PUBLIC') ? rtrim(BASE_PUBLIC, '/') : '') . '/index.php?page=' . $redirectPage;
             }
         }

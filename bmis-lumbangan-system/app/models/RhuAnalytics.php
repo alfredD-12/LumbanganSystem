@@ -121,6 +121,9 @@ class RhuAnalytics
     {
         [$where, $params] = $this->buildFilterSql($filters, false);
         $riskScore = $this->riskScoreSql();
+        $trendMonths = isset($filters['trend_months']) && in_array((string) $filters['trend_months'], ['3', '6', '12', '24'], true)
+            ? (int) $filters['trend_months']
+            : 6;
 
         $sql = "
             SELECT
@@ -138,7 +141,7 @@ class RhuAnalytics
             WHERE {$where}
             GROUP BY month_key
             ORDER BY month_key DESC
-            LIMIT 6
+            LIMIT {$trendMonths}
         ";
 
         $stmt = $this->db->prepare($sql);

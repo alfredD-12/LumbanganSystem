@@ -13,6 +13,8 @@ $filters = $filters ?? [];
 $trendLabels = array_map(static fn($row) => !empty($row['month_key']) ? date('M Y', strtotime($row['month_key'] . '-01')) : 'N/A', $monthlyTrend);
 $trendApproved = array_map(static fn($row) => (int) ($row['approved_count'] ?? 0), $monthlyTrend);
 $trendHighRisk = array_map(static fn($row) => (int) ($row['high_risk'] ?? 0), $monthlyTrend);
+$trendMonths = in_array((string) ($filters['trend_months'] ?? '6'), ['3', '6', '12', '24'], true) ? (string) $filters['trend_months'] : '6';
+$trendBadge = 'Last ' . $trendMonths . ' months';
 $purokLabels = array_map(static fn($row) => (string) ($row['purok_name'] ?? 'Unassigned'), $purokBreakdown);
 $purokHighRisk = array_map(static fn($row) => (int) ($row['high_risk'] ?? 0), $purokBreakdown);
 
@@ -431,6 +433,15 @@ function rhu_risk_class($level)
             background: #fcfcfd;
         }
 
+        .rhu-list-item.actionable {
+            grid-template-columns: 1fr auto auto;
+        }
+
+        .rhu-list-item.actionable:hover {
+            border-color: #b9c6d8;
+            background: #fff;
+        }
+
         .rhu-list-title {
             font-size: .9rem;
             font-weight: 700;
@@ -451,6 +462,11 @@ function rhu_risk_class($level)
             place-items: center;
             background: #f2f4f7;
             font-weight: 700;
+        }
+
+        .rhu-priority-action {
+            display: flex;
+            justify-content: flex-end;
         }
 
         .rhu-table-wrap {
@@ -674,6 +690,8 @@ function rhu_risk_class($level)
             .rhu-account { grid-column: 1 / -1; justify-content: space-between; }
             .rhu-account-text { text-align: left; }
             .filter-grid, .rhu-kpis, .rhu-risk-summary, .detail-grid, .detail-list, .referral-grid { grid-template-columns: 1fr; }
+            .rhu-list-item.actionable { grid-template-columns: 1fr auto; }
+            .rhu-priority-action { grid-column: 1 / -1; justify-content: flex-start; }
             .rhu-toolbar { align-items: flex-start; flex-direction: column; }
         }
     </style>
@@ -758,6 +776,15 @@ function rhu_risk_class($level)
                     </select>
                 </div>
                 <div class="field">
+                    <label for="trend_months">Trend</label>
+                    <select id="trend_months" name="trend_months">
+                        <option value="3" <?php echo rhu_selected($trendMonths, '3'); ?>>Last 3 months</option>
+                        <option value="6" <?php echo rhu_selected($trendMonths, '6'); ?>>Last 6 months</option>
+                        <option value="12" <?php echo rhu_selected($trendMonths, '12'); ?>>Last 12 months</option>
+                        <option value="24" <?php echo rhu_selected($trendMonths, '24'); ?>>Last 24 months</option>
+                    </select>
+                </div>
+                <div class="field">
                     <label for="privacy">Privacy</label>
                     <select id="privacy" name="privacy">
                         <option value="full" <?php echo rhu_selected($privacyMode, 'full'); ?>>Show names</option>
@@ -801,7 +828,7 @@ function rhu_risk_class($level)
 
         <section class="rhu-grid">
             <article class="rhu-panel">
-                <div class="rhu-panel-header"><div><h2 class="rhu-panel-title">Monthly Trend</h2><div class="rhu-panel-subtitle">Approved surveys and monitoring needs</div></div><span class="rhu-panel-badge">Last 6 months</span></div>
+                <div class="rhu-panel-header"><div><h2 class="rhu-panel-title">Monthly Trend</h2><div class="rhu-panel-subtitle">Approved surveys and monitoring needs</div></div><span class="rhu-panel-badge"><?php echo rhu_h($trendBadge); ?></span></div>
                 <div class="rhu-chart"><canvas id="monthlyTrendChart"></canvas></div>
             </article>
             <article class="rhu-panel">
@@ -818,12 +845,15 @@ function rhu_risk_class($level)
                         <div class="rhu-empty">No priority residents for the current filters.</div>
                     <?php else: ?>
                         <?php foreach ($priorityAssessments as $row): ?>
-                            <div class="rhu-list-item">
+                            <div class="rhu-list-item actionable">
                                 <div>
                                     <div class="rhu-list-title"><?php echo rhu_h(rhu_name($row, $privacyMode)); ?></div>
                                     <div class="rhu-list-meta"><?php echo rhu_h($row['purok_name'] ?? 'Unassigned'); ?> | <?php echo rhu_h(($row['age'] ?? 'N/A') . ' / ' . ($row['sex'] ?? 'N/A')); ?> | <?php echo rhu_h($row['referral_status'] ?? 'Pending Review'); ?></div>
                                 </div>
                                 <span class="rhu-pill <?php echo rhu_risk_class($row['risk_level'] ?? 'Low'); ?>"><?php echo rhu_h($row['risk_level'] ?? 'Low'); ?></span>
+                                <div class="rhu-priority-action">
+                                    <button class="tiny-button" type="button" data-view-assessment="<?php echo (int) $row['id']; ?>"><i class="fas fa-eye"></i> View</button>
+                                </div>
                             </div>
                         <?php endforeach; ?>
                     <?php endif; ?>

@@ -221,12 +221,19 @@ class RhuAnalyticsController
             'sex' => trim((string) ($source['sex'] ?? '')),
             'risk_type' => trim((string) ($source['risk_type'] ?? '')),
             'risk_level' => trim((string) ($source['risk_level'] ?? '')),
+            'trend_months' => $this->validTrendMonths($source['trend_months'] ?? '') ?: '6',
         ];
     }
 
     private function validDate($value)
     {
         return is_string($value) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) === 1;
+    }
+
+    private function validTrendMonths($value)
+    {
+        $value = (string) $value;
+        return in_array($value, ['3', '6', '12', '24'], true) ? $value : '';
     }
 
     private function displayName(array $row, $privacyMode)

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Barangay Lumbangan | Nasugbu, Batangas</title>
+
+
+  <!-- Vendor -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Landing page styles -->
+  <link rel="stylesheet" href="/assets/css/landing.css">
+  <link rel="stylesheet" href="/assets/css/news-styles.css">
+  <link rel="stylesheet" href="/assets/css/static-overrides.css">
+
+  <!-- Optional news fetcher -->
+</head>
+
+<body>
+  <!-- Floating Background Shapes -->
+  <div class="floating-shapes">
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+  </div>
+
+  <!-- Header (Navbar) -->
+  <nav class="navbar navbar-expand-lg fixed-top shadow-sm">
+    <div class="container">
+      <!-- Brand / Logo Section -->
+      <a class="navbar-brand d-flex align-items-center" href="#home">
+        <div class="logo-circle">
+          <img src="https://raw.githubusercontent.com/alfredD-12/LumbanganSystem/dd1207afc4ecef6f4e68b9efd0d1da1e23d3e4e4/bmis-lumbangan-system/app/uploads/BMISlogo.png" alt="BMIS Logo" class="navbar-logo-img">
+        </div>
+        <div class="brand-text">
+          <h6 class="mb-0 fw-bold brand-title">Barangay Lumbangan</h6>
+          <small class="brand-subtitle">Nasugbu, Batangas</small>
+        </div>
+      </a>
+
+      <!-- Toggle for mobile -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- Navbar links -->
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mx-auto">
+          <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="#projects">Projects</a></li>
+          <li class="nav-item"><a class="nav-link" href="#officials">Officials</a></li>
+          <li class="nav-item"><a class="nav-link" href="#announcements">Announcements</a></li>
+          <li class="nav-item"><a class="nav-link" href="#news-section">News</a></li>
+          <li class="nav-item"><a class="nav-link" href="#gallery">Gallery</a></li>
+          <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+        </ul>
+
+        <!-- Government Seals -->
+        <div class="d-none d-lg-flex align-items-center gap-2 me-3 gov-seals">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Bagong_Pilipinas_logo.png"
+            alt="Bagong Pilipinas" title="Bagong Pilipinas"
+            class="seal-img">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Seal_of_Nasugbu.png/599px-Seal_of_Nasugbu.png"
+            alt="Nasugbu Seal" title="Municipality of Nasugbu"
+            class="seal-img">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/0/0c/Seal_of_Batangas.png"
+            alt="Batangas Seal" title="Province of Batangas"
+            class="seal-img">
+        </div>
+
+        <!-- Login Button -->
+        <div class="d-flex align-items-center auth-buttons">
+          <a href="#contact" class="btn-auth"><i class="fas fa-map-marker-alt me-1"></i><span>Visit Barangay Office</span></a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero-section" id="home">
+    <div class="container">
+      <div class="hero-content">
+        <div class="mb-4 hero-logos-wrapper" style="animation: fadeInUp 1s ease;">
+          <img src="https://portal.batangas.gov.ph/wp-content/uploads/2025/06/batangaslogo2025.png"
+            alt="Matatag Batangas"
+            class="matatag-logo-hero">
+        </div>
+
+        <div class="hero-badge">🏛️ BARANGAY INFORMATION · STATIC PREVIEW</div>
+        <h1>BARANGAY LUMBANGAN</h1>
+        <div class="hero-subtitle">Nasugbu, Batangas</div>
+        <div class="hero-tagline">"Isang Barangay, Isang Puso, Para sa Lumbangan!"</div>
+        <div class="hero-buttons">
+          <a href="#announcements" class="btn btn-custom btn-primary-custom">View Announcements</a>
+          <a href="#about" class="btn btn-custom btn-outline-white">Discover More</a>
+        </div>
+      </div>
+
+      <!-- Scroll Down Indicator -->
+      <a href="#about" class="scroll-down-indicator">
+        <div class="mouse-icon">
+          <div class="mouse-wheel"></div>
+        </div>
+        <span>Scroll Down</span>
+      </a>
+    </div>
+    <div class="wave-animation">
+      <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+        <path d="M0,0 C150,60 350,0 600,50 C850,100 1050,50 1200,0 L1200,120 L0,120 Z"
+          fill="rgba(30, 58, 95, 0.1)">
+          <animate attributeName="d" dur="10s" repeatCount="indefinite"
+            values="M0,0 C150,60 350,0 600,50 C850,100 1050,50 1200,0 L1200,120 L0,120 Z;
+                    M0,50 C150,0 350,100 600,50 C850,0 1050,100 1200,50 L1200,120 L0,120 Z;
+                    M0,0 C150,60 350,0 600,50 C850,100 1050,50 1200,0 L1200,120 L0,120 Z" />
+        </path>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Stats Section -->
+  <section class="stats-section">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-3 col-md-6">
+          <div class="stat-card">
+            <div class="stat-number"><i class="fas fa-users"></i> Community</div>
+            <div class="stat-label">For residents</div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="stat-card">
+            <div class="stat-number"><i class="fas fa-project-diagram"></i> Programs</div>
+            <div class="stat-label">Local initiatives</div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="stat-card">
+            <div class="stat-number"><i class="fas fa-calendar-check"></i> Events</div>
+            <div class="stat-label">Activities</div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="stat-card">
+            <div class="stat-number"><i class="fas fa-award"></i> Service</div>
+            <div class="stat-label">Barangay services</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="about-section" id="about">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">About Us</div>
+        <h2 class="section-title">Welcome to Lumbangan</h2>
+        <p class="section-subtitle">A progressive barangay committed to excellence in public service and community development</p>
+      </div>
+      <div class="row align-items-center">
+        <div class="col-lg-6">
+          <div class="about-img-wrapper">
+            <img src="https://raw.githubusercontent.com/alfredD-12/LumbanganSystem/dd1207afc4ecef6f4e68b9efd0d1da1e23d3e4e4/bmis-lumbangan-system/app/uploads/BarangayHall.png"
+              alt="Barangay Hall" class="about-img">
+          </div>
+        </div>
+        <div class="col-lg-6 about-content">
+          <p class="about-text">Barangay Lumbangan is one of the progressive barangays of Nasugbu, Batangas, known for its peaceful community and hardworking residents. Our barangay is committed to providing excellent public service and fostering a safe, clean, and prosperous environment for all residents.</p>
+          <p class="about-text">Through collaborative efforts and transparent governance, we strive to implement programs that enhance the quality of life of every family in Lumbangan.</p>
+          <div class="mission-vision-grid">
+            <div class="mv-card">
+              <div class="mv-icon"><i class="fas fa-bullseye"></i></div>
+              <h5 class="mv-title">Mission</h5>
+              <p class="mv-text">To provide responsive, transparent, and inclusive governance that empowers every resident and promotes sustainable community development.</p>
+            </div>
+            <div class="mv-card">
+              <div class="mv-icon"><i class="fas fa-eye"></i></div>
+              <h5 class="mv-title">Vision</h5>
+              <p class="mv-text">A progressive, peaceful, and united Barangay Lumbangan where every resident enjoys a high quality of life.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<section class="projects-section" id="projects"><div class="container"><div class="section-header"><div class="section-badge">Our Projects</div><h2 class="section-title">Community Development</h2><p class="section-subtitle">Information about local programs and initiatives</p></div><div class="row g-4">
+<div class="col-lg-4 col-md-6"><div class="announcement-card h-100"><div class="announcement-header"><i class="fas fa-road announcement-icon"></i></div><div class="announcement-body"><h5 class="announcement-title">Infrastructure & Development</h5><p style="color:#718096">Confirmed infrastructure project updates can be added here.</p><small class="text-muted">Details pending verification</small></div></div></div>
+<div class="col-lg-4 col-md-6"><div class="announcement-card h-100"><div class="announcement-header"><i class="fas fa-hands-helping announcement-icon"></i></div><div class="announcement-body"><h5 class="announcement-title">Community Programs</h5><p style="color:#718096">Barangay-led community initiatives will be featured here.</p><small class="text-muted">Details pending verification</small></div></div></div>
+<div class="col-lg-4 col-md-6"><div class="announcement-card h-100"><div class="announcement-header"><i class="fas fa-seedling announcement-icon"></i></div><div class="announcement-body"><h5 class="announcement-title">Environmental Programs</h5><p style="color:#718096">Verified community improvement activities can be featured here.</p><small class="text-muted">Details pending verification</small></div></div></div>
+</div></div></section>  <!-- Officials Section -->
+  <section class="officials-section" id="officials">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">Leadership</div>
+        <h2 class="section-title">Barangay Officials</h2>
+        <p class="section-subtitle">Meet the dedicated leaders serving our community with integrity and passion</p>
+      </div>
+
+      <!-- Officials Carousel -->
+      <div class="officials-carousel-wrapper">
+        <button class="carousel-nav carousel-prev" onclick="moveOfficialsCarousel(-1)">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+
+        <div class="officials-carousel-container">
+          <div class="officials-carousel-track" id="officialsCarouselTrack">
+            <!-- Official 1 -->
+            <div class="official-card-carousel">
+              <div class="official-img"><i class="fas fa-user"></i></div>
+              <div class="official-info">
+                <div class="official-name">Name to be confirmed</div>
+                <div class="official-position">Punong Barangay</div>
+              </div>
+            </div>
+            <!-- Official 2 -->
+            <div class="official-card-carousel">
+              <div class="official-img"><i class="fas fa-user"></i></div>
+              <div class="official-info">
+                <div class="official-name">Name to be confirmed</div>
+                <div class="official-position">Kagawad</div>
+              </div>
+            </div>
+            <!-- Official 3 -->
+            <div class="official-card-carousel">
+              <div class="official-img"><i class="fas fa-user"></i></div>
+              <div class="official-info">
+                <div class="official-name">Name to be confirmed</div>
+                <div class="official-position">Kagawad</div>
+              </div>
+            </div>
+            <!-- Official 4 -->
+            <div class="official-card-carousel">
+              <div class="official-img"><i class="fas fa-user"></i></div>
+              <div class="official-info">
+                <div class="official-name">Name to be confirmed</div>
+                <div class="official-position">Kagawad</div>
+              </div>
+            </div>
+            <!-- Official 5 -->
+            <div class="official-card-carousel">
+              <div class="official-img"><i class="fas fa-user"></i></div>
+              <div class="official-info">
+                <div class="official-name">Name to be confirmed</div>
+                <div class="official-position">SK Chairman</div>
+              </div>
+            </div>
+            <!-- Official 6 -->
+            <div class="official-card-carousel">
+              <div class="official-img"><i class="fas fa-user"></i></div>
+              <div class="official-info">
+                <div class="official-name">Name to be confirmed</div>
+                <div class="official-position">Barangay Secretary</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button class="carousel-nav carousel-next" onclick="moveOfficialsCarousel(1)">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+
+      <p class="text-center text-muted small mt-4">Names and official positions must be verified before publication.</p>
+      <!-- Carousel Indicators -->
+      <div class="carousel-indicators" id="officialsIndicators"></div>
+    </div>
+  </section>
+
+<section class="announcements-section" id="announcements"><div class="container"><div class="section-header"><div class="section-badge">Latest Updates</div><h2 class="section-title">Announcements</h2><p class="section-subtitle">Barangay advisories and community announcements</p></div><div class="row"><div class="col-12"><div style="text-align:center;padding:3rem;background:white;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.05)"><i class="fas fa-bullhorn" style="font-size:3rem;color:#94a3b8;margin-bottom:1rem"></i><h4>Announcements coming soon</h4><p style="color:#718096">The static preview does not connect to the announcements database.</p></div></div></div></div></section><section class="news-section" id="news-section"><div class="container"><div class="section-header"><div class="section-badge">Latest News</div><h2 class="section-title">Batangas News & Updates</h2><p class="section-subtitle">Read verified provincial news directly from its source</p></div><div class="text-center" style="padding:2rem"><i class="fas fa-newspaper mb-4" style="font-size:3rem;color:var(--primary-blue)"></i><p>Visit the Batangas provincial news portal for the latest updates.</p><a href="https://portal.batangas.gov.ph/news/" class="btn btn-custom btn-primary-custom" target="_blank" rel="noopener noreferrer">View Batangas News</a></div></div></section><section class="gallery-section" id="gallery"><div class="container"><div class="section-header"><div class="section-badge">Memories</div><h2 class="section-title">Gallery</h2><p class="section-subtitle">Photos from the existing project gallery</p></div><div class="gallery-carousel-wrapper"><button type="button" class="gallery-carousel-nav gallery-carousel-prev" onclick="previousGallery()" aria-label="Previous gallery image"><i class="fas fa-chevron-left"></i></button><button type="button" class="gallery-carousel-nav gallery-carousel-next" onclick="nextGallery()" aria-label="Next gallery image"><i class="fas fa-chevron-right"></i></button><div class="gallery-carousel-container">
+<div class="gallery-carousel-card active" data-index="0"><div class="gallery-img"><img src="https://raw.githubusercontent.com/alfredD-12/LumbanganSystem/dd1207afc4ecef6f4e68b9efd0d1da1e23d3e4e4/bmis-lumbangan-system/app/uploads/gallery/691e82f6cce52_1763607286.jpg" alt="Community gallery image 1" loading="lazy" data-lightbox style="cursor:zoom-in"></div><div class="gallery-card-overlay"><h4>Community Gallery</h4><p>From the LumbanganSystem project</p></div></div>
+<div class="gallery-carousel-card" data-index="1"><div class="gallery-img"><img src="https://raw.githubusercontent.com/alfredD-12/LumbanganSystem/dd1207afc4ecef6f4e68b9efd0d1da1e23d3e4e4/bmis-lumbangan-system/app/uploads/gallery/692670a764ab3_1764126887.png" alt="Community gallery image 2" loading="lazy" data-lightbox style="cursor:zoom-in"></div><div class="gallery-card-overlay"><h4>Community Gallery</h4><p>From the LumbanganSystem project</p></div></div>
+</div><div class="gallery-carousel-indicators"><button type="button" class="gallery-indicator active" onclick="goToGallery(0)" aria-label="Show gallery image 1"></button><button type="button" class="gallery-indicator" onclick="goToGallery(1)" aria-label="Show gallery image 2"></button></div></div></div></section>  <!-- Contact Section -->
+  <section class="contact-section" id="contact">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-badge">Get In Touch</div>
+        <h2 class="section-title">Contact Us</h2>
+        <p class="section-subtitle">We're here to serve you. Reach out to us for any concerns or inquiries</p>
+      </div>
+      <div class="row">
+        <div class="col-lg-6">
+          <div class="contact-card">
+            <h4 style="color: var(--primary-blue); font-weight: 700; margin-bottom: 1.618rem; font-size: 1.5rem;">Contact Information</h4>
+            <div class="contact-info-item">
+              <div class="contact-icon"><i class="fas fa-map-marker-alt"></i></div>
+              <div>
+                <h6 style="font-weight: 600; color: var(--primary-blue); margin-bottom: 5px;">Address</h6>
+                <p style="color: #718096; margin: 0;">Lumbangan, Nasugbu, Batangas</p>
+              </div>
+            </div>
+            <div class="contact-info-item">
+              <div class="contact-icon"><i class="fas fa-phone"></i></div>
+              <div>
+                <h6 style="font-weight: 600; color: var(--primary-blue); margin-bottom: 5px;">Phone</h6>
+                <p style="color: #718096; margin: 0;">Contact the barangay office to confirm</p>
+              </div>
+            </div>
+            <div class="contact-info-item">
+              <div class="contact-icon"><i class="fas fa-envelope"></i></div>
+              <div>
+                <h6 style="font-weight: 600; color: var(--primary-blue); margin-bottom: 5px;">Email</h6>
+                <p style="color: #718096; margin: 0;">Official email address to be confirmed</p>
+              </div>
+            </div>
+            <div class="contact-info-item">
+              <div class="contact-icon"><i class="fas fa-clock"></i></div>
+              <div>
+                <h6 style="font-weight: 600; color: var(--primary-blue); margin-bottom: 5px;">Office Hours</h6>
+                <p style="color: #718096; margin: 0;">Monday - Friday: 8:00 AM - 5:00 PM</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="contact-card">
+            <h4 style="color: var(--primary-blue); font-weight: 700; margin-bottom: 1.618rem; font-size: 1.5rem;">Barangay Office Information</h4>
+            <p style="color:#718096">This static preview has no active online contact form, account registration, or document request service.</p><p style="color:#718096">For official transactions, please visit or contact the barangay office directly.</p><a class="btn btn-custom btn-primary-custom w-100" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/search/?api=1&amp;query=Lumbangan%2C%20Nasugbu%2C%20Batangas">View Location on Google Maps</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4 mb-4">
+          <h5 class="footer-title">Barangay Lumbangan</h5>
+          <p style="color: rgba(255,255,255,0.85); line-height: 1.8;">
+            Committed to serving the community with transparency, integrity, and excellence. Building a better future for all residents.
+          </p>
+          
+        </div>
+        <div class="col-lg-4 mb-4">
+          <h5 class="footer-title">Quick Links</h5>
+          <ul class="footer-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About Us</a></li>
+            <li><a href="#projects">Projects</a></li>
+            <li><a href="#announcements">Announcements</a></li>
+            <li><a href="#gallery">Gallery</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-4 mb-4">
+          <h5 class="footer-title">Office Hours</h5>
+          <ul class="footer-links">
+            <li style="color: rgba(255,255,255,0.85);">Monday - Friday</li>
+            <li style="color: white; font-weight: 600;">8:00 AM - 5:00 PM</li>
+            <li style="color: rgba(255,255,255,0.85); margin-top: 20px;">Saturday</li>
+            <li style="color: white; font-weight: 600;">8:00 AM - 12:00 PM</li>
+            <li style="color: rgba(255,255,255,0.85); margin-top: 20px;">Sunday & Holidays</li>
+            <li style="color: white; font-weight: 600;">Closed</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p style="margin: 0; color: rgba(255,255,255,0.7);">
+          © 2026 Barangay Lumbangan, Nasugbu, Batangas. All rights reserved.
+        </p>
+      </div>
+    </div>
+  <p class="text-center small mb-2" style="color:rgba(255,255,255,.7)">Static preview only · Backend services inactive · Verify official details before public use</p></footer>
+
+<div id="imageLightbox" role="dialog" aria-modal="true" aria-label="Expanded image" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:99999;align-items:center;justify-content:center;padding:1rem"><button type="button" id="closeLightbox" aria-label="Close expanded image" style="position:absolute;right:1rem;top:1rem;border:0;background:white;border-radius:50%;width:3rem;height:3rem;font-size:1.6rem">×</button><img id="lightboxImg" alt="Expanded gallery image" style="max-width:94%;max-height:90vh;object-fit:contain"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js" defer></script><script src="/assets/js/static-landing.js" defer></script></body></html>
